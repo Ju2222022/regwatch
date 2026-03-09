@@ -98,7 +98,7 @@ def classify_product(api_key: str, model_code: str, name: str, product_type: str
     """
     genai.configure(api_key=api_key)
     model = genai.GenerativeModel(
-        model_name="gemini-1.5-pro",
+       model_name="gemini-2.0-flash",
         system_instruction=SYSTEM_PROMPT
     )
 
