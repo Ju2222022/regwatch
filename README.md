@@ -14,7 +14,7 @@ Déployée sur [regwatch.streamlit.app](https://regwatch.streamlit.app)
 | Agent 3 — Regulatory Classifier | ✅ Actif | Classifie les produits selon le référentiel Decathlon (CAT1-CAT9) |
 | Agent 4 — Impact Analyzer | ✅ Actif | Croise veille × catalogue (Mode Produit → Agent 5B) ou × catégories (Mode Catégorie → Agent 5A) |
 | Agent 5A — Legal Sheet Updater | ✅ Actif | Analyse et propose des mises à jour des fiches légales "My Conformity Box" par catégorie |
-| Agent 5B — Risk Mapper | 🔜 Phase 3 | Génère le risk mapping produit (mode audit) |
+| Agent 5B — Risk Mapper | ✅ Actif | Génère le risk mapping produit avec comparaison avant/après mise à jour 5A |
 
 ---
 
@@ -188,6 +188,33 @@ La zone Europe couvre l'EEE par défaut. Une mention nationale n'est ajoutée qu
 
 ---
 
+## Agent 5B — Risk Mapper
+
+Génère un risk mapping réglementaire par produit à partir des résultats Agent 4 (Mode Produit),
+avec comparaison avant/après les mises à jour approuvées par Agent 5A.
+
+**Flux :**
+```
+Agent 4 Mode Produit → session_state["impact_product_result"]
+Agent 5A export JSON → session_state["5a_export_approved"] (optionnel)
+        ↓
+Agent 5B — risk mapping 3 niveaux
+```
+
+**3 niveaux de lecture (3 onglets) :**
+- 📊 **Vue Exécutive** — tableau produits × niveau de risque, pour la direction
+- 📦 **Vue Produit** — non-conformités + actions correctives + délais, pour les chefs de produit
+- 📋 **Vue Réglementaire** — par réglementation, taux de conformité avant/après, pour le responsable réglementaire
+
+**Comparaison avant/après :**
+- AVANT = état actuel basé sur les alertes Agent 4
+- APRÈS = simulation post-implémentation des mises à jour Agent 5A approuvées
+- Clairement signalé comme simulation dans l'interface
+
+**Export :** JSON complet + CSV synthétique (vue exécutive)
+
+---
+
 ## Page Configuration
 
 Gestion des sources de veille par marché. Édition par onglet, import/export `sources.json`.
@@ -200,7 +227,7 @@ Gestion des sources de veille par marché. Édition par onglet, import/export `s
 |---|---|---|
 | Phase 1 | ✅ Terminée | Agents 2 + 3 opérationnels, concordance validée |
 | Phase 2 | ✅ Terminée | Agent 1 · Agent 4 · Page Configuration |
-| Phase 3 | 🔄 En cours | Agent 5A opérationnel · Agent 5B (risk mapping) à venir |
+| Phase 3 | ✅ Terminée | Agent 5A (fiches légales) · Agent 5B (risk mapping) opérationnels |
 | Phase 4 | 🔜 Planifiée | Présentation équipe · Go/No-Go · Google Sheets · Scheduling automatique |
 
 ---
