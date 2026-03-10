@@ -305,8 +305,9 @@ def run_watch(
         search_results = enriched
 
     if not search_results:
-        return [], {"tavily_results": 0, "jina_enriched": 0,
-                    "input_tokens": 0, "output_tokens": 0, "cost_usd": 0.0}
+        return [], {"tavily_results": 0, "jina_enriched": 0, "entries_found": 0,
+                    "input_tokens": 0, "output_tokens": 0, "cost_usd": 0.0,
+                    "warning": "Tavily n'a retourné aucun résultat. Essayez une période plus longue ou un sujet différent."}
 
     # Étape 3 — Claude extraction
     entries, token_usage = extract_regulatory_entries(
