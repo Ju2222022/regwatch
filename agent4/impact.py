@@ -200,6 +200,21 @@ OUTPUT — respond ONLY with valid JSON, no markdown:
 """
 
 
+def _summarize_alerts(alerts: list) -> list:
+    """Résume les alertes pour réduire la taille du prompt."""
+    return [
+        {
+            "title": a.get("title", ""),
+            "urgency": a.get("urgency", ""),
+            "categories_concerned": a.get("categories_concerned", []),
+            "summary_fr": (a.get("summary_fr") or a.get("summary", ""))[:200],
+            "regulation_type": a.get("regulation_type", ""),
+            "deadline": a.get("deadline", ""),
+        }
+        for a in alerts
+    ]
+
+
 def _parse_json(raw: str) -> dict:
     """Parse JSON robuste — cherche premier { dernier }."""
     if not raw:
@@ -218,7 +233,7 @@ def _call_claude(anthropic_key: str, system: str, user_message: str) -> tuple:
     """Appel Claude Sonnet avec retour (result_dict, token_usage)."""
     payload = json.dumps({
         "model": "claude-sonnet-4-20250514",
-        "max_tokens": 4096,
+        "max_tokens": 6000,
         "system": system,
         "messages": [{"role": "user", "content": user_message}]
     }).encode("utf-8")
@@ -266,20 +281,26 @@ def analyze_product_impact(
     Returns:
         (result, token_usage)
     """
+    alerts_short   = _summarize_alerts(alerts)
+    catalog_short  = [
+        {"code": p.get("code",""), "name": p.get("name",""),
+         "categories": p.get("categories",[])}
+        for p in product_catalog
+    ]
+
     user_message = f"""Analyze regulatory impact on this product catalog.
 
-REGULATORY ALERTS ({len(alerts)} alerts):
-{json.dumps(alerts, indent=2, ensure_ascii=False)}
+REGULATORY ALERTS ({len(alerts_short)} alerts):
+{json.dumps(alerts_short, indent=2, ensure_ascii=False)}
 
-PRODUCT CATALOG ({len(product_catalog)} products):
-{json.dumps(product_catalog, indent=2, ensure_ascii=False)}
+PRODUCT CATALOG ({len(catalog_short)} products):
+{json.dumps(catalog_short, indent=2, ensure_ascii=False)}
 
 CATEGORY DEFINITIONS:
-{json.dumps({k: {"label": v["label"], "scope": v["scope"]} for k, v in CAT_DEFINITIONS.items()}, indent=2)}
+{json.dumps({k: {"label": v["label"], "scope": v["scope"][:100]} for k, v in CAT_DEFINITIONS.items()}, indent=2)}
 
-Today's date: {datetime.now().strftime('%Y-%m-%d')}
-
-Return JSON only."""
+Today: {datetime.now().strftime('%Y-%m-%d')}
+Keep regulation names concise. Return JSON only."""
 
     result, token_usage = _call_claude(anthropic_key, SYSTEM_PRODUCT, user_message)
     result["token_usage"] = token_usage
@@ -304,10 +325,12 @@ def analyze_category_impact(
     cats = {k: v for k, v in CAT_DEFINITIONS.items()
             if active_categories is None or k in active_categories}
 
+    alerts_short_cat = _summarize_alerts(alerts)
+
     user_message = f"""Analyze which regulatory categories need legal sheet updates.
 
-REGULATORY ALERTS ({len(alerts)} alerts):
-{json.dumps(alerts, indent=2, ensure_ascii=False)}
+REGULATORY ALERTS ({len(alerts_short_cat)} alerts):
+{json.dumps(alerts_short_cat, indent=2, ensure_ascii=False)}
 
 ACTIVE CATEGORY DEFINITIONS:
 {json.dumps(cats, indent=2, ensure_ascii=False)}
