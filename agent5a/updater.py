@@ -15,7 +15,9 @@ HAIKU_OUTPUT_COST = 4.00
 
 # ── Structure officielle des fiches "My Conformity Box" ──────────────────────
 
-FICHE_SECTIONS = [
+# Sections découpées en 2 passes pour éviter les timeouts
+# Passe A : sections critiques (définition, étiquetage, technique)
+FICHE_SECTIONS_A = [
     {"id": "definition_category",       "label": "Product's definition — Category"},
     {"id": "definition_definition",     "label": "Product's definition — Definition"},
     {"id": "definition_comments",       "label": "Product's definition — Comments"},
@@ -25,42 +27,39 @@ FICHE_SECTIONS = [
     {"id": "labelling_manual",          "label": "Labelling — Mandatory on instructions manual"},
     {"id": "labelling_warnings_gen",    "label": "Labelling — Warnings (general)"},
     {"id": "labelling_warnings_spec",   "label": "Labelling — Warnings (specific)"},
-    {"id": "labelling_age",             "label": "Labelling — Target Age"},
     {"id": "labelling_sanctions",       "label": "Labelling — Sanctions / Fines"},
-    {"id": "labelling_comments",        "label": "Labelling — Comments"},
     {"id": "env_recycling",             "label": "Environment — Recycling & Eco taxes"},
     {"id": "env_labelling",             "label": "Environment — Labelling"},
     {"id": "tech_safety",               "label": "Technical — General safety requirements"},
     {"id": "tech_standards",            "label": "Technical — Mandatory / voluntary standards"},
+    {"id": "tech_radiofrequency",       "label": "Technical — Radiofrequency"},
+    {"id": "tech_chemicals",            "label": "Technical — Chemical substances"},
+    {"id": "tech_laboratory",           "label": "Technical — Laboratory"},
+    {"id": "tech_sanctions",            "label": "Technical — Sanctions / Fines"},
+]
+
+# Passe B : sections secondaires (conformité, import, commercialisation)
+FICHE_SECTIONS_B = [
     {"id": "tech_physical",             "label": "Technical — Physical & mechanical properties"},
     {"id": "tech_electrical",           "label": "Technical — Electrical aspects"},
     {"id": "tech_inflammability",       "label": "Technical — Inflammability"},
     {"id": "tech_hygiene",              "label": "Technical — Hygiene"},
     {"id": "tech_radioactivity",        "label": "Technical — Radioactivity"},
-    {"id": "tech_radiofrequency",       "label": "Technical — Radiofrequency"},
     {"id": "tech_noise",                "label": "Technical — Products making noise"},
-    {"id": "tech_chemicals",            "label": "Technical — Chemical substances"},
     {"id": "tech_packaging_req",        "label": "Technical — Packaging requirements"},
-    {"id": "tech_laboratory",           "label": "Technical — Laboratory"},
-    {"id": "tech_sanctions",            "label": "Technical — Sanctions / Fines"},
-    {"id": "tech_comments",             "label": "Technical — Comments"},
     {"id": "cert_registrations",        "label": "Certifications / Registrations"},
     {"id": "cert_laboratory",           "label": "Certifications — Laboratory"},
-    {"id": "cert_comments",             "label": "Certifications — Comments"},
     {"id": "conformity_documents",      "label": "Conformity documents — Documents"},
     {"id": "conformity_format",         "label": "Conformity documents — Format"},
-    {"id": "conformity_comments",       "label": "Conformity documents — Comments"},
     {"id": "import_general",            "label": "Importation rules — General rules"},
-    {"id": "import_documents",          "label": "Importation rules — Documents"},
-    {"id": "import_admin",              "label": "Importation rules — Administration"},
-    {"id": "import_comments",           "label": "Importation rules — Comments"},
     {"id": "commercial_notification",   "label": "Commercialization — Notification / Declaration"},
     {"id": "commercial_store",          "label": "Commercialization — Display in store"},
     {"id": "commercial_internet",       "label": "Commercialization — Display on internet"},
     {"id": "commercial_consumers",      "label": "Commercialization — Information to consumers"},
-    {"id": "commercial_comments",       "label": "Commercialization — Comments"},
 ]
 
+# Liste complète pour référence
+FICHE_SECTIONS = FICHE_SECTIONS_A + FICHE_SECTIONS_B
 SECTION_IDS = [s["id"] for s in FICHE_SECTIONS]
 
 # ── Statuts possibles ─────────────────────────────────────────────────────────
@@ -130,69 +129,86 @@ OUTPUT — respond ONLY with valid JSON, no markdown:
 """
 
 
-def analyze_legal_sheet(
+
+def _parse_json_response(raw: str, pass_label: str) -> dict:
+    """Parse JSON depuis la réponse Claude, robuste aux variations."""
+    if not raw:
+        raise ValueError(f"Réponse vide ({pass_label})")
+    if "```" in raw:
+        for part in raw.split("```"):
+            part = part.strip().lstrip("json").strip()
+            if part.startswith("{"):
+                try:
+                    return json.loads(part)
+                except json.JSONDecodeError:
+                    continue
+    if raw.startswith("{"):
+        try:
+            return json.loads(raw)
+        except json.JSONDecodeError:
+            pass
+    # Chercher n'importe quel objet JSON dans la réponse
+    start = raw.find("{")
+    end   = raw.rfind("}") + 1
+    if start >= 0 and end > start:
+        try:
+            return json.loads(raw[start:end])
+        except json.JSONDecodeError:
+            pass
+    raise ValueError(f"JSON invalide ({pass_label}). Début : {raw[:150]}")
+
+
+def _call_analysis(
     anthropic_key: str,
-    fiche_text: str,
+    fiche_text_truncated: str,
     alerts: list,
     category: str,
-    fiche_title: str = "",
-    market: str = "Europe",
+    fiche_title: str,
+    market: str,
+    sections_pass: list,
+    pass_label: str,
 ) -> tuple:
-    """
-    Analyse une fiche légale et propose des mises à jour.
-
-    Args:
-        fiche_text  : contenu extrait du PDF de la fiche
-        alerts      : alertes Agent 1 applicables (filtrées par catégorie)
-        category    : ex "CAT9"
-        fiche_title : titre de la fiche
-        market      : "Europe" ou pays spécifique
-
-    Returns:
-        (result_dict, token_usage)
-    """
+    """Un seul appel Claude pour un sous-ensemble de sections."""
     sections_ref = json.dumps(
-        [{"id": s["id"], "label": s["label"]} for s in FICHE_SECTIONS],
+        [{"id": s["id"], "label": s["label"]} for s in sections_pass],
         indent=2
     )
-
-    # Tronquer le texte à 12000 chars pour rester dans le contexte
-    fiche_text_truncated = fiche_text[:12000] + (
-        f"\n[... texte tronqué — {len(fiche_text)-12000} caractères supplémentaires non affichés ...]"
-        if len(fiche_text) > 12000 else ""
+    # Résumer les alertes pour économiser des tokens
+    alerts_short = json.dumps(
+        [{"title": a.get("title", ""), "urgency": a.get("urgency", ""),
+          "summary_fr": a.get("summary_fr", "")[:250],
+          "categories_concerned": a.get("categories_concerned", [])}
+         for a in alerts],
+        indent=2, ensure_ascii=False
     )
 
-    user_message = f"""Analyze this legal compliance sheet and propose updates based on recent regulatory alerts.
-
-LEGAL SHEET — {fiche_title or category} ({market})
-{'='*60}
-{fiche_text_truncated}
-{'='*60}
-
-APPLICABLE REGULATORY ALERTS ({len(alerts)} alerts):
-{json.dumps(alerts, indent=2, ensure_ascii=False)}
-
-PRODUCT CATEGORY: {category}
-MARKET: {market}
-
-SECTION STRUCTURE TO ANALYZE:
-{sections_ref}
-
-Today's date: {datetime.now().strftime('%Y-%m-%d')}
-
-Instructions:
-- Analyze EVERY section listed above
-- For sections not visible in the fiche text, consider them as empty/NA
-- Focus especially on sections that are empty or contain only "NA"
-- Cross-reference with the regulatory alerts provided
-- Propose concrete, actionable update text for each section that needs updating
-- Maintain professional regulatory language consistent with the existing sheet style
-
-Return complete JSON analysis."""
+    user_message = (
+        f"Analyze this legal compliance sheet ({pass_label}) and propose updates.\n\n"
+        f"LEGAL SHEET — {fiche_title or category} ({market})\n"
+        f"{'='*60}\n"
+        f"{fiche_text_truncated}\n"
+        f"{'='*60}\n\n"
+        f"APPLICABLE REGULATORY ALERTS ({len(alerts)}):\n"
+        f"{alerts_short}\n\n"
+        f"PRODUCT CATEGORY: {category} | MARKET: {market}\n"
+        f"Today: {datetime.now().strftime('%Y-%m-%d')}\n\n"
+        f"SECTIONS TO ANALYZE IN THIS PASS:\n"
+        f"{sections_ref}\n\n"
+        "Analyze ONLY the sections listed. Return valid JSON:\n"
+        "{\"sections\": ["
+        "{\"section_id\":\"...\",\"section_label\":\"...\","
+        "\"current_content_summary\":\"...\","
+        "\"status\":\"OK|ENRICH|MISSING|OBSOLETE|NA_OK\","
+        "\"alert_reference\":null,"
+        "\"proposed_update\":null,"
+        "\"update_reason\":\"...\","
+        "\"priority\":\"HIGH|MEDIUM|LOW|NONE\"}"
+        "]}"
+    )
 
     payload = json.dumps({
         "model": "claude-haiku-4-5-20251001",
-        "max_tokens": 8192,
+        "max_tokens": 4096,
         "system": SYSTEM_5A,
         "messages": [{"role": "user", "content": user_message}]
     }).encode("utf-8")
@@ -208,48 +224,77 @@ Return complete JSON analysis."""
         method="POST"
     )
 
-    with urllib.request.urlopen(req, timeout=60) as resp:
+    with urllib.request.urlopen(req, timeout=90) as resp:
         data = json.loads(resp.read())
 
     usage = data.get("usage", {})
-    input_tokens  = usage.get("input_tokens", 0)
-    output_tokens = usage.get("output_tokens", 0)
-    cost_usd = (input_tokens * HAIKU_INPUT_COST + output_tokens * HAIKU_OUTPUT_COST) / 1_000_000
-    token_usage = {
-        "input_tokens": input_tokens,
-        "output_tokens": output_tokens,
-        "cost_usd": round(cost_usd, 5)
-    }
+    inp  = usage.get("input_tokens", 0)
+    out  = usage.get("output_tokens", 0)
+    cost = (inp * HAIKU_INPUT_COST + out * HAIKU_OUTPUT_COST) / 1_000_000
+    token_usage = {"input_tokens": inp, "output_tokens": out, "cost_usd": round(cost, 5)}
 
     raw = data["content"][0]["text"].strip()
-    if not raw:
-        raise ValueError("Réponse vide de l'API Claude — vérifiez les logs")
+    return _parse_json_response(raw, pass_label), token_usage
 
-    # Nettoyer les blocs markdown
-    if "```" in raw:
-        for part in raw.split("```"):
-            part = part.strip().lstrip("json").strip()
-            if part.startswith("{"):
-                try:
-                    return json.loads(part), token_usage
-                except json.JSONDecodeError:
-                    continue
 
-    # Essai direct
-    if raw.startswith("{"):
-        try:
-            return json.loads(raw), token_usage
-        except json.JSONDecodeError as e:
-            # Chercher un JSON valide dans la réponse
-            match = re.search(r'\{.*\}', raw, re.DOTALL)
-            if match:
-                try:
-                    return json.loads(match.group()), token_usage
-                except json.JSONDecodeError:
-                    pass
-            raise ValueError(f"JSON invalide dans la réponse. Début : {raw[:200]}") from e
+def analyze_legal_sheet(
+    anthropic_key: str,
+    fiche_text: str,
+    alerts: list,
+    category: str,
+    fiche_title: str = "",
+    market: str = "Europe",
+) -> tuple:
+    """
+    Analyse une fiche légale en 2 passes pour éviter les timeouts.
+    Retourne (result_dict, token_usage_total).
+    """
+    fiche_text_truncated = fiche_text[:10000] + (
+        f"\n[... tronqué — {len(fiche_text)-10000} caractères supplémentaires ...]"
+        if len(fiche_text) > 10000 else ""
+    )
 
-    raise ValueError(f"Réponse inattendue (non-JSON). Début : {raw[:200]}")
+    total_tokens = {"input_tokens": 0, "output_tokens": 0, "cost_usd": 0.0}
+    all_sections = []
+
+    for pass_sections, pass_label in [
+        (FICHE_SECTIONS_A, "Pass A — Definition / Labelling / Technical"),
+        (FICHE_SECTIONS_B, "Pass B — Conformity / Import / Commercialization"),
+    ]:
+        result_pass, tu = _call_analysis(
+            anthropic_key, fiche_text_truncated, alerts,
+            category, fiche_title, market,
+            pass_sections, pass_label
+        )
+        all_sections.extend(result_pass.get("sections", []))
+        total_tokens["input_tokens"]  += tu["input_tokens"]
+        total_tokens["output_tokens"] += tu["output_tokens"]
+        total_tokens["cost_usd"]      = round(total_tokens["cost_usd"] + tu["cost_usd"], 5)
+
+    n_update = sum(1 for s in all_sections if s.get("status") in ["MISSING", "ENRICH", "OBSOLETE"])
+    n_ok     = sum(1 for s in all_sections if s.get("status") in ["OK", "NA_OK"])
+
+    result = {
+        "analysis_date": datetime.now().strftime("%Y-%m-%d"),
+        "category": category,
+        "market": market,
+        "fiche_title": fiche_title,
+        "overall_status": (
+            "MAJOR_UPDATE" if n_update >= 5 else
+            "MINOR_UPDATE" if n_update >= 1 else
+            "UP_TO_DATE"
+        ),
+        "sections": all_sections,
+        "sections_ok": n_ok,
+        "sections_to_update": n_update,
+        "national_specificities_missing": [],
+        "summary": (
+            f"Analyse {fiche_title or category} ({market}) — "
+            f"{n_update} section(s) à mettre à jour, {n_ok} à jour."
+        ),
+        "token_usage": total_tokens,
+    }
+    return result, total_tokens
 
 
 def extract_pdf_text_jina(pdf_url: str) -> str:
