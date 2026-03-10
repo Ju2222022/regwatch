@@ -252,20 +252,30 @@ if "5a_result" in st.session_state:
         "UP_TO_DATE": "Fiche à jour"
     }
 
-    m1, m2, m3, m4 = st.columns(4)
     sections_by_status = {}
     for s in sections:
         sections_by_status.setdefault(s.get("status",""), []).append(s)
 
-    m1.metric("Statut global",
-              f"{overall_icons.get(overall,'?')} {overall_labels.get(overall, overall)}")
-    m2.metric("✅ À jour",   len(sections_by_status.get("OK", [])) + len(sections_by_status.get("NA_OK", [])))
-    m3.metric("⚠️ À mettre à jour",
-              len(sections_by_status.get("MISSING", [])) +
-              len(sections_by_status.get("ENRICH", [])) +
-              len(sections_by_status.get("OBSOLETE", [])))
-    m4.metric("Validées",
-              sum(1 for d in decisions.values() if d["action"] in ["approved", "edited"]))
+    n_ok      = len(sections_by_status.get("OK",[])) + len(sections_by_status.get("NA_OK",[]))
+    n_action  = (len(sections_by_status.get("MISSING",[])) +
+                 len(sections_by_status.get("ENRICH",[])) +
+                 len(sections_by_status.get("OBSOLETE",[])))
+    n_valid   = sum(1 for d in decisions.values() if d["action"] in ["approved","edited"])
+
+    # Bandeau statut global coloré
+    band_color = {"MAJOR_UPDATE": "#c0392b", "MINOR_UPDATE": "#e67e22", "UP_TO_DATE": "#27ae60"}.get(overall, "#7f8c8d")
+    overall_icon  = overall_icons.get(overall, "?")
+    overall_label = overall_labels.get(overall, overall)
+    st.markdown(
+        f"<div style='background:{band_color}22;border-left:4px solid {band_color};"
+        f"padding:10px 16px;border-radius:4px;margin-bottom:8px'>"
+        f"<b>{overall_icon} {overall_label}</b>"
+        f"&nbsp;&nbsp;·&nbsp;&nbsp;✅ {n_ok} à jour"
+        f"&nbsp;&nbsp;·&nbsp;&nbsp;⚠️ {n_action} à mettre à jour"
+        f"&nbsp;&nbsp;·&nbsp;&nbsp;✔️ {n_valid} validée(s)"
+        f"</div>",
+        unsafe_allow_html=True
+    )
 
     if result.get("summary"):
         st.info(result["summary"])
@@ -284,9 +294,16 @@ if "5a_result" in st.session_state:
     col_f1, col_f2 = st.columns([2, 2])
     with col_f1:
         show_status = st.multiselect(
-            "Afficher les statuts",
+            "Sections à afficher",
             ["MISSING", "ENRICH", "OBSOLETE", "OK", "NA_OK"],
             default=["MISSING", "ENRICH", "OBSOLETE"],
+            format_func=lambda x: {
+                "MISSING":  "➕ Contenu manquant",
+                "ENRICH":   "⚠️ À enrichir",
+                "OBSOLETE": "🔴 Obsolète",
+                "OK":       "✅ À jour",
+                "NA_OK":    "🔵 NA justifié",
+            }.get(x, x),
             key="5a_filter_status"
         )
     with col_f2:
@@ -294,6 +311,10 @@ if "5a_result" in st.session_state:
             "Priorité",
             ["HIGH", "MEDIUM", "LOW", "NONE"],
             default=["HIGH", "MEDIUM", "LOW"],
+            format_func=lambda x: {
+                "HIGH": "🔴 Haute", "MEDIUM": "🟡 Moyenne",
+                "LOW": "🟢 Basse", "NONE": "⚪ Aucune"
+            }.get(x, x),
             key="5a_filter_priority"
         )
 
@@ -378,14 +399,13 @@ if "5a_result" in st.session_state:
                 if col_a.button("✅ Approuver", key=f"approve_{sid}"):
                     decisions[sid] = {
                         "action": "approved",
-                        "final_text": edited_text,
+                        "final_text": sec.get("proposed_update", ""),
                         "section_label": sec.get("section_label","")
                     }
                     st.rerun()
-                if col_e.button("✏️ Approuver (édité)", key=f"edit_approve_{sid}"):
-                    original = sec.get("proposed_update","")
+                if col_e.button("✏️ Éditer", key=f"edit_approve_{sid}"):
                     decisions[sid] = {
-                        "action": "edited" if edited_text != original else "approved",
+                        "action": "edited",
                         "final_text": edited_text,
                         "section_label": sec.get("section_label","")
                     }
@@ -410,10 +430,13 @@ if "5a_result" in st.session_state:
     st.divider()
     st.subheader("⑥ Export")
 
-    col_s1, col_s2, col_s3 = st.columns(3)
-    col_s1.metric("✅ Approuvées", len(approved))
-    col_s2.metric("❌ Rejetées",   len(rejected))
-    col_s3.metric("⏳ En attente", len(pending))
+    n_approved_pure = sum(1 for d in approved.values() if d["action"] == "approved")
+    n_edited        = sum(1 for d in approved.values() if d["action"] == "edited")
+    col_s1, col_s2, col_s3, col_s4 = st.columns(4)
+    col_s1.metric("✅ Approuvées",   n_approved_pure)
+    col_s2.metric("✏️ Éditées",      n_edited)
+    col_s3.metric("❌ Rejetées",     len(rejected))
+    col_s4.metric("⏳ En attente",   len(pending))
 
     if pending:
         st.warning(f"{len(pending)} section(s) non encore traitée(s).")
