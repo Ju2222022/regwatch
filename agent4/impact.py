@@ -266,45 +266,91 @@ def _call_claude(anthropic_key: str, system: str, user_message: str) -> tuple:
     return _parse_json(raw), token_usage
 
 
+def _analyze_product_batch(
+    anthropic_key: str,
+    alerts_short: list,
+    batch: list,
+    cat_def_short: dict,
+    batch_label: str,
+) -> tuple:
+    """Analyse un sous-groupe de produits (passe)."""
+    alerts_json = json.dumps(alerts_short, indent=2, ensure_ascii=False)
+    batch_json  = json.dumps(batch, indent=2, ensure_ascii=False)
+    cat_json    = json.dumps(cat_def_short, indent=2)
+    today       = datetime.now().strftime("%Y-%m-%d")
+    user_message = (
+        f"Analyze regulatory impact on this product batch ({batch_label}).\n\n"
+        f"REGULATORY ALERTS ({len(alerts_short)} alerts):\n{alerts_json}\n\n"
+        f"PRODUCTS TO ANALYZE ({len(batch)} products):\n{batch_json}\n\n"
+        f"CATEGORY DEFINITIONS:\n{cat_json}\n\n"
+        f"Today: {today}\n"
+        "Keep descriptions concise (max 100 chars). Return JSON only."
+    )
+    return _call_claude(anthropic_key, SYSTEM_PRODUCT, user_message)
+
+
 def analyze_product_impact(
     anthropic_key: str,
     alerts: list,
     product_catalog: list,
+    batch_size: int = 4,
 ) -> tuple:
     """
-    Mode Produit : croise alertes × catalogue.
+    Mode Produit : croise alertes × catalogue, par passes de batch_size produits.
 
     Args:
-        alerts         : liste d'entrées Agent 1 [{title, categories_concerned, urgency...}]
-        product_catalog: liste de produits [{code, name, categories: [CAT3, CAT9]}]
+        alerts         : liste d'entrées Agent 1
+        product_catalog: liste de produits [{code, name, categories}]
+        batch_size     : nombre de produits par appel (défaut 4)
 
     Returns:
         (result, token_usage)
     """
-    alerts_short   = _summarize_alerts(alerts)
-    catalog_short  = [
+    alerts_short = _summarize_alerts(alerts)
+    catalog_short = [
         {"code": p.get("code",""), "name": p.get("name",""),
          "categories": p.get("categories",[])}
         for p in product_catalog
     ]
+    cat_def_short = {
+        k: {"label": v["label"]} for k, v in CAT_DEFINITIONS.items()
+    }
 
-    user_message = f"""Analyze regulatory impact on this product catalog.
+    # Découper en passes
+    batches = [catalog_short[i:i+batch_size]
+               for i in range(0, len(catalog_short), batch_size)]
 
-REGULATORY ALERTS ({len(alerts_short)} alerts):
-{json.dumps(alerts_short, indent=2, ensure_ascii=False)}
+    all_impacted     = []
+    all_non_impacted = []
+    total_tokens     = {"input_tokens": 0, "output_tokens": 0, "cost_usd": 0.0}
 
-PRODUCT CATALOG ({len(catalog_short)} products):
-{json.dumps(catalog_short, indent=2, ensure_ascii=False)}
+    for idx, batch in enumerate(batches):
+        batch_label = f"batch {idx+1}/{len(batches)}"
+        result_batch, tu = _analyze_product_batch(
+            anthropic_key, alerts_short, batch, cat_def_short, batch_label
+        )
+        all_impacted     += result_batch.get("impacted_products", [])
+        all_non_impacted += result_batch.get("non_impacted_products", [])
+        total_tokens["input_tokens"]  += tu["input_tokens"]
+        total_tokens["output_tokens"] += tu["output_tokens"]
+        total_tokens["cost_usd"]       = round(total_tokens["cost_usd"] + tu["cost_usd"], 5)
 
-CATEGORY DEFINITIONS:
-{json.dumps({k: {"label": v["label"], "scope": v["scope"][:100]} for k, v in CAT_DEFINITIONS.items()}, indent=2)}
+    n_high   = sum(1 for p in all_impacted if p.get("risk_score") == "HIGH")
+    n_medium = sum(1 for p in all_impacted if p.get("risk_score") == "MEDIUM")
 
-Today: {datetime.now().strftime('%Y-%m-%d')}
-Keep regulation names concise. Return JSON only."""
-
-    result, token_usage = _call_claude(anthropic_key, SYSTEM_PRODUCT, user_message)
-    result["token_usage"] = token_usage
-    return result, token_usage
+    result = {
+        "analysis_date": datetime.now().strftime("%Y-%m-%d"),
+        "mode": "product",
+        "impacted_products": all_impacted,
+        "non_impacted_products": all_non_impacted,
+        "summary": (
+            f"{len(all_impacted)} produit(s) impacté(s) sur {len(catalog_short)} "
+            f"({n_high} HIGH, {n_medium} MEDIUM). "
+            f"{len(all_non_impacted)} non impacté(s)."
+        ),
+        "token_usage": total_tokens,
+    }
+    return result, total_tokens
 
 
 def analyze_category_impact(
