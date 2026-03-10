@@ -6,6 +6,7 @@ propose des mises à jour avec workflow approbation/édition/rejet.
 """
 
 import json
+import re
 import urllib.request
 from datetime import datetime
 
@@ -155,11 +156,17 @@ def analyze_legal_sheet(
         indent=2
     )
 
+    # Tronquer le texte à 12000 chars pour rester dans le contexte
+    fiche_text_truncated = fiche_text[:12000] + (
+        f"\n[... texte tronqué — {len(fiche_text)-12000} caractères supplémentaires non affichés ...]"
+        if len(fiche_text) > 12000 else ""
+    )
+
     user_message = f"""Analyze this legal compliance sheet and propose updates based on recent regulatory alerts.
 
 LEGAL SHEET — {fiche_title or category} ({market})
 {'='*60}
-{fiche_text}
+{fiche_text_truncated}
 {'='*60}
 
 APPLICABLE REGULATORY ALERTS ({len(alerts)} alerts):
@@ -185,7 +192,7 @@ Return complete JSON analysis."""
 
     payload = json.dumps({
         "model": "claude-haiku-4-5-20251001",
-        "max_tokens": 4096,
+        "max_tokens": 8192,
         "system": SYSTEM_5A,
         "messages": [{"role": "user", "content": user_message}]
     }).encode("utf-8")
@@ -215,14 +222,34 @@ Return complete JSON analysis."""
     }
 
     raw = data["content"][0]["text"].strip()
+    if not raw:
+        raise ValueError("Réponse vide de l'API Claude — vérifiez les logs")
+
+    # Nettoyer les blocs markdown
     if "```" in raw:
         for part in raw.split("```"):
             part = part.strip().lstrip("json").strip()
-            try:
-                return json.loads(part), token_usage
-            except json.JSONDecodeError:
-                continue
-    return json.loads(raw), token_usage
+            if part.startswith("{"):
+                try:
+                    return json.loads(part), token_usage
+                except json.JSONDecodeError:
+                    continue
+
+    # Essai direct
+    if raw.startswith("{"):
+        try:
+            return json.loads(raw), token_usage
+        except json.JSONDecodeError as e:
+            # Chercher un JSON valide dans la réponse
+            match = re.search(r'\{.*\}', raw, re.DOTALL)
+            if match:
+                try:
+                    return json.loads(match.group()), token_usage
+                except json.JSONDecodeError:
+                    pass
+            raise ValueError(f"JSON invalide dans la réponse. Début : {raw[:200]}") from e
+
+    raise ValueError(f"Réponse inattendue (non-JSON). Début : {raw[:200]}")
 
 
 def extract_pdf_text_jina(pdf_url: str) -> str:
