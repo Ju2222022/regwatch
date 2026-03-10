@@ -156,6 +156,12 @@ def display_results(entries: list, key_suffix: str = "main"):
 anthropic_key = st.secrets.get("ANTHROPIC_API_KEY", "")
 tavily_key    = st.secrets.get("TAVILY_API_KEY", "")
 
+# ── Sources chargées en dehors de la sidebar (évite NameError si try/except) ──
+try:
+    sources = load_sources("data/sources.json")
+except Exception:
+    sources = {"EU": ["eur-lex.europa.eu", "europa.eu"], "France": ["legifrance.gouv.fr"]}
+
 # ── Sidebar ───────────────────────────────────────────────────────────────────
 with st.sidebar:
     try:
@@ -188,7 +194,6 @@ with st.sidebar:
         st.divider()
 
         st.header("🗂️ Sources surveillées")
-        sources = load_sources("data/sources.json")
         with st.expander("Configurer les domaines"):
             market_to_edit = st.selectbox("Marché", list(sources.keys()))
             new_domains_text = st.text_area(
