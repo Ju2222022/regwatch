@@ -1,0 +1,25 @@
+{
+  "EU": [
+    "eur-lex.europa.eu",
+    "europa.eu",
+    "echa.europa.eu",
+    "single-market-economy.ec.europa.eu",
+    "commission.europa.eu",
+    "cenelec.eu",
+    "iec.ch"
+  ],
+  "France": [
+    "legifrance.gouv.fr",
+    "anssi.fr",
+    "economie.gouv.fr"
+  ],
+  "UK": [
+    "gov.uk",
+    "legislation.gov.uk"
+  ],
+  "USA": [
+    "fcc.gov",
+    "cpsc.gov",
+    "ftc.gov"
+  ]
+}
