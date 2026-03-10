@@ -102,7 +102,7 @@ st.caption("Surveillance des sources réglementaires officielles · Tavily + Jin
 # ── Pré-remplissage par catégorie ─────────────────────────────────────────────
 with st.expander("🏷️ Pré-remplir les sujets depuis les catégories Decathlon", expanded=False):
     st.caption("Sélectionnez les catégories de votre périmètre — les sujets de veille correspondants seront générés automatiquement.")
-    from agent4.impact import CAT_DEFINITIONS, get_watch_queries_for_categories
+    from agent4.impact import CAT_DEFINITIONS, get_watch_queries_deduplicated, CAT_WATCH_QUERIES
     cat_options = {k: f"{k} — {v['label']}" for k, v in CAT_DEFINITIONS.items()}
     selected_cats = st.multiselect(
         "Catégories actives",
@@ -111,13 +111,28 @@ with st.expander("🏷️ Pré-remplir les sujets depuis les catégories Decathl
         format_func=lambda c: cat_options[c],
         key="cat_prefill_select"
     )
+
+    # Aperçu du nombre de requêtes qui seront générées
+    if selected_cats:
+        preview_queries = get_watch_queries_deduplicated(selected_cats)
+        st.caption(
+            f"→ {len(selected_cats)} catégorie(s) sélectionnée(s) · "
+            f"**{len(preview_queries)} requête(s) de veille** seront générées"
+        )
+        with st.expander("Aperçu des requêtes"):
+            for cat in selected_cats:
+                topics = CAT_WATCH_QUERIES.get(cat, [])
+                st.markdown(f"**{cat}** — {CAT_DEFINITIONS[cat]['label']}")
+                for t in topics:
+                    st.caption(f"  • {t}")
+
     if st.button("🔄 Générer les sujets de veille", key="btn_prefill"):
-        queries = get_watch_queries_for_categories(selected_cats)
+        queries = get_watch_queries_deduplicated(selected_cats)
         st.session_state["watch_topics"] = [
             {"topic": q["topic"], "markets": q["markets"], "timeframe": q["timeframe"]}
             for q in queries
         ]
-        st.success(f"{len(queries)} sujet(s) générés pour : {', '.join(selected_cats)}")
+        st.success(f"{len(queries)} sujet(s) de veille générés pour {len(selected_cats)} catégorie(s)")
         st.rerun()
 
 # ── Formulaire ────────────────────────────────────────────────────────────────
