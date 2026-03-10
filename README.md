@@ -9,11 +9,11 @@ Déployée sur [regwatch.streamlit.app](https://regwatch.streamlit.app)
 
 | Agent | Statut | Rôle |
 |---|---|---|
-| Agent 1 — Regulatory Watcher | ✅ Actif | Surveille les sources officielles (Tavily + Jina.ai), multi-sujets, historique persistant |
+| Agent 1 — Regulatory Watcher | ✅ Actif | Surveille les sources officielles (Tavily + Jina.ai), multi-sujets, pré-remplissage par catégorie, historique persistant |
 | Agent 2 — Product Profiler | ✅ Actif | Extrait les specs produit depuis le web par code modèle |
 | Agent 3 — Regulatory Classifier | ✅ Actif | Classifie les produits selon le référentiel Decathlon (CAT1-CAT9) |
-| Agent 4 — Impact Analyzer | 🔜 Phase 2 | Croise veille × catalogue produits via les catégories |
-| Agent 5A — Legal Sheet Updater | 🔜 Phase 3 | Met à jour les fiches légales par catégorie |
+| Agent 4 — Impact Analyzer | ✅ Actif | Croise veille × catalogue (Mode Produit → Agent 5B) ou × catégories (Mode Catégorie → Agent 5A) |
+| Agent 5A — Legal Sheet Updater | ✅ Actif | Analyse et propose des mises à jour des fiches légales "My Conformity Box" par catégorie |
 | Agent 5B — Risk Mapper | 🔜 Phase 3 | Génère le risk mapping produit (mode audit) |
 
 ---
@@ -23,10 +23,10 @@ Déployée sur [regwatch.streamlit.app](https://regwatch.streamlit.app)
 | Besoin | Outil |
 |---|---|
 | Interface | Python + Streamlit (Streamlit Cloud) |
-| Moteur IA | Claude Haiku (Anthropic API) |
+| Moteur IA | Claude Haiku (Agents 1-4) · Claude Sonnet (Agent 5A) |
 | Recherche réglementaire | Tavily API |
-| Lecture PDF / sites dynamiques | Jina.ai reader (r.jina.ai) |
-| Versioning | GitHub |
+| Lecture PDF / sites dynamiques | Jina.ai reader (r.jina.ai) · PyPDF2 |
+| Versioning | GitHub (Ju2222022/regwatch) |
 
 ---
 
@@ -41,14 +41,21 @@ regwatch/
 │   └── profiler.py                 ← Profiler produit par code modèle
 ├── agent3/
 │   └── classifier.py               ← Classificateur réglementaire CAT1-CAT9
+├── agent4/
+│   └── impact.py                   ← Impact Analyzer (Mode Produit + Mode Catégorie)
+├── agent5a/
+│   └── updater.py                  ← Legal Sheet Updater — analyse + workflow validation
 ├── data/
-│   ├── sources.json                ← Domaines surveillés (configurable via UI)
+│   ├── sources.json                ← Domaines surveillés par marché (configurable via UI)
 │   └── watch_history.json          ← Historique des veilles (persistance PoC)
 ├── pages/
 │   ├── 1_Agent3_Classificateur.py
 │   ├── 2_Concordance.py
 │   ├── 3_Agent2_Profiler.py
-│   └── 4_Agent1_Veille.py
+│   ├── 4_Agent1_Veille.py
+│   ├── 5_Configuration.py          ← Gestion des sources de veille par marché
+│   ├── 6_Agent4_Impact.py          ← Impact Analyzer UI
+│   └── 7_Agent5A_Fiche.py          ← Legal Sheet Updater UI
 └── .streamlit/
     └── config.toml                 ← Thème Decathlon
 ```
@@ -91,21 +98,61 @@ TAVILY_API_KEY    = "tvly-..."
 5. Les résultats sont affichés par criticité ou par thématique, exportables en CSV
 6. L'historique est persisté dans `data/watch_history.json`
 
+**Pré-remplissage par catégorie** : l'utilisateur sélectionne ses catégories actives, l'agent génère automatiquement les requêtes de veille correspondantes.
+
 **Criticité :**
 - 🔴 HIGH — texte en vigueur ou échéance < 6 mois
 - 🟡 MEDIUM — échéance 6-18 mois
 - 🟢 LOW — consultation ou échéance > 18 mois
 
-> Les actions suggérées sont générées par IA et doivent être validées par le responsable réglementaire.
+---
+
+## Agent 4 — Impact Analyzer
+
+Croise les alertes Agent 1 avec le catalogue produits ou les catégories actives.
+
+**Mode Produit** → identifie les produits du catalogue impactés → prépare le risk mapping pour Agent 5B.
+
+**Mode Catégorie** → identifie les catégories impactées et le type de changement (NEW / UPDATE / DEADLINE / WITHDRAWAL) → prépare la mise à jour des fiches légales pour Agent 5A.
 
 ---
 
-## Résultats PoC — Agent 3 (Phase 1)
+## Agent 5A — Legal Sheet Updater
 
-- **11 produits** testés sur le référentiel Decathlon Electronics
-- **Concordance** : 3/11 (27%) avec nom + type uniquement — 6/11 (55%) avec description enrichie
-- **Zéro divergence totale** sur l'ensemble des tests
-- Avec Agent 2 (specs web) : concordance estimée 70%+
+Analyse une fiche légale "My Conformity Box" (upload PDF) et propose des mises à jour section par section, croisées avec les alertes réglementaires.
+
+### Profils d'analyse
+
+| Profil | Sections | Appels API | Coût ~estimé |
+|---|---|---|---|
+| ⚡ Veille rapide | ~8 (high uniquement) | 1 | ~$0.03 |
+| 📋 Standard | ~16 (high + medium) | 2 | ~$0.05 |
+| 🔍 Complet | ~25 (toutes) | 3 | ~$0.08 |
+| ✏️ Personnalisé | au choix | variable | variable |
+
+### Workflow de validation
+
+```
+IA analyse chaque section → statut par section
+        ↓
+Responsable réglementaire :
+  ✅ Approuver  — texte IA tel quel
+  ✏️ Éditer     — modifier le texte puis valider
+  ❌ Rejeter
+        ↓
+Export Markdown + JSON avec métadonnées de traçabilité
+(section, texte final, alerte source, raison, priorité, date)
+```
+
+### Spécificités Europe
+
+La zone Europe couvre l'EEE par défaut. Une mention nationale n'est ajoutée que si un État membre a une exigence supplémentaire (ex: AGEC France, Décret espagnol recyclage).
+
+---
+
+## Page Configuration
+
+Gestion des sources de veille par marché. Édition par onglet, import/export `sources.json`.
 
 ---
 
@@ -114,14 +161,15 @@ TAVILY_API_KEY    = "tvly-..."
 | Phase | Statut | Contenu |
 |---|---|---|
 | Phase 1 | ✅ Terminée | Agents 2 + 3 opérationnels, concordance validée |
-| Phase 2 | 🔄 En cours | Agent 1 (veille) opérationnel · Agent 4 (impact analyzer) à venir |
-| Phase 3 | 🔜 Planifiée | Agents 5A (fiches légales) + 5B (risk mapping) |
-| Phase 4 | 🔜 Planifiée | Présentation équipe · Go/No-Go déploiement · Google Sheets persistance |
+| Phase 2 | ✅ Terminée | Agent 1 · Agent 4 · Page Configuration |
+| Phase 3 | 🔄 En cours | Agent 5A opérationnel · Agent 5B (risk mapping) à venir |
+| Phase 4 | 🔜 Planifiée | Présentation équipe · Go/No-Go · Google Sheets · Scheduling automatique |
 
 ---
 
 ## Notes PoC
 
-- **Persistance** : l'historique `watch_history.json` est local — réinitialisé à chaque redéploiement GitHub. Migration Google Sheets prévue en Phase 4.
-- **Coût estimé** : ~$0.001 par classification · ~$0.006 par session de veille (3 sujets) · $5 de crédit ≈ 4000 classifications
-- **Scheduling** : veille manuelle en PoC · automatisation GitHub Actions prévue en Phase 4
+- **Persistance** : `watch_history.json` local — réinitialisé à chaque redéploiement. Migration Google Sheets Phase 4.
+- **Coût estimé** : ~$0.001/classification · ~$0.006/session veille · ~$0.05/analyse fiche (profil Standard)
+- **Scheduling** : veille manuelle en PoC · automatisation GitHub Actions Phase 4
+- **Sidebar** : affichage de code interne Streamlit connu — traitement lors de la revue design finale (Phase 4)
