@@ -132,22 +132,27 @@ OUTPUT — respond ONLY with valid JSON, no markdown:
 
 def _parse_json_response(raw: str, pass_label: str) -> dict:
     """Parse JSON depuis la réponse Claude, robuste aux variations."""
+    import re as _re
     if not raw:
-        raise ValueError(f"Réponse vide ({pass_label})")
-    if "```" in raw:
-        for part in raw.split("```"):
-            part = part.strip().lstrip("json").strip()
-            if part.startswith("{"):
-                try:
-                    return json.loads(part)
-                except json.JSONDecodeError:
-                    continue
-    if raw.startswith("{"):
+        raise ValueError(f"Reponse vide ({pass_label})")
+
+    # Strategie 1 : extraire bloc ```json ... ``` ou ``` ... ```
+    matches = _re.findall(r"```(?:json)?\s*(\{.*?\})\s*```", raw, _re.DOTALL)
+    for m in matches:
         try:
-            return json.loads(raw)
+            return json.loads(m)
+        except json.JSONDecodeError:
+            continue
+
+    # Strategie 2 : JSON direct
+    stripped = raw.strip()
+    if stripped.startswith("{"):
+        try:
+            return json.loads(stripped)
         except json.JSONDecodeError:
             pass
-    # Chercher n'importe quel objet JSON dans la réponse
+
+    # Strategie 3 : premier { ... dernier }
     start = raw.find("{")
     end   = raw.rfind("}") + 1
     if start >= 0 and end > start:
@@ -155,7 +160,8 @@ def _parse_json_response(raw: str, pass_label: str) -> dict:
             return json.loads(raw[start:end])
         except json.JSONDecodeError:
             pass
-    raise ValueError(f"JSON invalide ({pass_label}). Début : {raw[:150]}")
+
+    raise ValueError(f"JSON invalide ({pass_label}). Debut : {raw[:150]}")
 
 
 def _call_analysis(
