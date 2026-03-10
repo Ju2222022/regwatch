@@ -1,7 +1,9 @@
 """
-Agent 1 — Regulatory Watcher v5
-Corrections : résultats persistés en session_state, légende inline,
-sidebar épurée, ajout marché revu.
+Agent 1 — Regulatory Watcher v6
+- Sidebar allégée (tokens uniquement)
+- Configuration sources → page dédiée
+- Légende criticité déplacée avant les résultats
+- Résultats persistés en session_state
 """
 
 import streamlit as st
@@ -12,7 +14,7 @@ from pathlib import Path
 import sys, os
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from agent1.watcher import run_watch, load_sources, save_sources, TIMEFRAMES
+from agent1.watcher import run_watch, load_sources, TIMEFRAMES
 
 st.set_page_config(page_title="Agent 1 — Veille", page_icon="📡", layout="wide")
 
@@ -37,7 +39,7 @@ URGENCY_DEF = {
 
 HISTORY_FILE = "data/watch_history.json"
 
-# ── Persistance fichier ───────────────────────────────────────────────────────
+# ── Persistance ───────────────────────────────────────────────────────────────
 def load_history():
     try:
         with open(HISTORY_FILE) as f:
@@ -52,7 +54,7 @@ def save_to_history(entries):
     with open(HISTORY_FILE, "w") as f:
         json.dump(h, f, ensure_ascii=False, indent=2)
 
-# ── Chargement sources (avant tout rendu) ────────────────────────────────────
+# ── Chargement sources ────────────────────────────────────────────────────────
 try:
     sources = load_sources("data/sources.json")
 except Exception:
@@ -62,27 +64,24 @@ except Exception:
 anthropic_key = st.secrets.get("ANTHROPIC_API_KEY", "")
 tavily_key    = st.secrets.get("TAVILY_API_KEY", "")
 
-# ── Session state init ────────────────────────────────────────────────────────
+# ── Session state ─────────────────────────────────────────────────────────────
 if "session_tokens" not in st.session_state:
     st.session_state["session_tokens"] = {"input": 0, "output": 0, "cost_usd": 0.0, "calls": 0}
 if "watch_topics" not in st.session_state:
     st.session_state["watch_topics"] = [
         {"topic": "", "markets": ["EU", "France"], "timeframe": "📅 12 derniers mois"}
     ]
-if "last_results" not in st.session_state:   # ← résultats persistés
+if "last_results" not in st.session_state:
     st.session_state["last_results"] = []
 if "last_stats" not in st.session_state:
     st.session_state["last_stats"] = {}
 
-# ── Sidebar ───────────────────────────────────────────────────────────────────
+# ── Sidebar — tokens uniquement ───────────────────────────────────────────────
 with st.sidebar:
-    st.header("⚙️ Configuration")
-    st.success("Clé Anthropic ✓") if anthropic_key else st.error("ANTHROPIC_API_KEY manquante")
-    st.success("Clé Tavily ✓")    if tavily_key    else st.error("TAVILY_API_KEY manquante")
-
+    st.header("⚙️ Statut")
+    st.success("Anthropic ✓") if anthropic_key else st.error("ANTHROPIC_API_KEY manquante")
+    st.success("Tavily ✓")    if tavily_key    else st.error("TAVILY_API_KEY manquante")
     st.divider()
-
-    # Tokens
     st.header("📊 Tokens session")
     t = st.session_state["session_tokens"]
     ca, cb = st.columns(2)
@@ -93,66 +92,14 @@ with st.sidebar:
     if st.button("🔄 Réinitialiser"):
         st.session_state["session_tokens"] = {"input": 0, "output": 0, "cost_usd": 0.0, "calls": 0}
         st.rerun()
-
     st.divider()
-
-    # Sources — UI repensée
-    st.header("🗂️ Sources")
-    st.caption("Domaines surveillés par marché")
-
-    selected_market = st.selectbox(
-        "Marché à consulter / éditer",
-        list(sources.keys()),
-        key="sidebar_market_select"
-    )
-    st.caption(f"{len(sources.get(selected_market, []))} domaine(s) actif(s)")
-
-    with st.expander("✏️ Modifier les domaines"):
-        edited = st.text_area(
-            "Un domaine par ligne",
-            value="\n".join(sources.get(selected_market, [])),
-            height=120,
-            key="sidebar_domains_edit"
-        )
-        if st.button("💾 Sauvegarder les modifications", key="btn_save_domains"):
-            sources[selected_market] = [d.strip() for d in edited.split("\n") if d.strip()]
-            save_sources(sources, "data/sources.json")
-            st.success(f"{len(sources[selected_market])} domaine(s) sauvegardé(s) ✓")
-
-    with st.expander("➕ Ajouter un nouveau marché"):
-        new_market_name = st.text_input("Nom du marché", placeholder="ex: Germany", key="new_market_input")
-        new_market_domains = st.text_area(
-            "Domaines initiaux (un par ligne)",
-            placeholder="ex: bsi.bund.de\nbundesanzeiger.de",
-            height=80,
-            key="new_market_domains"
-        )
-        if st.button("✅ Créer le marché", key="btn_create_market"):
-            if new_market_name.strip():
-                sources[new_market_name.strip()] = [
-                    d.strip() for d in new_market_domains.split("\n") if d.strip()
-                ]
-                save_sources(sources, "data/sources.json")
-                st.success(f"Marché **{new_market_name}** créé ✓")
-                st.rerun()
-            else:
-                st.error("Donnez un nom au marché.")
+    st.caption("⚙️ Pour gérer les sources, rendez-vous dans **Configuration**.")
 
 # ── Page principale ───────────────────────────────────────────────────────────
 st.title("📡 Agent 1 — Regulatory Watcher")
 st.caption("Surveillance des sources réglementaires officielles · Tavily + Jina.ai")
 
-# Légende criticité — inline, toujours visible
-with st.container(border=True):
-    st.caption("**Légende criticité**")
-    c1, c2, c3 = st.columns(3)
-    for col, (level, (icon, desc)) in zip([c1, c2, c3], URGENCY_DEF.items()):
-        col.markdown(f"{icon} **{level}**")
-        col.caption(desc)
-
-st.divider()
-
-# ── Formulaire sujets ─────────────────────────────────────────────────────────
+# ── Formulaire ────────────────────────────────────────────────────────────────
 st.subheader("🔍 Sujets de veille")
 
 col_left, col_right = st.columns([3, 1])
@@ -237,7 +184,6 @@ if launch:
                 st.session_state["session_tokens"]["cost_usd"] += stats.get("cost_usd", 0.0)
                 st.session_state["session_tokens"]["calls"]    += 1
                 all_entries.extend(entries)
-
                 if stats.get("warning"):
                     status.update(label=f"⚠️ {topic[:40]} — {stats['warning']}", state="error")
                 else:
@@ -255,8 +201,6 @@ if launch:
             time.sleep(1)
 
     progress.progress(100, text="Terminé ✓")
-
-    # ← Persister en session_state pour survivre aux reruns
     st.session_state["last_results"] = all_entries
     st.session_state["last_stats"]   = total_stats
 
@@ -266,63 +210,66 @@ if launch:
             st.session_state["veille_results"] = []
         st.session_state["veille_results"].extend(all_entries)
 
-# ── Affichage résultats (depuis session_state — résiste aux reruns) ───────────
+# ── Affichage résultats ───────────────────────────────────────────────────────
+def render_entry(entry, key):
+    urgency = entry.get("urgency","LOW")
+    u_icon, u_desc = URGENCY_DEF.get(urgency, ("⚪",""))
+    cats_raw = entry.get("categories_concerned",[])
+    cats_inline = "  ·  ".join(f"**{c}** ({CAT_LABELS.get(c,c)})" for c in cats_raw)
+    with st.expander(f"{u_icon} {entry.get('title','Sans titre')}", key=key):
+        col_a, col_b = st.columns([3,1])
+        with col_a:
+            st.markdown("**Résumé**")
+            st.write(entry.get("summary_fr","—"))
+            if entry.get("action_required"):
+                st.info(f"⚙️ **Action suggérée** *(à valider)* : {entry['action_required']}")
+            url = entry.get("url","")
+            if url and url.startswith("http"):
+                st.markdown(f"[🔗 Accéder au document source]({url})")
+            else:
+                st.caption("⚠️ URL source non disponible")
+            st.caption(f"Sujet : *{entry.get('watch_topic','')}* · Extrait le {entry.get('watch_date','—')}")
+        with col_b:
+            st.metric("Urgence", f"{u_icon} {urgency}", help=u_desc)
+            st.markdown("**Catégories**")
+            st.markdown(cats_inline or "—")
+            st.caption(f"📅 {entry.get('date','?')}")
+            st.caption(f"🌍 {', '.join(entry.get('markets',[]))}")
+
 if st.session_state["last_results"]:
-    all_entries  = st.session_state["last_results"]
-    total_stats  = st.session_state["last_stats"]
+    all_entries = st.session_state["last_results"]
+    total_stats = st.session_state["last_stats"]
 
     st.divider()
-    st.subheader("📊 Récapitulatif de session")
+    st.subheader("📊 Récapitulatif")
     m1,m2,m3,m4,m5 = st.columns(5)
-    m1.metric("Sujets traités",  total_stats.get("entries_found", 0) and len(valid_topics) or "—")
-    m2.metric("Résultats Tavily", total_stats.get("tavily_results", 0))
-    m3.metric("Entrées extraites", len(all_entries))
-    m4.metric("Tokens totaux", f"{total_stats.get('input_tokens',0)+total_stats.get('output_tokens',0):,}")
-    m5.metric("Coût total", f"${total_stats.get('cost_usd',0):.4f}")
+    m1.metric("Sujets traités",   len(valid_topics) or "—")
+    m2.metric("Résultats Tavily", total_stats.get("tavily_results",0))
+    m3.metric("Entrées extraites",len(all_entries))
+    m4.metric("Tokens totaux",    f"{total_stats.get('input_tokens',0)+total_stats.get('output_tokens',0):,}")
+    m5.metric("Coût total",       f"${total_stats.get('cost_usd',0):.4f}")
 
     st.success(f"**{len(all_entries)} entrée(s) réglementaire(s) identifiée(s)**")
 
-    # Toggle vue — ne déclenche plus de perte de données
+    # Toggle vue
     view_mode = st.radio(
-        "Regrouper par",
-        ["🔴 Criticité", "📂 Thématique"],
-        horizontal=True,
-        key="view_mode_main"
+        "Regrouper par", ["🔴 Criticité","📂 Thématique"],
+        horizontal=True, key="view_mode_main"
     )
 
-    def render_entry(entry, key: str):
-        urgency = entry.get("urgency", "LOW")
-        u_icon, u_desc = URGENCY_DEF.get(urgency, ("⚪", ""))
-        cats_raw = entry.get("categories_concerned", [])
-        cats_inline = "  ·  ".join(f"**{c}** ({CAT_LABELS.get(c,c)})" for c in cats_raw)
-
-        with st.expander(f"{u_icon} {entry.get('title','Sans titre')}", key=key):
-            col_a, col_b = st.columns([3, 1])
-            with col_a:
-                st.markdown("**Résumé**")
-                st.write(entry.get("summary_fr","—"))
-                if entry.get("action_required"):
-                    st.info(f"⚙️ **Action suggérée** *(à valider)* : {entry['action_required']}")
-                url = entry.get("url","")
-                if url and url.startswith("http"):
-                    st.markdown(f"[🔗 Accéder au document source]({url})")
-                else:
-                    st.caption("⚠️ URL source non disponible")
-                st.caption(f"Sujet : *{entry.get('watch_topic','')}* · Extrait le {entry.get('watch_date','—')}")
-            with col_b:
-                st.metric("Urgence", f"{u_icon} {urgency}", help=u_desc)
-                st.markdown("**Catégories**")
-                st.markdown(cats_inline or "—")
-                st.caption(f"📅 {entry.get('date','?')}")
-                st.caption(f"🌍 {', '.join(entry.get('markets',[]))}")
+    # Légende juste avant les résultats
+    with st.container(border=True):
+        c1, c2, c3 = st.columns(3)
+        for col, (level, (icon, desc)) in zip([c1,c2,c3], URGENCY_DEF.items()):
+            col.markdown(f"{icon} **{level}**")
+            col.caption(desc)
 
     if view_mode == "🔴 Criticité":
         for level in ["HIGH","MEDIUM","LOW"]:
             lvl_entries = [e for e in all_entries if e.get("urgency")==level]
             if not lvl_entries: continue
             icon, desc = URGENCY_DEF[level]
-            st.markdown(f"### {icon} Urgence {level} — {len(lvl_entries)} entrée(s)")
-            st.caption(desc)
+            st.markdown(f"### {icon} {level} — {len(lvl_entries)} entrée(s)")
             for i, e in enumerate(lvl_entries):
                 render_entry(e, f"crit_{level}_{i}")
     else:
@@ -350,7 +297,7 @@ if st.session_state["last_results"]:
     st.dataframe(df[["Date","Titre","Catégories","Urgence","Action","URL Source"]], use_container_width=True)
     csv = df.to_csv(index=False).encode("utf-8")
     st.download_button("⬇️ Exporter CSV", csv,
-        f"regwatch_veille_{datetime.now().strftime('%Y%m%d_%H%M')}.csv", "text/csv")
+        f"regwatch_veille_{datetime.now().strftime('%Y%m%d_%H%M')}.csv","text/csv")
     st.info(f"💾 {len(st.session_state.get('veille_results',[]))} entrée(s) disponibles pour l'Agent 4.")
 
 # ── Historique ────────────────────────────────────────────────────────────────
@@ -366,25 +313,19 @@ with st.expander("🗃️ Historique des veilles précédentes", expanded=False)
             Path(HISTORY_FILE).write_text("[]")
             st.session_state["last_results"] = []
             st.rerun()
-
-        view_h = st.radio("Vue historique", ["🔴 Criticité","📂 Thématique"],
-                          horizontal=True, key="view_history")
-        for level in (["HIGH","MEDIUM","LOW"] if view_h=="🔴 Criticité" else [None]):
-            entries_to_show = (
-                [e for e in history if e.get("urgency")==level]
-                if level else history
-            )
-            if not entries_to_show: continue
-            if level:
-                icon, desc = URGENCY_DEF[level]
-                st.markdown(f"### {icon} {level} — {len(entries_to_show)} entrée(s)")
-            for i, e in enumerate(entries_to_show):
-                urgency = e.get("urgency","LOW")
-                u_icon, _ = URGENCY_DEF.get(urgency, ("⚪",""))
-                cats = "  ·  ".join(f"**{c}** ({CAT_LABELS.get(c,c)})" for c in e.get("categories_concerned",[]))
-                with st.expander(f"{u_icon} {e.get('title','Sans titre')}", key=f"hist_{i}"):
-                    st.write(e.get("summary_fr","—"))
-                    if e.get("url","").startswith("http"):
-                        st.markdown(f"[🔗 Source]({e['url']})")
-                    st.markdown(cats or "—")
-                    st.caption(f"📅 {e.get('date','?')} · 🌍 {', '.join(e.get('markets',[]))} · Sujet : *{e.get('watch_topic','')}*")
+        view_h = st.radio("Vue", ["🔴 Criticité","📂 Thématique"], horizontal=True, key="view_history")
+        if view_h == "🔴 Criticité":
+            for level in ["HIGH","MEDIUM","LOW"]:
+                lvl = [e for e in history if e.get("urgency")==level]
+                if not lvl: continue
+                icon, _ = URGENCY_DEF[level]
+                st.markdown(f"### {icon} {level} — {len(lvl)} entrée(s)")
+                for i, e in enumerate(lvl):
+                    render_entry(e, f"hist_crit_{level}_{i}")
+        else:
+            topics_h = list(dict.fromkeys(e.get("watch_topic","?") for e in history))
+            for topic in topics_h:
+                t_entries = [e for e in history if e.get("watch_topic")==topic]
+                st.markdown(f"### 📂 {topic} — {len(t_entries)} entrée(s)")
+                for i, e in enumerate(t_entries):
+                    render_entry(e, f"hist_theme_{topic[:10]}_{i}")
