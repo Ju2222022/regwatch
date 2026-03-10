@@ -12,7 +12,8 @@ import sys, os
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from agent5a.updater import (
-    analyze_legal_sheet, FICHE_SECTIONS, STATUS_LABELS, SECTION_IDS
+    analyze_legal_sheet, ALL_SECTIONS, STATUS_LABELS, SECTION_IDS,
+    SECTION_PROFILES, get_sections_for_profile,
 )
 from agent4.impact import CAT_DEFINITIONS
 
@@ -128,11 +129,47 @@ else:
 
 st.divider()
 
-# ── Étape 3 — Lancement analyse ───────────────────────────────────────────────
-st.subheader("③ Analyse")
+# ── Étape 3 — Profil d'analyse ────────────────────────────────────────────────
+st.subheader("③ Profil d'analyse")
 
-ready = anthropic_key and fiche_text.strip() and bool(filtered_alerts or True)
-# Note: on autorise l'analyse même sans alertes (audit pur de la fiche)
+profile_names = list(SECTION_PROFILES.keys())
+profile = st.radio(
+    "Périmètre d'analyse",
+    profile_names,
+    horizontal=True,
+    key="5a_profile"
+)
+
+profile_info = SECTION_PROFILES[profile]
+st.caption(f"*{profile_info['desc']}*")
+
+# Sélection manuelle si profil Personnalisé
+custom_ids = None
+if profile == "✏️ Personnalisé":
+    all_opts = {s["id"]: f"{s['label']} ({s['relevance']})" for s in ALL_SECTIONS}
+    custom_ids = st.multiselect(
+        "Sections à analyser",
+        options=list(all_opts.keys()),
+        default=[s["id"] for s in ALL_SECTIONS if s["relevance"] == "high"],
+        format_func=lambda x: all_opts[x],
+        key="5a_custom_sections"
+    )
+    sections_preview = [s for s in ALL_SECTIONS if s["id"] in (custom_ids or [])]
+else:
+    sections_preview = get_sections_for_profile(profile)
+
+n_passes = max(1, -(-len(sections_preview) // 8))  # ceil division
+cost_est = n_passes * 0.025  # ~$0.025 par passe Sonnet
+st.info(
+    f"**{len(sections_preview)} section(s)** · "
+    f"**{n_passes} appel(s)** Claude · "
+    f"Coût estimé : **~${cost_est:.2f}**"
+)
+
+st.divider()
+
+# ── Étape 4 — Lancement analyse ───────────────────────────────────────────────
+st.subheader("④ Analyse")
 
 if not fiche_text.strip():
     st.info("Uploadez ou collez le contenu de la fiche légale pour continuer.")
@@ -140,9 +177,9 @@ if not fiche_text.strip():
 col_launch, col_info = st.columns([2, 3])
 with col_info:
     if not filtered_alerts:
-        st.warning(f"Aucune alerte {category} en mémoire — l'analyse portera uniquement sur la qualité de la fiche existante.")
+        st.warning(f"Aucune alerte {category} en mémoire — audit qualité uniquement.")
     else:
-        st.info(f"{len(filtered_alerts)} alerte(s) seront croisées avec la fiche.")
+        st.info(f"{len(filtered_alerts)} alerte(s) croisées avec la fiche.")
 
 with col_launch:
     launch = st.button(
@@ -168,6 +205,8 @@ if launch:
                 category=category,
                 fiche_title=fiche_title,
                 market=market,
+                profile=profile,
+                custom_section_ids=custom_ids,
             )
             st.session_state["5a_result"] = result
             st.session_state["5a_decisions"] = {}  # reset décisions
@@ -202,7 +241,7 @@ if "5a_result" in st.session_state:
     decisions = st.session_state.setdefault("5a_decisions", {})
 
     st.divider()
-    st.subheader("④ Révision et validation")
+    st.subheader("⑤ Révision et validation")
 
     # Récapitulatif
     overall = result.get("overall_status", "")
@@ -369,7 +408,7 @@ if "5a_result" in st.session_state:
                 and s.get("section_id") not in decisions]
 
     st.divider()
-    st.subheader("⑤ Export")
+    st.subheader("⑥ Export")
 
     col_s1, col_s2, col_s3 = st.columns(3)
     col_s1.metric("✅ Approuvées", len(approved))
