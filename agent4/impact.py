@@ -200,11 +200,25 @@ OUTPUT — respond ONLY with valid JSON, no markdown:
 """
 
 
+def _parse_json(raw: str) -> dict:
+    """Parse JSON robuste — cherche premier { dernier }."""
+    if not raw:
+        raise ValueError("Réponse vide de l'API Claude")
+    start = raw.find("{")
+    end   = raw.rfind("}") + 1
+    if start >= 0 and end > start:
+        try:
+            return json.loads(raw[start:end])
+        except json.JSONDecodeError as e:
+            raise ValueError(f"JSON invalide : {e}. Début : {raw[:150]}")
+    raise ValueError(f"Aucun JSON trouvé. Début : {raw[:150]}")
+
+
 def _call_claude(anthropic_key: str, system: str, user_message: str) -> tuple:
-    """Appel Claude Haiku avec retour (result_dict, token_usage)."""
+    """Appel Claude Sonnet avec retour (result_dict, token_usage)."""
     payload = json.dumps({
-        "model": "claude-haiku-4-5-20251001",
-        "max_tokens": 2048,
+        "model": "claude-sonnet-4-20250514",
+        "max_tokens": 4096,
         "system": system,
         "messages": [{"role": "user", "content": user_message}]
     }).encode("utf-8")
@@ -220,7 +234,7 @@ def _call_claude(anthropic_key: str, system: str, user_message: str) -> tuple:
         method="POST"
     )
 
-    with urllib.request.urlopen(req, timeout=45) as resp:
+    with urllib.request.urlopen(req, timeout=90) as resp:
         data = json.loads(resp.read())
 
     usage = data.get("usage", {})
@@ -234,14 +248,7 @@ def _call_claude(anthropic_key: str, system: str, user_message: str) -> tuple:
     }
 
     raw = data["content"][0]["text"].strip()
-    if "```" in raw:
-        for part in raw.split("```"):
-            part = part.strip().lstrip("json").strip()
-            try:
-                return json.loads(part), token_usage
-            except json.JSONDecodeError:
-                continue
-    return json.loads(raw), token_usage
+    return _parse_json(raw), token_usage
 
 
 def analyze_product_impact(
