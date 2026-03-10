@@ -131,37 +131,28 @@ OUTPUT — respond ONLY with valid JSON, no markdown:
 
 
 def _parse_json_response(raw: str, pass_label: str) -> dict:
-    """Parse JSON depuis la réponse Claude, robuste aux variations."""
-    import re as _re
+    """Parse JSON depuis la réponse Claude.
+    Stratégie : trouver le premier { et le dernier } dans la réponse,
+    quelle que soit l'enveloppe markdown.
+    """
     if not raw:
         raise ValueError(f"Reponse vide ({pass_label})")
 
-    # Strategie 1 : extraire bloc ```json ... ``` ou ``` ... ```
-    matches = _re.findall(r"```(?:json)?\s*(\{.*?\})\s*```", raw, _re.DOTALL)
-    for m in matches:
-        try:
-            return json.loads(m)
-        except json.JSONDecodeError:
-            continue
-
-    # Strategie 2 : JSON direct
-    stripped = raw.strip()
-    if stripped.startswith("{"):
-        try:
-            return json.loads(stripped)
-        except json.JSONDecodeError:
-            pass
-
-    # Strategie 3 : premier { ... dernier }
+    # Toujours chercher premier { et dernier } — fonctionne avec ou sans ```json
     start = raw.find("{")
     end   = raw.rfind("}") + 1
     if start >= 0 and end > start:
+        candidate = raw[start:end]
         try:
-            return json.loads(raw[start:end])
-        except json.JSONDecodeError:
-            pass
+            return json.loads(candidate)
+        except json.JSONDecodeError as e:
+            raise ValueError(
+                f"JSON invalide ({pass_label}) : {e}. "
+                f"Debut reponse : {raw[:120]}"
+            )
 
-    raise ValueError(f"JSON invalide ({pass_label}). Debut : {raw[:150]}")
+    raise ValueError(f"Aucun JSON trouve ({pass_label}). Debut : {raw[:120]}")
+
 
 
 def _call_analysis(
