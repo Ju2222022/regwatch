@@ -107,6 +107,44 @@ TAVILY_API_KEY    = "tvly-..."
 
 ---
 
+## Agent 2 — Product Profiler
+
+Extrait automatiquement les spécifications techniques d'un produit à partir de son code modèle.
+
+1. L'utilisateur saisit un **code modèle** (ex: *8595153 Kalenji Run 500 GPS*)
+2. **Tavily** recherche les fiches produit sur le web (site Decathlon, revendeurs, bases techniques)
+3. **Claude Haiku** extrait et structure les specs pertinentes pour la classification réglementaire :
+   - Type de produit et fonction principale
+   - Protocoles de communication (Bluetooth, ANT+, GPS, WiFi...)
+   - Présence de batterie intégrée / rechargeable
+   - Caractéristiques électriques
+4. Le profil produit enrichit la classification Agent 3 et peut être transmis à Agent 4
+
+> Sans Agent 2, la concordance Agent 3 est de ~27% (nom + type uniquement). Avec Agent 2, elle monte à ~70%+.
+
+---
+
+## Agent 3 — Regulatory Classifier
+
+Classifie un produit dans le référentiel Decathlon Electronics (CAT1-CAT9) à partir de sa description ou du profil Agent 2.
+
+**Règles de classification :**
+- Chaque produit reçoit **CAT3 par défaut** (parachute universel — tout équipement électronique)
+- Les sous-catégories s'ajoutent uniquement si le protocole est **explicitement confirmé** dans le profil produit
+- Plusieurs catégories peuvent s'appliquer simultanément (ex: CAT3 + CAT9 pour une montre Bluetooth)
+
+**Exemple :**
+```
+Produit : Montre GPS Bluetooth avec capteur cardiaque
+→ CAT3 (équipement électronique)        ← toujours
+→ CAT7 (GPS confirmé)                   ← protocole détecté
+→ CAT9 (Bluetooth confirmé)             ← protocole détecté
+```
+
+**Page Concordance** : compare la classification IA avec la classification manuelle Decathlon sur les 11 produits du PoC. Permet de valider la fiabilité du modèle avant déploiement.
+
+---
+
 ## Agent 4 — Impact Analyzer
 
 Croise les alertes Agent 1 avec le catalogue produits ou les catégories actives.
