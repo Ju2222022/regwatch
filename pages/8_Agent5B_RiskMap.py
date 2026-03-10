@@ -19,26 +19,33 @@ anthropic_key = st.secrets.get("ANTHROPIC_API_KEY", "")
 
 # ── Sidebar ───────────────────────────────────────────────────────────────────
 with st.sidebar:
-    st.header("⚙️ Statut")
+    st.header("⚙️ Status")
     st.success("Anthropic ✓") if anthropic_key else st.error("ANTHROPIC_API_KEY manquante")
     st.divider()
 
     impact = st.session_state.get("impact_product_result", {})
     agent5a = st.session_state.get("5a_export_approved", [])
 
-    st.header("📥 Données disponibles")
+    st.header("📥 Available data")
     if impact:
         impacted = impact.get("impacted_products", [])
         non_impacted = impact.get("non_impacted_products", [])
         all_products = impacted + non_impacted
-        st.success(f"Agent 4 ✓ — {len(impacted)} impacté(s) · {len(non_impacted)} non impacté(s)")
+        st.success(f"Agent 4 ✓ — {len(impacted)} impacted · {len(non_impacted)} non impacted")
+        if impacted:
+            st.markdown("**Impacted products:**")
+            _risk_icon = {"HIGH": "🔴", "MEDIUM": "🟡", "LOW": "🟢"}
+            for _p in impacted:
+                _name = _p.get("product_name", _p.get("name", _p.get("code", "?")))
+                _risk = _p.get("risk_score", _p.get("risk_level", ""))
+                st.caption(f"{_risk_icon.get(_risk,'⚪')} {_name}")
     else:
         st.warning("Aucun résultat Agent 4.\nLancez Agent 4 Mode Produit.")
 
     if agent5a:
         st.success(f"Agent 5A ✓ — {len(agent5a)} section(s) approuvée(s)")
     else:
-        st.info("Agent 5A : aucune mise à jour\n(comparaison avant/après désactivée)")
+        st.info("Agent 5A : aucune mise à jour\n(comparaison avant/après désenabled)")
 
     st.divider()
     st.caption("Flux : Agent 1 → Agent 4 (Mode Produit) → Agent 5B")
@@ -48,41 +55,41 @@ st.title("🗺️ Agent 5B — Risk Mapper")
 st.caption("Risk mapping réglementaire par produit · 3 niveaux de lecture")
 
 # ── Étape 1 — Vérification des données ───────────────────────────────────────
-st.subheader("① Données source")
+st.subheader("① Data sources")
 
 col1, col2 = st.columns(2)
 with col1:
-    st.markdown("**Agent 4 — Impact produit**")
+    st.markdown("**Agent 4 — Product impact**")
     if impact:
         impacted_    = impact.get("impacted_products", [])
         non_imp_     = impact.get("non_impacted_products", [])
         all_products = impacted_ + non_imp_
-        st.success(f"✓ {len(impacted_)} produit(s) impacté(s) · {len(non_imp_)} non impacté(s)")
-        with st.expander("Aperçu"):
+        st.success(f"✓ {len(impacted_)} product(s) impacted · {len(non_imp_)} non impacted")
+        with st.expander("Preview"):
             for p in impacted_[:3]:
                 name = p.get("product_name", p.get("name", ""))
                 risk = p.get("risk_level", p.get("overall_risk", ""))
                 st.caption(f"• 🔴 {name} — {risk}")
             if len(impacted_) > 3:
-                st.caption(f"... et {len(impacted_)-3} autre(s) impacté(s)")
+                st.caption(f"... et {len(impacted_)-3} autre(s) impacted")
     else:
         all_products = []
         st.error("Manquant — lancez Agent 4 Mode Produit")
 
 with col2:
-    st.markdown("**Agent 5A — Mises à jour approuvées**")
+    st.markdown("**Agent 5A — Approved updates**")
     if agent5a:
-        st.success(f"✓ {len(agent5a)} section(s) — comparaison avant/après activée")
-        with st.expander("Aperçu"):
+        st.success(f"✓ {len(agent5a)} section(s) — comparaison avant/après enabled")
+        with st.expander("Preview"):
             for upd in agent5a[:3]:
                 st.caption(f"• {upd.get('section_label','?')} ({upd.get('action','')})")
     else:
-        st.info("Non disponible — l'analyse sera faite sans comparaison avant/après")
+        st.info("Not available — analysis will run without before/after comparison")
 
     # Import manuel des données 5A si pas en session
     if not agent5a:
         uploaded = st.file_uploader(
-            "Importer le JSON Agent 5A (optionnel)",
+            "Import Agent 5A JSON (optional)",
             type=["json"],
             key="5b_import_5a"
         )
@@ -91,41 +98,41 @@ with col2:
                 data_5a = json.loads(uploaded.read())
                 agent5a = data_5a.get("approved_updates", [])
                 st.session_state["5a_export_approved"] = agent5a
-                st.success(f"✓ {len(agent5a)} section(s) importée(s)")
+                st.success(f"✓ {len(agent5a)} section(s) imported")
                 st.rerun()
             except Exception as e:
-                st.error(f"Erreur import : {e}")
+                st.error(f"Import error: {e}")
 
 st.divider()
 
 # ── Étape 2 — Lancement ──────────────────────────────────────────────────────
-st.subheader("② Génération du risk mapping")
+st.subheader("② Risk mapping generation")
 
 col_l, col_i = st.columns([2, 3])
 with col_i:
     if not impact:
         st.warning("Lancez d'abord Agent 4 en Mode Produit.")
         imp_ = impact.get("impacted_products", [])
-        before_after = "activée" if agent5a else "désactivée (pas de données 5A)"
+        before_after = "enabled" if agent5a else "désenabled (pas de données 5A)"
         st.info(
-            f"{len(imp_)} produit(s) impacté(s) à analyser  \n"
-            f"Comparaison avant/après : **{before_after}**  \n"
+            f"{len(imp_)} impacted product(s) to analyze  \n"
+            f"Before/after comparison: **{before_after}**  \n"
             f"Coût estimé : ~$0.05"
         )
 
 with col_l:
     launch = st.button(
-        "🗺️ Générer le risk mapping",
+        "🗺️ Generate risk mapping",
         disabled=not (anthropic_key and bool(impact)),
         type="primary",
         use_container_width=True
     )
 
 if launch:
-    with st.status("🗺️ Génération en cours...", expanded=True) as status:
+    with st.status("🗺️ Generating...", expanded=True) as status:
         try:
             imp__ = impact.get("impacted_products", [])
-            st.write(f"Analyse de {len(imp__)} produit(s) impacté(s)...")
+            st.write(f"Analyse de {len(imp__)} product(s) impacted...")
             if agent5a:
                 st.write(f"Intégration de {len(agent5a)} mise(s) à jour Agent 5A...")
             result, token_usage = generate_risk_mapping(
@@ -138,19 +145,19 @@ if launch:
             n_high = result.get("executive_summary", {}).get("total_high", 0)
             status.update(
                 label=(
-                    f"✅ Risk mapping terminé · {n_prod} produit(s) · "
-                    f"{n_high} risque(s) HIGH · "
+                    f"✅ Risk mapping terminé · {n_prod} product(s) · "
+                    f"{n_high} HIGH risk(s) · "
                     f"{token_usage['input_tokens']+token_usage['output_tokens']:,} tokens · "
                     f"${token_usage['cost_usd']:.4f}"
                 ),
                 state="complete"
             )
         except Exception as e:
-            status.update(label=f"❌ Erreur : {e}", state="error")
+            status.update(label=f"❌ Error: {e}", state="error")
             st.error(str(e))
             st.stop()
 
-# ── Résultats ─────────────────────────────────────────────────────────────────
+# ── Results ─────────────────────────────────────────────────────────────────
 if "5b_result" in st.session_state:
     result   = st.session_state["5b_result"]
     products = result.get("products", [])
@@ -158,7 +165,7 @@ if "5b_result" in st.session_state:
     reg_view = result.get("regulatory_view", [])
 
     st.divider()
-    st.subheader("③ Résultats")
+    st.subheader("③ Results")
 
     # Bandeau exécutif
     n_h = exec_sum.get("total_high", 0)
@@ -174,14 +181,14 @@ if "5b_result" in st.session_state:
 
     # 3 onglets
     tab_exec, tab_prod, tab_reg = st.tabs([
-        "📊 Vue Exécutive",
-        "📦 Vue Produit",
-        "📋 Vue Réglementaire"
+        "📊 Executive View",
+        "📦 Product View",
+        "📋 Regulatory View"
     ])
 
-    # ── Onglet 1 : Vue Exécutive ─────────────────────────────────────────────
+    # ── Onglet 1 : Executive View ─────────────────────────────────────────────
     with tab_exec:
-        st.markdown("*Synthèse pour la direction — niveau de risque global par produit*")
+        st.markdown("*Summary for management — global risk level per product*")
 
         risk_icon = {"HIGH": "🔴", "MEDIUM": "🟡", "LOW": "🟢"}
         delta_icon = {"IMPROVED": "⬇️ Amélioré", "UNCHANGED": "➡️ Inchangé", "WORSENED": "⬆️ Dégradé"}
@@ -193,12 +200,12 @@ if "5b_result" in st.session_state:
             row = {
                 "Produit": p.get("product_name", p.get("product_code", "")),
                 "Catégories": ", ".join(p.get("categories", [])),
-                "Risque actuel": f"{risk_icon.get(p.get('risk_before',''),'?')} {p.get('risk_before','')}",
+                "Current risk": f"{risk_icon.get(p.get('risk_before',''),'?')} {p.get('risk_before','')}",
             }
             if has_5a or agent5a:
-                row["Risque après 5A"] = f"{risk_icon.get(p.get('risk_after',''),'?')} {p.get('risk_after','')}"
-                row["Évolution"] = delta_icon.get(p.get("risk_delta", ""), "—")
-            row["Synthèse"] = p.get("executive_note", "")
+                row["Risk after 5A"] = f"{risk_icon.get(p.get('risk_after',''),'?')} {p.get('risk_after','')}"
+                row["Change"] = delta_icon.get(p.get("risk_delta", ""), "—")
+            row["Summary"] = p.get("executive_note", "")
             rows.append(row)
 
         if rows:
@@ -207,9 +214,9 @@ if "5b_result" in st.session_state:
         if agent5a:
             st.caption("⚠️ *Les valeurs 'après 5A' sont une simulation — la conformité réelle dépend de l'implémentation dans My Conformity Box.*")
 
-    # ── Onglet 2 : Vue Produit ───────────────────────────────────────────────
+    # ── Onglet 2 : Product View ───────────────────────────────────────────────
     with tab_prod:
-        st.markdown("*Détail par produit — actions correctives pour les chefs de produit*")
+        st.markdown("*Product detail — corrective actions for product managers*")
 
         for p in products:
             risk_b = p.get("risk_before", "")
@@ -224,26 +231,26 @@ if "5b_result" in st.session_state:
 
             with st.expander(header, expanded=(risk_b == "HIGH")):
 
-                # Non-conformités
+                # Non-conformities
                 non_conf = p.get("non_conformities", [])
                 if non_conf:
-                    st.markdown("**Non-conformités**")
+                    st.markdown("**Non-conformities**")
                     nc_rows = []
                     for nc in non_conf:
                         row_nc = {
-                            "Réglementation": nc.get("regulation", ""),
-                            "Avant": nc.get("status_before", ""),
+                            "Regulation": nc.get("regulation", ""),
+                            "Before": nc.get("status_before", ""),
                         }
                         if agent5a:
-                            row_nc["Après 5A"] = nc.get("status_after", "")
-                            row_nc["Résolu par"] = nc.get("resolved_by") or "—"
+                            row_nc["After 5A"] = nc.get("status_after", "")
+                            row_nc["Resolved by"] = nc.get("resolved_by") or "—"
                         nc_rows.append(row_nc)
                     st.dataframe(pd.DataFrame(nc_rows), use_container_width=True, hide_index=True)
 
-                # Actions correctives
+                # Corrective actions
                 actions = p.get("corrective_actions", [])
                 if actions:
-                    st.markdown("**Actions correctives**")
+                    st.markdown("**Corrective actions**")
                     prio_icon = {"HIGH": "🔴", "MEDIUM": "🟡", "LOW": "🟢"}
                     for a in actions:
                         col_p, col_a, col_d, col_o = st.columns([1, 4, 2, 2])
@@ -252,9 +259,9 @@ if "5b_result" in st.session_state:
                         col_d.caption(a.get("deadline", ""))
                         col_o.caption(a.get("owner", ""))
 
-    # ── Onglet 3 : Vue Réglementaire ─────────────────────────────────────────
+    # ── Onglet 3 : Regulatory View ─────────────────────────────────────────
     with tab_reg:
-        st.markdown("*Par réglementation — pour le responsable affaires réglementaires*")
+        st.markdown("*By regulation — for the regulatory affairs manager*")
 
         for reg in reg_view:
             urg = reg.get("urgency", "")
@@ -262,17 +269,27 @@ if "5b_result" in st.session_state:
             n_affected = len(reg.get("products_affected", []))
 
             with st.expander(
-                f"{icon_u} **{reg.get('regulation', '')}** — {n_affected} produit(s) concerné(s)",
+                f"{icon_u} **{reg.get('regulation', '')}** — {n_affected} product(s) concerné(s)",
                 expanded=(urg == "HIGH")
             ):
                 col_b, col_a = st.columns(2)
-                col_b.metric("Conformité actuelle", reg.get("compliance_rate_before", "—"))
+                def _fr_compliance(rate_str):
+                    """Translates compliance rate to display string."""
+                    if not rate_str or rate_str == "—":
+                        return "—"
+                    return (rate_str
+                        .replace("products compliant", "product(s) conforme(s)")
+                        .replace("product compliant", "produit conforme")
+                        .replace("No products compliant", "Aucun produit conforme")
+                        .replace("All products compliant", "Tous conformes"))
+
+                col_b.metric("Current compliance", _fr_compliance(reg.get("compliance_rate_before", "—")))
                 if agent5a:
-                    col_a.metric("Conformité après 5A *(simulation)*",
-                                 reg.get("compliance_rate_after", "—"))
+                    col_a.metric("Compliance after 5A *(simulation)*",
+                                 _fr_compliance(reg.get("compliance_rate_after", "—")))
 
                 if reg.get("products_affected"):
-                    st.markdown("**Produits concernés :**")
+                    st.markdown("**Affected products:**")
                     # Trouver les noms depuis la liste produits
                     name_map = {p.get("product_code",""): p.get("product_name","") for p in products}
                     for code in reg["products_affected"]:
@@ -300,7 +317,7 @@ if "5b_result" in st.session_state:
 
     col_dl1, col_dl2 = st.columns(2)
     col_dl1.download_button(
-        "⬇️ Exporter JSON complet",
+        "⬇️ Export full JSON",
         json.dumps(export_data, indent=2, ensure_ascii=False).encode("utf-8"),
         f"regwatch_riskmap_{datetime.now().strftime('%Y%m%d')}.json",
         "application/json"
@@ -323,7 +340,7 @@ if "5b_result" in st.session_state:
             })
         df_export = pd.DataFrame(csv_rows)
         col_dl2.download_button(
-            "⬇️ Exporter CSV (vue exécutive)",
+            "⬇️ Export CSV (executive view)",
             df_export.to_csv(index=False).encode("utf-8"),
             f"regwatch_riskmap_{datetime.now().strftime('%Y%m%d')}.csv",
             "text/csv"

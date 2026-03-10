@@ -21,39 +21,39 @@ st.caption("Recherche automatique des specs produit → Classification réglemen
 api_key = st.secrets.get("ANTHROPIC_API_KEY", "")
 
 with st.sidebar:
-    st.header("⚙️ Configuration")
+    st.header("⚙️ Settings")
     if api_key:
-        st.success("Clé API chargée ✓")
+        st.success("API key loaded ✓")
     else:
         st.warning("ANTHROPIC_API_KEY non trouvée")
         api_key = st.text_input("Clé API Anthropic (secours)", type="password")
 
 CAT_LABELS = {
-    "CAT1": "🔋 Batteries & accumulateurs",
-    "CAT2": "💡 Lampes & éclairage",
-    "CAT3": "⚡ Équipements électroniques (base)",
-    "CAT4": "🔌 Chargeurs & produits rechargeables",
-    "CAT5": "📡 Caméra / ANT+",
-    "CAT6": "🎵 Lecteur MP3",
-    "CAT7": "🛰️ GPS / Radio / Talkie / Télémètre",
-    "CAT8": "📶 Téléphone / Wifi",
-    "CAT9": "📲 Équipement Bluetooth",
+    "CAT1": "🔋 Batteries & accumulators",
+    "CAT2": "💡 Lamps & lighting",
+    "CAT3": "⚡ Electronic equipment (base)",
+    "CAT4": "🔌 Chargers & rechargeable products",
+    "CAT5": "📡 Camera / ANT+",
+    "CAT6": "🎵 MP3 player",
+    "CAT7": "🛰️ GPS / Radio / Walkie-talkie / Rangefinder",
+    "CAT8": "📶 Phone / Wifi",
+    "CAT9": "📲 Bluetooth equipment",
 }
 
 st.info("💡 Entrez un code modèle Decathlon — l'Agent 2 recherche les specs sur le web, puis l'Agent 3 classifie automatiquement.")
 
 col1, col2 = st.columns(2)
 with col1:
-    model_code = st.text_input("Code modèle *", placeholder="ex: 8941337")
-    product_name = st.text_input("Nom commercial *", placeholder="ex: FIT100M")
+    model_code = st.text_input("Model code *", placeholder="ex: 8941337")
+    product_name = st.text_input("Product name *", placeholder="ex: FIT100M")
 with col2:
-    extra_info = st.text_input("Infos complémentaires (optionnel)",
+    extra_info = st.text_input("Additional info (optional)",
                                 placeholder="ex: GPS Bluetooth rechargeable")
     st.caption("Si vous avez déjà des infos, ajoutez-les ici pour améliorer la précision.")
 
 if st.button("🚀 Profiler + Classifier", disabled=not api_key, type="primary"):
     if not model_code or not product_name:
-        st.error("Code modèle et nom commercial requis.")
+        st.error("Model code et nom commercial requis.")
     else:
         # ── Étape 1 : Agent 2 — Profiling ─────────────────────────────────
         with st.status("🔎 Agent 2 — Recherche des specs produit...", expanded=True) as status:
@@ -62,7 +62,7 @@ if st.button("🚀 Profiler + Classifier", disabled=not api_key, type="primary")
                 profile = search_and_profile(api_key, model_code, product_name, extra_info)
                 status.update(label="✅ Agent 2 — Profil extrait", state="complete")
             except Exception as e:
-                status.update(label=f"⚠️ Agent 2 — Erreur: {e}", state="error")
+                status.update(label=f"⚠️ Agent 2 — Error: {e}", state="error")
                 st.warning("Passage en mode dégradé : classification sans profil web.")
                 profile = {
                     "code": model_code, "name": product_name,
@@ -103,7 +103,7 @@ if st.button("🚀 Profiler + Classifier", disabled=not api_key, type="primary")
 
         with st.status("🏷️ Agent 3 — Classification réglementaire...", expanded=True) as status:
             try:
-                st.write("Classification en cours...")
+                st.write("Classifying...")
                 result = classify_product(
                     api_key,
                     classifier_input["code"],
@@ -111,9 +111,9 @@ if st.button("🚀 Profiler + Classifier", disabled=not api_key, type="primary")
                     classifier_input["type"],
                     classifier_input["extra_info"]
                 )
-                status.update(label="✅ Agent 3 — Classification terminée", state="complete")
+                status.update(label="✅ Agent 3 — Classification complete", state="complete")
             except Exception as e:
-                status.update(label=f"❌ Agent 3 — Erreur: {e}", state="error")
+                status.update(label=f"❌ Agent 3 — Error: {e}", state="error")
                 st.stop()
 
         # Afficher la classification
@@ -140,13 +140,13 @@ if st.button("🚀 Profiler + Classifier", disabled=not api_key, type="primary")
         edge_cases = flags.get("regulatory_edge_cases", [])
 
         if to_confirm or if_confirmed or edge_cases:
-            st.subheader("⚠️ Points d'attention")
+            st.subheader("⚠️ Points of attention")
             for f in to_confirm:
-                st.info(f"📌 Protocole à confirmer : {f}")
+                st.info(f"📌 Protocol to confirm: {f}")
             for f in if_confirmed:
-                st.info(f"💡 Catégorie potentielle : {f}")
+                st.info(f"💡 Potential category: {f}")
             for f in edge_cases:
-                st.warning(f"⚖️ Cas limite : {f}")
+                st.warning(f"⚖️ Edge case: {f}")
 
         with st.expander("Voir les données complètes (profil + classification)"):
             st.json({"profil_agent2": profile, "classification_agent3": result})

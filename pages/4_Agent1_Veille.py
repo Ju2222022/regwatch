@@ -3,7 +3,7 @@ Agent 1 — Regulatory Watcher v6
 - Sidebar allégée (tokens uniquement)
 - Configuration sources → page dédiée
 - Légende criticité déplacée avant les résultats
-- Résultats persistés en session_state
+- Results persisted in session_state
 """
 
 import streamlit as st
@@ -16,7 +16,7 @@ import sys, os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from agent1.watcher import run_watch, load_sources, TIMEFRAMES
 
-st.set_page_config(page_title="Agent 1 — Veille", page_icon="📡", layout="wide")
+st.set_page_config(page_title="Agent 1 — Watch", page_icon="📡", layout="wide")
 
 # ── Référentiels ──────────────────────────────────────────────────────────────
 CAT_LABELS = {
@@ -60,7 +60,7 @@ try:
 except Exception:
     sources = {"EU": ["eur-lex.europa.eu", "europa.eu"], "France": ["legifrance.gouv.fr"]}
 
-# ── Clés API ──────────────────────────────────────────────────────────────────
+# ── API Keys ──────────────────────────────────────────────────────────────────
 anthropic_key = st.secrets.get("ANTHROPIC_API_KEY", "")
 tavily_key    = st.secrets.get("TAVILY_API_KEY", "")
 
@@ -78,7 +78,7 @@ if "last_stats" not in st.session_state:
 
 # ── Sidebar — tokens uniquement ───────────────────────────────────────────────
 with st.sidebar:
-    st.header("⚙️ Statut")
+    st.header("⚙️ Status")
     st.success("Anthropic ✓") if anthropic_key else st.error("ANTHROPIC_API_KEY manquante")
     st.success("Tavily ✓")    if tavily_key    else st.error("TAVILY_API_KEY manquante")
     st.divider()
@@ -112,21 +112,21 @@ with st.expander("🏷️ Pré-remplir les sujets depuis les catégories Decathl
         key="cat_prefill_select"
     )
 
-    # Aperçu du nombre de requêtes qui seront générées
+    # Preview du nombre de requêtes qui seront générées
     if selected_cats:
         preview_queries = get_watch_queries_deduplicated(selected_cats)
         st.caption(
             f"→ {len(selected_cats)} catégorie(s) sélectionnée(s) · "
             f"**{len(preview_queries)} requête(s) de veille** seront générées"
         )
-        with st.expander("Aperçu des requêtes"):
+        with st.expander("Query preview"):
             for cat in selected_cats:
                 topics = CAT_WATCH_QUERIES.get(cat, [])
                 st.markdown(f"**{cat}** — {CAT_DEFINITIONS[cat]['label']}")
                 for t in topics:
                     st.caption(f"  • {t}")
 
-    if st.button("🔄 Générer les sujets de veille", key="btn_prefill"):
+    if st.button("🔄 Generate watch topics", key="btn_prefill"):
         queries = get_watch_queries_deduplicated(selected_cats)
         st.session_state["watch_topics"] = [
             {"topic": q["topic"], "markets": q["markets"], "timeframe": q["timeframe"]}
@@ -136,7 +136,7 @@ with st.expander("🏷️ Pré-remplir les sujets depuis les catégories Decathl
         st.rerun()
 
 # ── Formulaire ────────────────────────────────────────────────────────────────
-st.subheader("🔍 Sujets de veille")
+st.subheader("🔍 Watch topics")
 
 col_left, col_right = st.columns([3, 1])
 with col_right:
@@ -161,7 +161,7 @@ for i, item in enumerate(st.session_state["watch_topics"]):
             avail = list(sources.keys())
             def_m = [m for m in item["markets"] if m in avail] or avail[:2]
             st.session_state["watch_topics"][i]["markets"] = st.multiselect(
-                "Marchés", avail, default=def_m,
+                "Markets", avail, default=def_m,
                 key=f"markets_{i}", label_visibility="collapsed"
             )
         with c3:
@@ -181,7 +181,7 @@ for i in reversed(topics_to_delete):
 
 col_add, col_run = st.columns([1, 3])
 with col_add:
-    if st.button("➕ Ajouter un sujet"):
+    if st.button("➕ Add topic"):
         st.session_state["watch_topics"].append(
             {"topic": "", "markets": ["EU", "France"], "timeframe": "📅 12 derniers mois"}
         )
@@ -192,7 +192,7 @@ ready = anthropic_key and tavily_key and bool(valid_topics)
 
 with col_run:
     launch = st.button(
-        f"📡 Lancer la veille ({len(valid_topics)} sujet{'s' if len(valid_topics)>1 else ''})",
+        f"📡 Run watch ({len(valid_topics)} sujet{'s' if len(valid_topics)>1 else ''})",
         disabled=not ready, type="primary", use_container_width=True
     )
 
@@ -234,7 +234,7 @@ if launch:
                         state="complete"
                     )
             except Exception as e:
-                status.update(label=f"❌ {topic[:40]} — Erreur : {e}", state="error")
+                status.update(label=f"❌ {topic[:40]} — Error: {e}", state="error")
 
         if idx < len(valid_topics)-1:
             time.sleep(1)
@@ -283,7 +283,7 @@ if st.session_state["last_results"]:
     st.subheader("📊 Récapitulatif")
     m1,m2,m3,m4,m5 = st.columns(5)
     m1.metric("Sujets traités",   len(valid_topics) or "—")
-    m2.metric("Résultats Tavily", total_stats.get("tavily_results",0))
+    m2.metric("Tavily results", total_stats.get("tavily_results",0))
     m3.metric("Entrées extraites",len(all_entries))
     m4.metric("Tokens totaux",    f"{total_stats.get('input_tokens',0)+total_stats.get('output_tokens',0):,}")
     m5.metric("Coût total",       f"${total_stats.get('cost_usd',0):.4f}")
@@ -326,7 +326,7 @@ if st.session_state["last_results"]:
         "Titre":       e.get("title",""),
         "Résumé":      e.get("summary_fr",""),
         "Catégories":  ", ".join(f"{c} ({CAT_LABELS.get(c,c)})" for c in e.get("categories_concerned",[])),
-        "Marchés":     ", ".join(e.get("markets",[])),
+        "Markets":     ", ".join(e.get("markets",[])),
         "Urgence":     e.get("urgency",""),
         "Action":      e.get("action_required",""),
         "URL Source":  e.get("url",""),
@@ -335,13 +335,13 @@ if st.session_state["last_results"]:
     } for e in all_entries])
     st.dataframe(df[["Date","Titre","Catégories","Urgence","Action","URL Source"]], use_container_width=True)
     csv = df.to_csv(index=False).encode("utf-8")
-    st.download_button("⬇️ Exporter CSV", csv,
+    st.download_button("⬇️ Export CSV", csv,
         f"regwatch_veille_{datetime.now().strftime('%Y%m%d_%H%M')}.csv","text/csv")
     st.info(f"💾 {len(st.session_state.get('veille_results',[]))} entrée(s) disponibles pour l'Agent 4.")
 
-# ── Historique ────────────────────────────────────────────────────────────────
+# ── History ────────────────────────────────────────────────────────────────
 st.divider()
-with st.expander("🗃️ Historique des veilles précédentes", expanded=False):
+with st.expander("🗃️ History des veilles précédentes", expanded=False):
     history = load_history()
     if not history:
         st.caption("Aucun historique enregistré.")

@@ -6,15 +6,14 @@ st.set_page_config(
     layout="wide"
 )
 
-st.title("🔍 RegWatch — Veille Réglementaire Decathlon")
-st.caption("PoC Phase 1 — Agent 3 : Classificateur Réglementaire")
+st.title("🔍 RegWatch — Regulatory Intelligence Platform")
+st.caption("Decathlon Electronics · AI-powered regulatory watch & compliance")
 
-st.info("👈 Utilisez le menu à gauche pour naviguer entre les modules.")
+st.info("👈 Use the left menu to navigate between modules.")
 
-col1, col2, col3 = st.columns(3)
-with col1:
-    st.metric("Agent 3", "✅ Actif", "Classificateur")
-with col2:
-    st.metric("Agent 1", "🔜 Phase 2", "Veille réglementaire")
-with col3:
-    st.metric("Agent 4", "🔜 Phase 3", "Impact analyzer")
+col1, col2, col3, col4, col5 = st.columns(5)
+col1.metric("Agent 1", "✅ Active", "Regulatory Watch")
+col2.metric("Agent 2", "✅ Active", "Product Profiler")
+col3.metric("Agent 3", "✅ Active", "Classifier")
+col4.metric("Agent 4", "✅ Active", "Impact Analyzer")
+col5.metric("Agent 5A/5B", "✅ Active", "Legal Sheet / Risk Map")

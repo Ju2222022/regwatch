@@ -27,7 +27,7 @@ anthropic_key = st.secrets.get("ANTHROPIC_API_KEY", "")
 
 # ── Sidebar ───────────────────────────────────────────────────────────────────
 with st.sidebar:
-    st.header("⚙️ Statut")
+    st.header("⚙️ Status")
     st.success("Anthropic ✓") if anthropic_key else st.error("ANTHROPIC_API_KEY manquante")
 
     st.divider()
@@ -67,8 +67,8 @@ st.subheader("🎯 Mode d'analyse")
 mode = st.radio(
     "Que voulez-vous analyser ?",
     [
-        "📦 Mode Produit — Quels produits sont impactés ?",
-        "📋 Mode Catégorie — Quelles fiches légales mettre à jour ?",
+        "📦 Product Mode — Quels produits sont impactés ?",
+        "📋 Category Mode — Quelles fiches légales mettre à jour ?",
     ],
     horizontal=False,
 )
@@ -78,13 +78,13 @@ st.divider()
 # ══════════════════════════════════════════════════════════════════════════════
 # MODE PRODUIT
 # ══════════════════════════════════════════════════════════════════════════════
-if "Mode Produit" in mode:
-    st.subheader("📦 Mode Produit")
+if "Product Mode" in mode:
+    st.subheader("📦 Product Mode")
     st.caption("Identifiez quels produits de votre catalogue sont impactés par les alertes réglementaires.")
 
     # Saisie du catalogue
     st.markdown("**Catalogue produits**")
-    st.caption("Entrez vos produits avec leurs catégories réglementaires (issues de l'Agent 3).")
+    st.caption("Enter your products with their regulatory categories (from Agent 3).")
 
     # Catalogue par défaut — 11 produits PoC
     default_catalog = [
@@ -101,7 +101,7 @@ if "Mode Produit" in mode:
         {"code": "8916423", "name": "HR Monitor","categories": ["CAT3","CAT9"]},
     ]
 
-    use_default = st.toggle("Utiliser le catalogue PoC (11 produits)", value=True)
+    use_default = st.toggle("Use PoC catalog (11 products)", value=True)
 
     if use_default:
         catalog = default_catalog
@@ -122,17 +122,17 @@ if "Mode Produit" in mode:
             catalog = []
 
     # Filtrer les alertes
-    st.markdown("**Alertes à analyser**")
+    st.markdown("**Alerts to analyze**")
     urgency_filter = st.multiselect(
         "Filtrer par urgence", ["HIGH","MEDIUM","LOW"],
         default=["HIGH","MEDIUM"],
         help="Sélectionnez les niveaux d'urgence à inclure dans l'analyse"
     )
     filtered_alerts = [e for e in veille if e.get("urgency") in urgency_filter]
-    st.caption(f"{len(filtered_alerts)} alerte(s) sélectionnée(s) sur {len(veille)}")
+    st.caption(f"{len(filtered_alerts)} alert(s) selected out of {len(veille)}")
 
     launch_product = st.button(
-        "⚡ Analyser l'impact produit",
+        "⚡ Analyze product impact",
         disabled=not (anthropic_key and catalog and filtered_alerts),
         type="primary"
     )
@@ -153,10 +153,10 @@ if "Mode Produit" in mode:
                     state="complete"
                 )
             except Exception as e:
-                status.update(label=f"❌ Erreur : {e}", state="error")
+                status.update(label=f"❌ Error: {e}", state="error")
                 st.stop()
 
-    # Affichage résultats Mode Produit
+    # Affichage résultats Product Mode
     if "impact_product_result" in st.session_state:
         result = st.session_state["impact_product_result"]
         impacted = result.get("impacted_products", [])
@@ -164,9 +164,9 @@ if "Mode Produit" in mode:
 
         st.divider()
         c1, c2, c3 = st.columns(3)
-        c1.metric("Produits impactés",     len(impacted))
-        c2.metric("Produits non impactés", len(non_impacted))
-        c3.metric("Alertes analysées",     len(filtered_alerts))
+        c1.metric("Impacted products",     len(impacted))
+        c2.metric("Non-impacted products", len(non_impacted))
+        c3.metric("Analyzed alerts",     len(filtered_alerts))
 
         if result.get("summary"):
             st.info(result["summary"])
@@ -193,7 +193,7 @@ if "Mode Produit" in mode:
                             st.info(f"⚙️ Action : {alert['action']}")
 
         if non_impacted:
-            st.markdown(f"#### ⚪ Non impactés — {len(non_impacted)} produit(s)")
+            st.markdown(f"#### ⚪ Non-impacted — {len(non_impacted)} produit(s)")
             st.caption(", ".join(non_impacted))
 
         # Export CSV
@@ -213,18 +213,18 @@ if "Mode Produit" in mode:
         if rows:
             df_export = pd.DataFrame(rows)
             st.download_button(
-                "⬇️ Exporter Risk Map CSV",
+                "⬇️ Export Risk Map CSV",
                 df_export.to_csv(index=False).encode("utf-8"),
                 f"regwatch_risk_{datetime.now().strftime('%Y%m%d_%H%M')}.csv",
                 "text/csv"
             )
-        st.info("💾 Résultats disponibles pour l'Agent 5B (Risk Mapper).")
+        st.info("💾 Results available for Agent 5B (Risk Mapper).")
 
 # ══════════════════════════════════════════════════════════════════════════════
 # MODE CATÉGORIE
 # ══════════════════════════════════════════════════════════════════════════════
 else:
-    st.subheader("📋 Mode Catégorie")
+    st.subheader("📋 Category Mode")
     st.caption("Identifiez quelles fiches légales doivent être mises à jour suite aux nouvelles alertes.")
 
     # Sélection des catégories actives
@@ -240,7 +240,7 @@ else:
     )
 
     # Filtrer les alertes
-    st.markdown("**Alertes à analyser**")
+    st.markdown("**Alerts to analyze**")
     urgency_filter_cat = st.multiselect(
         "Filtrer par urgence", ["HIGH","MEDIUM","LOW"],
         default=["HIGH","MEDIUM"],
@@ -250,7 +250,7 @@ else:
     st.caption(f"{len(filtered_alerts_cat)} alerte(s) sélectionnée(s)")
 
     launch_cat = st.button(
-        "⚡ Analyser l'impact catégories",
+        "⚡ Analyze category impacts",
         disabled=not (anthropic_key and active_cats and filtered_alerts_cat),
         type="primary"
     )
@@ -270,10 +270,10 @@ else:
                     state="complete"
                 )
             except Exception as e:
-                status.update(label=f"❌ Erreur : {e}", state="error")
+                status.update(label=f"❌ Error: {e}", state="error")
                 st.stop()
 
-    # Affichage résultats Mode Catégorie
+    # Affichage résultats Category Mode
     if "impact_category_result" in st.session_state:
         result_cat = st.session_state["impact_category_result"]
         cat_impacts = result_cat.get("category_impacts", [])
@@ -334,4 +334,4 @@ else:
                 f"regwatch_cat_impact_{datetime.now().strftime('%Y%m%d_%H%M')}.csv",
                 "text/csv"
             )
-        st.info("💾 Résultats disponibles pour l'Agent 5A (Legal Sheet Updater).")
+        st.info("💾 Results available for Agent 5A (Legal Sheet Updater).")

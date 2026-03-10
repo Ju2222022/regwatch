@@ -17,22 +17,22 @@ from agent5a.updater import (
 )
 from agent4.impact import CAT_DEFINITIONS
 
-st.set_page_config(page_title="Agent 5A — Fiche légale", page_icon="📋", layout="wide")
+st.set_page_config(page_title="Agent 5A — Legal sheet", page_icon="📋", layout="wide")
 
 CAT_LABELS = {k: v["label"] for k, v in CAT_DEFINITIONS.items()}
 anthropic_key = st.secrets.get("ANTHROPIC_API_KEY", "")
 
 # ── Sidebar ───────────────────────────────────────────────────────────────────
 with st.sidebar:
-    st.header("⚙️ Statut")
+    st.header("⚙️ Status")
     st.success("Anthropic ✓") if anthropic_key else st.error("ANTHROPIC_API_KEY manquante")
     st.divider()
     veille = st.session_state.get("veille_results", [])
     st.header("📡 Alertes disponibles")
     if veille:
-        st.success(f"{len(veille)} alerte(s) en mémoire")
+        st.success(f"{len(veille)} alert(s) in memory")
     else:
-        st.warning("Aucune alerte.\nLancez l'Agent 1 d'abord.")
+        st.warning("No alerts.\nLancez l'Agent 1 d'abord.")
     st.divider()
     st.caption("Workflow : upload fiche → analyse → approuver / éditer / rejeter → exporter")
 
@@ -40,8 +40,8 @@ with st.sidebar:
 st.title("📋 Agent 5A — Legal Sheet Updater")
 st.caption("Analyse et mise à jour des fiches légales · My Conformity Box")
 
-# ── Étape 1 — Paramètres ─────────────────────────────────────────────────────
-st.subheader("① Paramètres")
+# ── Étape 1 — Parameters ─────────────────────────────────────────────────────
+st.subheader("① Parameters")
 
 col1, col2, col3 = st.columns(3)
 with col1:
@@ -72,16 +72,16 @@ filtered_alerts = [
     if e.get("urgency") in urgency_filter
     and (category in e.get("categories_concerned", []) or not e.get("categories_concerned"))
 ]
-st.caption(f"→ **{len(filtered_alerts)} alerte(s)** applicables pour {category} / {market}")
+st.caption(f"→ **{len(filtered_alerts)} alert(s)** applicables pour {category} / {market}")
 
 st.divider()
 
 # ── Étape 2 — Upload ou saisie de la fiche ───────────────────────────────────
-st.subheader("② Fiche légale actuelle")
+st.subheader("② Legal sheet actuelle")
 
 input_mode = st.radio(
     "Source de la fiche",
-    ["📄 Upload PDF", "📝 Coller le texte"],
+    ["📄 Upload PDF", "📝 Paste text"],
     horizontal=True,
     key="5a_input_mode"
 )
@@ -105,16 +105,16 @@ if input_mode == "📄 Upload PDF":
                 page.extract_text() or "" for page in reader.pages
             )
             fiche_title = uploaded_pdf.name.replace(".pdf", "").replace("_", " ")
-            st.success(f"✓ PDF lu — {len(reader.pages)} page(s) · {len(fiche_text):,} caractères")
-            with st.expander("Aperçu du texte extrait"):
+            st.success(f"✓ PDF read — {len(reader.pages)} page(s) · {len(fiche_text):,} characters")
+            with st.expander("Preview of extracted text"):
                 st.text(fiche_text[:2000] + ("..." if len(fiche_text) > 2000 else ""))
         except Exception as e:
-            st.error(f"Erreur lecture PDF : {e}")
-            st.info("Essayez le mode 'Coller le texte' comme alternative.")
+            st.error(f"Error lecture PDF : {e}")
+            st.info("Essayez le mode 'Paste text' comme alternative.")
 
 else:
     fiche_title = st.text_input(
-        "Titre de la fiche",
+        "Sheet title",
         placeholder="ex: Electronic equipment using bluetooth — EUROPE",
         key="5a_title"
     )
@@ -125,16 +125,16 @@ else:
         key="5a_text"
     )
     if fiche_text:
-        st.caption(f"{len(fiche_text):,} caractères")
+        st.caption(f"{len(fiche_text):,} characters")
 
 st.divider()
 
-# ── Étape 3 — Profil d'analyse ────────────────────────────────────────────────
-st.subheader("③ Profil d'analyse")
+# ── Étape 3 — Analysis profile ────────────────────────────────────────────────
+st.subheader("③ Analysis profile")
 
 profile_names = list(SECTION_PROFILES.keys())
 profile = st.radio(
-    "Périmètre d'analyse",
+    "Analysis scope",
     profile_names,
     horizontal=True,
     key="5a_profile"
@@ -148,7 +148,7 @@ custom_ids = None
 if profile == "✏️ Personnalisé":
     all_opts = {s["id"]: f"{s['label']} ({s['relevance']})" for s in ALL_SECTIONS}
     custom_ids = st.multiselect(
-        "Sections à analyser",
+        "Sections to analyze",
         options=list(all_opts.keys()),
         default=[s["id"] for s in ALL_SECTIONS if s["relevance"] == "high"],
         format_func=lambda x: all_opts[x],
@@ -163,7 +163,7 @@ cost_est = n_passes * 0.025  # ~$0.025 par passe Sonnet
 st.info(
     f"**{len(sections_preview)} section(s)** · "
     f"**{n_passes} appel(s)** Claude · "
-    f"Coût estimé : **~${cost_est:.2f}**"
+    f"Estimated cost : **~${cost_est:.2f}**"
 )
 
 st.divider()
@@ -177,26 +177,26 @@ if not fiche_text.strip():
 col_launch, col_info = st.columns([2, 3])
 with col_info:
     if not filtered_alerts:
-        st.warning(f"Aucune alerte {category} en mémoire — audit qualité uniquement.")
+        st.warning(f"No alerts {category} in memory — audit qualité uniquement.")
     else:
-        st.info(f"{len(filtered_alerts)} alerte(s) croisées avec la fiche.")
+        st.info(f"{len(filtered_alerts)} alert(s) crossed with the sheet.")
 
 with col_launch:
     launch = st.button(
-        "🔍 Analyser la fiche",
+        "🔍 Analyze sheet",
         disabled=not (anthropic_key and fiche_text.strip()),
         type="primary",
         use_container_width=True
     )
 
 if launch:
-    with st.status("🔍 Analyse en cours...", expanded=True) as status:
+    with st.status("🔍 Analysis in progress...", expanded=True) as status:
         try:
             chars = len(fiche_text)
-            st.write(f"📄 Texte extrait : {chars:,} caractères")
+            st.write(f"📄 Extracted text : {chars:,} characters")
             if chars > 12000:
-                st.write(f"⚠️ Texte tronqué à 12 000 caractères pour l'analyse (taille optimale)")
-            st.write(f"🔀 Croisement avec {len(filtered_alerts)} alerte(s) · {category} / {market}...")
+                st.write(f"⚠️ Truncated text à 12 000 characters for analysis (optimal size)")
+            st.write(f"🔀 Crossed with {len(filtered_alerts)} alert(s) · {category} / {market}...")
 
             result, token_usage = analyze_legal_sheet(
                 anthropic_key=anthropic_key,
@@ -224,13 +224,13 @@ if launch:
                 state="complete"
             )
         except ValueError as e:
-            # Erreur JSON ou réponse vide — afficher le détail
-            status.update(label=f"❌ Erreur d'analyse : {e}", state="error")
+            # Error JSON ou réponse vide — afficher le détail
+            status.update(label=f"❌ Error d'analyse : {e}", state="error")
             st.error(str(e))
-            st.info("💡 Conseil : essayez avec un texte plus court (mode 'Coller le texte' avec les sections les plus importantes) ou relancez l'analyse.")
+            st.info("💡 Conseil : essayez avec un texte plus court (mode 'Paste text' avec les sections les plus importantes) ou relancez l'analyse.")
             st.stop()
         except Exception as e:
-            status.update(label=f"❌ Erreur : {e}", state="error")
+            status.update(label=f"❌ Error: {e}", state="error")
             st.error(str(e))
             st.stop()
 
@@ -241,7 +241,7 @@ if "5a_result" in st.session_state:
     decisions = st.session_state.setdefault("5a_decisions", {})
 
     st.divider()
-    st.subheader("⑤ Révision et validation")
+    st.subheader("⑤ Review and validation")
 
     # Récapitulatif
     overall = result.get("overall_status", "")
@@ -294,7 +294,7 @@ if "5a_result" in st.session_state:
     col_f1, col_f2 = st.columns([2, 2])
     with col_f1:
         show_status = st.multiselect(
-            "Sections à afficher",
+            "Sections to display",
             ["MISSING", "ENRICH", "OBSOLETE", "OK", "NA_OK"],
             default=["MISSING", "ENRICH", "OBSOLETE"],
             format_func=lambda x: {
@@ -308,7 +308,7 @@ if "5a_result" in st.session_state:
         )
     with col_f2:
         show_priority = st.multiselect(
-            "Priorité",
+            "Priority",
             ["HIGH", "MEDIUM", "LOW", "NONE"],
             default=["HIGH", "MEDIUM", "LOW"],
             format_func=lambda x: {
@@ -366,27 +366,27 @@ if "5a_result" in st.session_state:
             "approved": "✅ Approuvée",
             "edited":   "✏️ Éditée",
             "rejected": "❌ Rejetée",
-            "pending":  "⏳ En attente"
+            "pending":  "⏳ Pending"
         }.get(action, "")
 
         with st.expander(
             f"{s_icon} {sec.get('section_label','?')}  {p_icon}  —  {action_badge}",
             expanded=(action == "pending" and status_code in ["MISSING","OBSOLETE","ENRICH"])
         ):
-            # Contenu actuel
+            # Current content
             if sec.get("current_content_summary"):
-                st.markdown("**Contenu actuel**")
+                st.markdown("**Current content**")
                 st.caption(sec["current_content_summary"])
 
             # Raison de la mise à jour
             if sec.get("update_reason"):
-                st.markdown(f"**Pourquoi mettre à jour** : {sec['update_reason']}")
+                st.markdown(f"**Why update** : {sec['update_reason']}")
                 if sec.get("alert_reference"):
                     st.caption(f"Alerte source : *{sec['alert_reference']}*")
 
-            # Proposition IA — éditable
+            # AI proposal — éditable
             if sec.get("proposed_update"):
-                st.markdown("**Proposition IA** *(éditable)*")
+                st.markdown("**AI proposal** *(éditable)*")
                 edited_text = st.text_area(
                     "Texte proposé",
                     value=decision.get("final_text", sec["proposed_update"]),
@@ -396,21 +396,21 @@ if "5a_result" in st.session_state:
                 )
 
                 col_a, col_e, col_r = st.columns(3)
-                if col_a.button("✅ Approuver", key=f"approve_{sid}"):
+                if col_a.button("✅ Approve", key=f"approve_{sid}"):
                     decisions[sid] = {
                         "action": "approved",
                         "final_text": sec.get("proposed_update", ""),
                         "section_label": sec.get("section_label","")
                     }
                     st.rerun()
-                if col_e.button("✏️ Éditer", key=f"edit_approve_{sid}"):
+                if col_e.button("✏️ Edit", key=f"edit_approve_{sid}"):
                     decisions[sid] = {
                         "action": "edited",
                         "final_text": edited_text,
                         "section_label": sec.get("section_label","")
                     }
                     st.rerun()
-                if col_r.button("❌ Rejeter", key=f"reject_{sid}"):
+                if col_r.button("❌ Reject", key=f"reject_{sid}"):
                     decisions[sid] = {
                         "action": "rejected",
                         "final_text": "",
@@ -433,10 +433,10 @@ if "5a_result" in st.session_state:
     n_approved_pure = sum(1 for d in approved.values() if d["action"] == "approved")
     n_edited        = sum(1 for d in approved.values() if d["action"] == "edited")
     col_s1, col_s2, col_s3, col_s4 = st.columns(4)
-    col_s1.metric("✅ Approuvées",   n_approved_pure)
-    col_s2.metric("✏️ Éditées",      n_edited)
-    col_s3.metric("❌ Rejetées",     len(rejected))
-    col_s4.metric("⏳ En attente",   len(pending))
+    col_s1.metric("✅ Approved",   n_approved_pure)
+    col_s2.metric("✏️ Edited",      n_edited)
+    col_s3.metric("❌ Rejected",     len(rejected))
+    col_s4.metric("⏳ Pending",   len(pending))
 
     if pending:
         st.warning(f"{len(pending)} section(s) non encore traitée(s).")
@@ -448,7 +448,7 @@ if "5a_result" in st.session_state:
             f"**Marché** : {market}  |  **Catégorie** : {category}",
             f"**Date** : {datetime.now().strftime('%d/%m/%Y %H:%M')}",
             f"**Sections approuvées** : {len(approved)}  |  "
-            f"**Rejetées** : {len(rejected)}  |  **En attente** : {len(pending)}",
+            f"**Rejected** : {len(rejected)}  |  **Pending** : {len(pending)}",
             "",
             "---",
             ""
@@ -476,19 +476,31 @@ if "5a_result" in st.session_state:
         )
 
         # Export JSON complet
+        # Enrichir avec les métadonnées de traçabilité pour saisie dans My Conformity Box
+        sections_lookup = {s.get("section_id"): s for s in sections}
         export_json = {
             "category": category,
             "market": market,
             "fiche_title": fiche_title,
-            "analysis_date": result.get("analysis_date",""),
+            "analysis_date": result.get("analysis_date", ""),
             "export_date": datetime.now().isoformat(),
+            "profile": result.get("profile", ""),
             "approved_updates": [
-                {"section_id": sid, "section_label": dec["section_label"],
-                 "action": dec["action"], "final_text": dec["final_text"]}
+                {
+                    "section_id": sid,
+                    "section_label": dec["section_label"],
+                    "action": dec["action"],
+                    "final_text": dec["final_text"],
+                    "source_alert": sections_lookup.get(sid, {}).get("alert_reference"),
+                    "update_reason": sections_lookup.get(sid, {}).get("update_reason"),
+                    "priority": sections_lookup.get(sid, {}).get("priority"),
+                    "approved_date": datetime.now().strftime("%Y-%m-%d"),
+                }
                 for sid, dec in approved.items()
             ],
             "rejected": list(rejected.keys()),
-            "pending": [s["section_id"] for s in pending]
+            "pending": [s["section_id"] for s in pending],
+            "summary": result.get("summary", ""),
         }
         col_dl2.download_button(
             "⬇️ Exporter JSON (intégration)",

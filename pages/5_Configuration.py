@@ -13,7 +13,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from agent1.watcher import load_sources, save_sources
 
 st.set_page_config(page_title="Configuration", page_icon="⚙️", layout="wide")
-st.title("⚙️ Configuration — Sources de veille")
+st.title("⚙️ Settings — Sources de veille")
 st.caption("Gérez les marchés et domaines surveillés par l'Agent 1")
 
 SOURCES_FILE = "data/sources.json"
@@ -24,7 +24,7 @@ except Exception:
     sources = {"EU": ["eur-lex.europa.eu"], "France": ["legifrance.gouv.fr"]}
 
 # ── Vue d'ensemble ────────────────────────────────────────────────────────────
-st.subheader("📋 Marchés actifs")
+st.subheader("📋 Active markets")
 
 cols = st.columns(len(sources) if sources else 1)
 for col, (market, domains) in zip(cols, sources.items()):
@@ -50,26 +50,26 @@ for tab, market in zip(tabs[:-1], sources.keys()):
                 height=200,
                 key=f"edit_{market}"
             )
-            if st.button(f"💾 Sauvegarder {market}", key=f"save_{market}", type="primary"):
+            if st.button(f"💾 Save {market}", key=f"save_{market}", type="primary"):
                 sources[market] = [d.strip() for d in edited_domains.split("\n") if d.strip()]
                 save_sources(sources, SOURCES_FILE)
                 st.success(f"✓ {len(sources[market])} domaine(s) sauvegardé(s) pour **{market}**")
                 st.rerun()
 
         with col_delete:
-            st.markdown("**Supprimer ce marché**")
+            st.markdown("**Delete this market**")
             st.warning(f"Cette action supprimera **{market}** et ses {len(sources[market])} domaine(s).")
             confirm = st.checkbox(f"Confirmer la suppression", key=f"confirm_del_{market}")
-            if st.button(f"🗑️ Supprimer {market}", key=f"del_{market}",
+            if st.button(f"🗑️ Delete {market}", key=f"del_{market}",
                          disabled=not confirm, type="secondary"):
                 del sources[market]
                 save_sources(sources, SOURCES_FILE)
                 st.success(f"Marché **{market}** supprimé.")
                 st.rerun()
 
-        # Aperçu domaines actifs
+        # Active domains preview
         st.divider()
-        st.markdown("**Aperçu**")
+        st.markdown("**Preview**")
         for d in sources.get(market, []):
             st.markdown(f"- `{d}`")
 
@@ -78,7 +78,7 @@ with tabs[-1]:
     st.markdown("**Créer un nouveau marché**")
     col_a, col_b = st.columns(2)
     with col_a:
-        new_name = st.text_input("Nom du marché *", placeholder="ex: Germany, Nordic, APAC")
+        new_name = st.text_input("Market name *", placeholder="ex: Germany, Nordic, APAC")
     with col_b:
         st.markdown("")  # spacer
 
@@ -117,7 +117,7 @@ st.subheader("📤 Export / Import de la configuration")
 
 col_exp, col_imp = st.columns(2)
 with col_exp:
-    st.markdown("**Exporter la configuration**")
+    st.markdown("**Export la configuration**")
     st.caption("Téléchargez votre configuration sources pour la sauvegarder ou la partager.")
     st.download_button(
         "⬇️ Télécharger sources.json",
@@ -127,7 +127,7 @@ with col_exp:
     )
 
 with col_imp:
-    st.markdown("**Importer une configuration**")
+    st.markdown("**Import une configuration**")
     st.caption("Remplacez la configuration actuelle par un fichier sources.json.")
     uploaded = st.file_uploader("Choisir un fichier sources.json", type="json")
     if uploaded:
@@ -142,4 +142,4 @@ with col_imp:
             else:
                 st.error("Format invalide — le fichier doit contenir un objet JSON.")
         except Exception as e:
-            st.error(f"Erreur de lecture : {e}")
+            st.error(f"Error de lecture : {e}")
