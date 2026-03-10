@@ -15,52 +15,85 @@ HAIKU_OUTPUT_COST = 4.00
 
 # ── Structure officielle des fiches "My Conformity Box" ──────────────────────
 
-# Sections découpées en 2 passes pour éviter les timeouts
-# Passe A : sections critiques (définition, étiquetage, technique)
-FICHE_SECTIONS_A = [
-    {"id": "definition_category",       "label": "Product's definition — Category"},
-    {"id": "definition_definition",     "label": "Product's definition — Definition"},
-    {"id": "definition_comments",       "label": "Product's definition — Comments"},
-    {"id": "labelling_language",        "label": "Labelling — Language"},
-    {"id": "labelling_product",         "label": "Labelling — Mandatory on product"},
-    {"id": "labelling_packaging",       "label": "Labelling — Mandatory on packaging"},
-    {"id": "labelling_manual",          "label": "Labelling — Mandatory on instructions manual"},
-    {"id": "labelling_warnings_gen",    "label": "Labelling — Warnings (general)"},
-    {"id": "labelling_warnings_spec",   "label": "Labelling — Warnings (specific)"},
-    {"id": "labelling_sanctions",       "label": "Labelling — Sanctions / Fines"},
-    {"id": "env_recycling",             "label": "Environment — Recycling & Eco taxes"},
-    {"id": "env_labelling",             "label": "Environment — Labelling"},
-    {"id": "tech_safety",               "label": "Technical — General safety requirements"},
-    {"id": "tech_standards",            "label": "Technical — Mandatory / voluntary standards"},
-    {"id": "tech_radiofrequency",       "label": "Technical — Radiofrequency"},
-    {"id": "tech_chemicals",            "label": "Technical — Chemical substances"},
-    {"id": "tech_laboratory",           "label": "Technical — Laboratory"},
-    {"id": "tech_sanctions",            "label": "Technical — Sanctions / Fines"},
+# ── Catalogue complet des sections ───────────────────────────────────────────
+# Chaque section a un niveau de pertinence :
+#   "high"   : change souvent, fort enjeu réglementaire → à analyser par défaut
+#   "medium" : change parfois, pertinent selon contexte
+#   "low"    : stable ou procédural, rarement modifié
+
+ALL_SECTIONS = [
+    {"id": "definition_category",     "label": "Product's definition — Category",              "relevance": "high"},
+    {"id": "definition_definition",   "label": "Product's definition — Definition",            "relevance": "medium"},
+    {"id": "labelling_product",       "label": "Labelling — Mandatory on product",             "relevance": "high"},
+    {"id": "labelling_packaging",     "label": "Labelling — Mandatory on packaging",           "relevance": "high"},
+    {"id": "labelling_manual",        "label": "Labelling — Mandatory on instructions manual", "relevance": "high"},
+    {"id": "labelling_warnings_gen",  "label": "Labelling — Warnings (general)",               "relevance": "medium"},
+    {"id": "labelling_warnings_spec", "label": "Labelling — Warnings (specific)",              "relevance": "medium"},
+    {"id": "env_recycling",           "label": "Environment — Recycling & Eco taxes",          "relevance": "high"},
+    {"id": "env_labelling",           "label": "Environment — Environmental labelling",        "relevance": "high"},
+    {"id": "tech_safety",             "label": "Technical — General safety requirements",      "relevance": "high"},
+    {"id": "tech_standards",          "label": "Technical — Mandatory / voluntary standards",  "relevance": "high"},
+    {"id": "tech_radiofrequency",     "label": "Technical — Radiofrequency",                   "relevance": "high"},
+    {"id": "tech_chemicals",          "label": "Technical — Chemical substances",              "relevance": "high"},
+    {"id": "tech_laboratory",         "label": "Technical — Laboratory",                       "relevance": "medium"},
+    {"id": "commercial_internet",     "label": "Commercialization — Display on internet",      "relevance": "high"},
+    {"id": "commercial_consumers",    "label": "Commercialization — Information to consumers", "relevance": "high"},
+    {"id": "commercial_store",        "label": "Commercialization — Display in store",         "relevance": "medium"},
+    {"id": "conformity_documents",    "label": "Conformity documents — Documents",             "relevance": "medium"},
+    {"id": "tech_physical",           "label": "Technical — Physical & mechanical properties", "relevance": "low"},
+    {"id": "tech_electrical",         "label": "Technical — Electrical aspects",               "relevance": "low"},
+    {"id": "tech_noise",              "label": "Technical — Products making noise",            "relevance": "low"},
+    {"id": "tech_packaging_req",      "label": "Technical — Packaging requirements",           "relevance": "low"},
+    {"id": "cert_registrations",      "label": "Certifications / Registrations",               "relevance": "low"},
+    {"id": "import_general",          "label": "Importation rules — General rules",            "relevance": "low"},
+    {"id": "commercial_notification", "label": "Commercialization — Notification / Declaration","relevance": "low"},
+    # Sections exclues par défaut (quasi-statiques pour l'électronique)
+    # tech_inflammability, tech_hygiene, tech_radioactivity, labelling_sanctions,
+    # tech_sanctions, conformity_format, import_documents, import_admin,
+    # cert_laboratory, definition_comments, labelling_language, labelling_age
 ]
 
-# Passe B : sections secondaires (conformité, import, commercialisation)
-FICHE_SECTIONS_B = [
-    {"id": "tech_physical",             "label": "Technical — Physical & mechanical properties"},
-    {"id": "tech_electrical",           "label": "Technical — Electrical aspects"},
-    {"id": "tech_inflammability",       "label": "Technical — Inflammability"},
-    {"id": "tech_hygiene",              "label": "Technical — Hygiene"},
-    {"id": "tech_radioactivity",        "label": "Technical — Radioactivity"},
-    {"id": "tech_noise",                "label": "Technical — Products making noise"},
-    {"id": "tech_packaging_req",        "label": "Technical — Packaging requirements"},
-    {"id": "cert_registrations",        "label": "Certifications / Registrations"},
-    {"id": "cert_laboratory",           "label": "Certifications — Laboratory"},
-    {"id": "conformity_documents",      "label": "Conformity documents — Documents"},
-    {"id": "conformity_format",         "label": "Conformity documents — Format"},
-    {"id": "import_general",            "label": "Importation rules — General rules"},
-    {"id": "commercial_notification",   "label": "Commercialization — Notification / Declaration"},
-    {"id": "commercial_store",          "label": "Commercialization — Display in store"},
-    {"id": "commercial_internet",       "label": "Commercialization — Display on internet"},
-    {"id": "commercial_consumers",      "label": "Commercialization — Information to consumers"},
-]
+# ── Profils de sélection ──────────────────────────────────────────────────────
+SECTION_PROFILES = {
+    "⚡ Veille rapide": {
+        "desc": "Sections à fort impact réglementaire uniquement (~8 sections, 1 appel)",
+        "relevance": ["high"],
+        "max_per_pass": 8,
+    },
+    "📋 Standard": {
+        "desc": "Sections high + medium (~16 sections, 2 appels)",
+        "relevance": ["high", "medium"],
+        "max_per_pass": 8,
+    },
+    "🔍 Complet": {
+        "desc": "Toutes les sections actives (~25 sections, 3 appels)",
+        "relevance": ["high", "medium", "low"],
+        "max_per_pass": 8,
+    },
+    "✏️ Personnalisé": {
+        "desc": "Sélection manuelle des sections",
+        "relevance": [],
+        "max_per_pass": 8,
+    },
+}
 
-# Liste complète pour référence
-FICHE_SECTIONS = FICHE_SECTIONS_A + FICHE_SECTIONS_B
-SECTION_IDS = [s["id"] for s in FICHE_SECTIONS]
+def get_sections_for_profile(profile_name: str, custom_ids: list = None) -> list:
+    """Retourne les sections à analyser selon le profil choisi."""
+    profile = SECTION_PROFILES.get(profile_name, SECTION_PROFILES["📋 Standard"])
+    if profile_name == "✏️ Personnalisé" and custom_ids:
+        return [s for s in ALL_SECTIONS if s["id"] in custom_ids]
+    relevance_filter = profile["relevance"]
+    return [s for s in ALL_SECTIONS if s["relevance"] in relevance_filter]
+
+def split_into_passes(sections: list, max_per_pass: int = 8) -> list:
+    """Découpe une liste de sections en passes de taille max_per_pass."""
+    return [sections[i:i+max_per_pass] for i in range(0, len(sections), max_per_pass)]
+
+# Rétrocompat : FICHE_SECTIONS = toutes les sections high+medium
+FICHE_SECTIONS = [s for s in ALL_SECTIONS if s["relevance"] in ["high", "medium"]]
+FICHE_SECTIONS_A = FICHE_SECTIONS[:8]
+FICHE_SECTIONS_B = FICHE_SECTIONS[8:]
+SECTION_IDS = [s["id"] for s in ALL_SECTIONS]
 
 # ── Statuts possibles ─────────────────────────────────────────────────────────
 
@@ -241,23 +274,23 @@ def analyze_legal_sheet(
     category: str,
     fiche_title: str = "",
     market: str = "Europe",
+    profile: str = "📋 Standard",
+    custom_section_ids: list = None,
 ) -> tuple:
-    """
-    Analyse une fiche légale en 2 passes pour éviter les timeouts.
-    Retourne (result_dict, token_usage_total).
-    """
+    """Analyse une fiche légale selon le profil choisi (passes de 8 sections max)."""
     fiche_text_truncated = fiche_text[:6000] + (
-        f"\n[... tronqué — {len(fiche_text)-6000} caractères supplémentaires ...]"
-        if len(fiche_text) > 10000 else ""
+        f"\n[... tronqué — {len(fiche_text)-6000} caractères ...]"
+        if len(fiche_text) > 6000 else ""
     )
+
+    sections_to_analyze = get_sections_for_profile(profile, custom_section_ids)
+    passes = split_into_passes(sections_to_analyze, max_per_pass=8)
 
     total_tokens = {"input_tokens": 0, "output_tokens": 0, "cost_usd": 0.0}
     all_sections = []
 
-    for pass_sections, pass_label in [
-        (FICHE_SECTIONS_A, "Pass A — Definition / Labelling / Technical"),
-        (FICHE_SECTIONS_B, "Pass B — Conformity / Import / Commercialization"),
-    ]:
+    for pass_idx, pass_sections in enumerate(passes):
+        pass_label = f"Pass {pass_idx+1}/{len(passes)}"
         result_pass, tu = _call_analysis(
             anthropic_key, fiche_text_truncated, alerts,
             category, fiche_title, market,
@@ -271,11 +304,13 @@ def analyze_legal_sheet(
     n_update = sum(1 for s in all_sections if s.get("status") in ["MISSING", "ENRICH", "OBSOLETE"])
     n_ok     = sum(1 for s in all_sections if s.get("status") in ["OK", "NA_OK"])
 
-    result = {
+    return {
         "analysis_date": datetime.now().strftime("%Y-%m-%d"),
         "category": category,
         "market": market,
         "fiche_title": fiche_title,
+        "profile": profile,
+        "sections_analyzed": len(sections_to_analyze),
         "overall_status": (
             "MAJOR_UPDATE" if n_update >= 5 else
             "MINOR_UPDATE" if n_update >= 1 else
@@ -286,17 +321,8 @@ def analyze_legal_sheet(
         "sections_to_update": n_update,
         "national_specificities_missing": [],
         "summary": (
-            f"Analyse {fiche_title or category} ({market}) — "
-            f"{n_update} section(s) à mettre à jour, {n_ok} à jour."
+            f"Profil {profile} · {len(sections_to_analyze)} sections analysées — "
+            f"{n_update} à mettre à jour, {n_ok} à jour."
         ),
         "token_usage": total_tokens,
-    }
-    return result, total_tokens
-
-
-def extract_pdf_text_jina(pdf_url: str) -> str:
-    """Extrait le texte d'un PDF via Jina.ai reader."""
-    jina_url = f"https://r.jina.ai/{pdf_url}"
-    req = urllib.request.Request(jina_url, headers={"User-Agent": "RegWatch/1.0"})
-    with urllib.request.urlopen(req, timeout=30) as resp:
-        return resp.read().decode("utf-8", errors="replace")[:15000]
+    }, total_tokens
