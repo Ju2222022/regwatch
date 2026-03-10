@@ -28,8 +28,10 @@ with st.sidebar:
 
     st.header("📥 Données disponibles")
     if impact:
-        products = impact.get("products", impact.get("risk_map", []))
-        st.success(f"Agent 4 ✓ — {len(products)} produit(s)")
+        impacted = impact.get("impacted_products", [])
+        non_impacted = impact.get("non_impacted_products", [])
+        all_products = impacted + non_impacted
+        st.success(f"Agent 4 ✓ — {len(impacted)} impacté(s) · {len(non_impacted)} non impacté(s)")
     else:
         st.warning("Aucun résultat Agent 4.\nLancez Agent 4 Mode Produit.")
 
@@ -52,16 +54,19 @@ col1, col2 = st.columns(2)
 with col1:
     st.markdown("**Agent 4 — Impact produit**")
     if impact:
-        products = impact.get("products", impact.get("risk_map", []))
-        st.success(f"✓ {len(products)} produit(s) analysé(s)")
+        impacted_    = impact.get("impacted_products", [])
+        non_imp_     = impact.get("non_impacted_products", [])
+        all_products = impacted_ + non_imp_
+        st.success(f"✓ {len(impacted_)} produit(s) impacté(s) · {len(non_imp_)} non impacté(s)")
         with st.expander("Aperçu"):
-            for p in products[:3]:
+            for p in impacted_[:3]:
                 name = p.get("product_name", p.get("name", ""))
                 risk = p.get("risk_level", p.get("overall_risk", ""))
-                st.caption(f"• {name} — {risk}")
-            if len(products) > 3:
-                st.caption(f"... et {len(products)-3} autre(s)")
+                st.caption(f"• 🔴 {name} — {risk}")
+            if len(impacted_) > 3:
+                st.caption(f"... et {len(impacted_)-3} autre(s) impacté(s)")
     else:
+        all_products = []
         st.error("Manquant — lancez Agent 4 Mode Produit")
 
 with col2:
@@ -100,9 +105,13 @@ col_l, col_i = st.columns([2, 3])
 with col_i:
     if not impact:
         st.warning("Lancez d'abord Agent 4 en Mode Produit.")
-    else:
+        imp_ = impact.get("impacted_products", [])
         before_after = "activée" if agent5a else "désactivée (pas de données 5A)"
-        st.info(f"Comparaison avant/après : **{before_after}**  \nCoût estimé : ~$0.05")
+        st.info(
+            f"{len(imp_)} produit(s) impacté(s) à analyser  \n"
+            f"Comparaison avant/après : **{before_after}**  \n"
+            f"Coût estimé : ~$0.05"
+        )
 
 with col_l:
     launch = st.button(
@@ -115,7 +124,8 @@ with col_l:
 if launch:
     with st.status("🗺️ Génération en cours...", expanded=True) as status:
         try:
-            st.write(f"Analyse de {len(products)} produit(s)...")
+            imp__ = impact.get("impacted_products", [])
+            st.write(f"Analyse de {len(imp__)} produit(s) impacté(s)...")
             if agent5a:
                 st.write(f"Intégration de {len(agent5a)} mise(s) à jour Agent 5A...")
             result, token_usage = generate_risk_mapping(
