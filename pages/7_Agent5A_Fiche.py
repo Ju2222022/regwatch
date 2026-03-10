@@ -155,8 +155,12 @@ with col_launch:
 if launch:
     with st.status("🔍 Analyse en cours...", expanded=True) as status:
         try:
-            st.write("Lecture de la fiche section par section...")
-            st.write(f"Croisement avec {len(filtered_alerts)} alerte(s)...")
+            chars = len(fiche_text)
+            st.write(f"📄 Texte extrait : {chars:,} caractères")
+            if chars > 12000:
+                st.write(f"⚠️ Texte tronqué à 12 000 caractères pour l'analyse (taille optimale)")
+            st.write(f"🔀 Croisement avec {len(filtered_alerts)} alerte(s) · {category} / {market}...")
+
             result, token_usage = analyze_legal_sheet(
                 anthropic_key=anthropic_key,
                 fiche_text=fiche_text,
@@ -167,17 +171,28 @@ if launch:
             )
             st.session_state["5a_result"] = result
             st.session_state["5a_decisions"] = {}  # reset décisions
-            n_update = result.get("sections_to_update", 0)
-            n_ok     = result.get("sections_ok", 0)
+            sections = result.get("sections", [])
+            n_update = sum(1 for s in sections if s.get("status") in ["MISSING","ENRICH","OBSOLETE"])
+            n_ok     = sum(1 for s in sections if s.get("status") in ["OK","NA_OK"])
+            # Mettre à jour les compteurs dans le résultat
+            result["sections_to_update"] = n_update
+            result["sections_ok"] = n_ok
             status.update(
                 label=f"✅ Analyse terminée · {n_update} section(s) à mettre à jour · "
-                      f"{n_ok} OK · "
+                      f"{n_ok} à jour · "
                       f"{token_usage['input_tokens']+token_usage['output_tokens']:,} tokens · "
                       f"${token_usage['cost_usd']:.4f}",
                 state="complete"
             )
+        except ValueError as e:
+            # Erreur JSON ou réponse vide — afficher le détail
+            status.update(label=f"❌ Erreur d'analyse : {e}", state="error")
+            st.error(str(e))
+            st.info("💡 Conseil : essayez avec un texte plus court (mode 'Coller le texte' avec les sections les plus importantes) ou relancez l'analyse.")
+            st.stop()
         except Exception as e:
             status.update(label=f"❌ Erreur : {e}", state="error")
+            st.error(str(e))
             st.stop()
 
 # ── Étape 4 — Workflow validation ────────────────────────────────────────────
