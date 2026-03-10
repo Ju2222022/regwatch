@@ -191,7 +191,7 @@ def _call_analysis(
         f"Today: {datetime.now().strftime('%Y-%m-%d')}\n\n"
         f"SECTIONS TO ANALYZE IN THIS PASS:\n"
         f"{sections_ref}\n\n"
-        "Analyze ONLY the sections listed. Return valid JSON:\n"
+"IMPORTANT: Keep proposed_update text under 300 chars per section. Analyze ONLY the sections listed. Return valid JSON (no markdown):\n"
         "{\"sections\": ["
         "{\"section_id\":\"...\",\"section_label\":\"...\","
         "\"current_content_summary\":\"...\","
@@ -204,8 +204,8 @@ def _call_analysis(
     )
 
     payload = json.dumps({
-        "model": "claude-haiku-4-5-20251001",
-        "max_tokens": 4096,
+        "model": "claude-sonnet-4-20250514",
+        "max_tokens": 6000,
         "system": SYSTEM_5A,
         "messages": [{"role": "user", "content": user_message}]
     }).encode("utf-8")
@@ -246,8 +246,8 @@ def analyze_legal_sheet(
     Analyse une fiche légale en 2 passes pour éviter les timeouts.
     Retourne (result_dict, token_usage_total).
     """
-    fiche_text_truncated = fiche_text[:10000] + (
-        f"\n[... tronqué — {len(fiche_text)-10000} caractères supplémentaires ...]"
+    fiche_text_truncated = fiche_text[:6000] + (
+        f"\n[... tronqué — {len(fiche_text)-6000} caractères supplémentaires ...]"
         if len(fiche_text) > 10000 else ""
     )
 
