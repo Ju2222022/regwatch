@@ -68,17 +68,58 @@ CAT_DEFINITIONS = {
     },
 }
 
-# Requêtes de veille pré-définies par catégorie
+# Requêtes de veille générées dynamiquement depuis les définitions de catégories
+# Chaque catégorie génère plusieurs requêtes couvrant son périmètre complet
 CAT_WATCH_QUERIES = {
-    "CAT1": "lithium battery regulation EU safety accumulators",
-    "CAT2": "LED lighting lamp ecodesign energy labelling regulation EU",
-    "CAT3": "RoHS WEEE electronics hazardous substances directive update",
-    "CAT4": "USB-C common charger ecodesign power supply regulation",
-    "CAT5": "ANT+ radio equipment directive RED frequency regulation",
-    "CAT6": "audio equipment MP3 player regulation directive",
-    "CAT7": "GPS radio frequency SAR telemeter regulation EU",
-    "CAT8": "wifi cybersecurity EN 18031 radio equipment connected devices",
-    "CAT9": "bluetooth connected devices cybersecurity EN 18031 RED regulation",
+    "CAT1": [
+        "lithium battery regulation EU safety accumulators 2024",
+        "battery due diligence traceability regulation EU",
+        "UN 38.3 IEC 62133 battery testing standard update",
+    ],
+    "CAT2": [
+        "LED lighting lamp ecodesign energy labelling regulation EU",
+        "torch headlamp photobiological safety standard update",
+        "ErP ecodesign lighting directive update EU",
+    ],
+    "CAT3": [
+        "RoHS hazardous substances electronics restriction update EU",
+        "WEEE waste electrical equipment directive 2024",
+        "EMC electromagnetic compatibility directive electronics EU",
+        "LVD low voltage directive CE marking electronics update",
+        "ecodesign electronics energy efficiency EU regulation",
+    ],
+    "CAT4": [
+        "USB-C common charger ecodesign power supply regulation EU",
+        "rechargeable battery charger efficiency directive update",
+        "photovoltaic solar charger regulation EU standard",
+    ],
+    "CAT5": [
+        "ANT+ radio equipment directive RED 2.4GHz regulation",
+        "action camera video equipment radio frequency EU",
+        "wireless sensor sport device RED directive update",
+    ],
+    "CAT6": [
+        "audio equipment MP3 player regulation directive EU",
+        "headphones earphones noise exposure standard EN 50332",
+        "portable audio device regulation update EU",
+    ],
+    "CAT7": [
+        "GPS GNSS radio frequency regulation SAR EU",
+        "walkie talkie radio equipment directive RED update",
+        "laser rangefinder telemeter regulation EU safety",
+        "meteorological device radio frequency ITU regulation",
+    ],
+    "CAT8": [
+        "wifi cybersecurity EN 18031 radio equipment connected devices",
+        "GSM 4G 5G radio equipment directive RED update EU",
+        "cybersecurity connected products regulation EU CRA",
+        "NFC contactless device regulation EU standard",
+    ],
+    "CAT9": [
+        "bluetooth BLE connected devices cybersecurity EN 18031",
+        "bluetooth radio equipment directive RED 2.4GHz EU",
+        "connected wearable device regulation cybersecurity EU",
+    ],
 }
 
 HAIKU_INPUT_COST  = 0.80
@@ -275,15 +316,35 @@ Return JSON only."""
 
 def get_watch_queries_for_categories(categories: list) -> list:
     """
-    Retourne les requêtes de veille pré-définies pour un ensemble de catégories.
+    Génère les requêtes de veille depuis les définitions de catégories.
+    Chaque catégorie produit plusieurs requêtes couvrant son périmètre complet.
     Utilisé par l'Agent 1 pour la veille automatique par périmètre.
     """
-    return [
-        {
-            "topic": CAT_WATCH_QUERIES[cat],
-            "categories": [cat],
-            "markets": ["EU", "France"],
-            "timeframe": "📅 12 derniers mois"
-        }
-        for cat in categories if cat in CAT_WATCH_QUERIES
-    ]
+    queries = []
+    for cat in categories:
+        if cat not in CAT_WATCH_QUERIES:
+            continue
+        cat_queries = CAT_WATCH_QUERIES[cat]
+        for topic in cat_queries:
+            queries.append({
+                "topic": topic,
+                "categories": [cat],
+                "markets": ["EU", "France"],
+                "timeframe": "📅 12 derniers mois"
+            })
+    return queries
+
+
+def get_watch_queries_deduplicated(categories: list) -> list:
+    """
+    Même chose mais déduplique les requêtes similaires entre catégories.
+    Retourne aussi un résumé : N catégories → M requêtes.
+    """
+    all_queries = get_watch_queries_for_categories(categories)
+    seen = set()
+    deduped = []
+    for q in all_queries:
+        if q["topic"] not in seen:
+            seen.add(q["topic"])
+            deduped.append(q)
+    return deduped
