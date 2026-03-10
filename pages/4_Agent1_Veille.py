@@ -130,16 +130,19 @@ with col_left:
     st.caption("💡 *EN 18031 cybersecurity radio equipment EU* · *lithium battery directive* · *RoHS WEEE 2024*")
 
 topics_to_delete = []
+topics_to_delete = []
 for i, item in enumerate(st.session_state["watch_topics"]):
     with st.container(border=True):
         c1, c2, c3, c4 = st.columns([3, 1.5, 1.5, 0.3])
         with c1:
-            st.session_state["watch_topics"][i]["topic"] = st.text_input(
-                f"Sujet {i+1}", value=item["topic"],
+            topic_val = item.get("topic", "")
+            new_val = st.text_input(
+                f"Sujet {i+1}", value=topic_val,
                 placeholder="ex: EN 18031 cybersecurity radio equipment EU",
-                key=f"topic_{i}", label_visibility="collapsed"
+                key=f"topic_{i}_{abs(hash(topic_val)) % 99999}",
+                label_visibility="collapsed"
             )
-        with c2:
+            st.session_state["watch_topics"][i]["topic"] = new_val
             avail = list(sources.keys())
             def_m = [m for m in item["markets"] if m in avail] or avail[:2]
             st.session_state["watch_topics"][i]["markets"] = st.multiselect(
