@@ -139,19 +139,23 @@ if st.button("📡 Lancer la veille", disabled=not ready, type="primary"):
             )
         except Exception as e:
             status.update(label=f"❌ Erreur : {e}", state="error")
-            entries, stats = [], {}
+            st.error(f"Détail : {e}")
+            entries = []
+            stats = {"tavily_results": 0, "jina_enriched": 0, "entries_found": 0,
+                     "input_tokens": 0, "output_tokens": 0, "cost_usd": 0.0}
 
     # ── Métriques de la session ───────────────────────────────────────────
-    if stats:
-        m1, m2, m3, m4, m5 = st.columns(5)
-        m1.metric("Résultats Tavily", stats.get("tavily_results", 0))
-        m2.metric("Enrichis Jina", stats.get("jina_enriched", 0))
-        m3.metric("Entrées extraites", stats.get("entries_found", 0))
-        m4.metric("Tokens (in+out)", f"{stats.get('input_tokens',0)+stats.get('output_tokens',0):,}")
-        m5.metric("Coût appel", f"${stats.get('cost_usd', 0):.4f}")
+    m1, m2, m3, m4, m5 = st.columns(5)
+    m1.metric("Résultats Tavily", stats.get("tavily_results", 0))
+    m2.metric("Enrichis Jina", stats.get("jina_enriched", 0))
+    m3.metric("Entrées extraites", stats.get("entries_found", 0))
+    m4.metric("Tokens (in+out)", f"{stats.get('input_tokens',0)+stats.get('output_tokens',0):,}")
+    m5.metric("Coût appel", f"${stats.get('cost_usd', 0):.4f}")
 
     # ── Résultats ─────────────────────────────────────────────────────────
-    if not entries:
+    if stats.get("warning"):
+        st.warning(f"⚠️ {stats['warning']}")
+    elif not entries:
         st.warning("Aucune entrée réglementaire trouvée. Essayez un sujet plus spécifique ou une période plus longue.")
     else:
         st.success(f"**{len(entries)} texte(s) réglementaire(s) identifié(s)**")
