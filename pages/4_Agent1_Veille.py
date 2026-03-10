@@ -1,12 +1,12 @@
 """
 Page 4 — Agent 1 : Regulatory Watcher
-Veille réglementaire multi-sources avec Tavily + Jina.ai
+Veille multi-sujets avec Tavily + Jina.ai
 Domaines configurables, compteur de tokens en temps réel.
 """
 
 import streamlit as st
 import pandas as pd
-import json
+import time
 from datetime import datetime
 import sys, os
 
@@ -53,8 +53,7 @@ with st.sidebar:
         current_domains = "\n".join(sources.get(market_to_edit, []))
         new_domains_text = st.text_area(
             f"Domaines pour {market_to_edit} (un par ligne)",
-            value=current_domains,
-            height=150
+            value=current_domains, height=150
         )
         col1, col2 = st.columns(2)
         if col1.button("💾 Sauvegarder"):
@@ -62,127 +61,207 @@ with st.sidebar:
             save_sources(sources, "data/sources.json")
             st.success("Sauvegardé ✓")
             st.rerun()
-
         new_market = st.text_input("Ajouter un nouveau marché")
         if col2.button("➕ Ajouter") and new_market:
             sources[new_market] = []
             save_sources(sources, "data/sources.json")
             st.rerun()
 
-    # Affichage résumé sources
     for market, domains in sources.items():
         st.caption(f"**{market}** — {len(domains)} domaine(s)")
 
-# ── Formulaire veille ─────────────────────────────────────────────────────────
-st.subheader("🔍 Lancer une session de veille")
+# ── Initialisation liste de sujets ────────────────────────────────────────────
+if "watch_topics" not in st.session_state:
+    st.session_state["watch_topics"] = [
+        {"topic": "", "markets": ["EU", "France"], "timeframe": "📅 12 derniers mois"}
+    ]
 
-col1, col2, col3 = st.columns([2, 1, 1])
-with col1:
-    topic = st.text_input(
-        "Sujet de veille *",
-        placeholder="ex: Bluetooth electronics regulation EU",
-        help="Décrivez le sujet en anglais pour de meilleurs résultats Tavily"
+SUGGESTED_TOPICS = [
+    "EN 18031 cybersecurity radio equipment EU",
+    "lithium battery directive regulation EU",
+    "Bluetooth electronics RoHS WEEE",
+    "GPS radio frequency SAR Europe",
+    "USB-C charger ecodesign regulation",
+    "RoHS WEEE 2024 update",
+]
+
+# ── Formulaire multi-sujets ───────────────────────────────────────────────────
+st.subheader("🔍 Sujets de veille")
+
+col_left, col_right = st.columns([3, 1])
+with col_right:
+    use_jina = st.toggle(
+        "🔬 Jina.ai (PDF + EUR-Lex)",
+        value=True,
+        help="Lecture profonde des 3 premiers résultats prioritaires par sujet"
     )
-with col2:
-    selected_markets = st.multiselect(
-        "Marchés",
-        options=list(sources.keys()),
-        default=["EU", "France"] if "EU" in sources else list(sources.keys())[:1]
-    )
-with col3:
-    timeframe = st.selectbox("Période", options=list(TIMEFRAMES.keys()), index=0)
 
-use_jina = st.toggle(
-    "🔬 Enrichissement Jina.ai (lecture PDF + sites dynamiques EUR-Lex)",
-    value=True,
-    help="Lit en profondeur les 3 premiers résultats prioritaires (EUR-Lex, Legifrance, PDFs)"
-)
+with col_left:
+    st.caption("💡 Suggestions : " + " · ".join(f"*{s}*" for s in SUGGESTED_TOPICS[:4]))
 
-st.caption("💡 Suggestions : *Bluetooth electronics regulation EU* · *lithium battery directive* · *cybersecurity EN 18031 connected devices* · *RoHS WEEE 2024* · *GPS radio frequency SAR Europe*")
+# Afficher chaque sujet
+topics_to_delete = []
+for i, item in enumerate(st.session_state["watch_topics"]):
+    with st.container(border=True):
+        c1, c2, c3, c4 = st.columns([3, 1.5, 1.5, 0.3])
+        with c1:
+            st.session_state["watch_topics"][i]["topic"] = st.text_input(
+                f"Sujet {i+1}",
+                value=item["topic"],
+                placeholder="ex: EN 18031 cybersecurity radio equipment EU",
+                key=f"topic_{i}",
+                label_visibility="collapsed"
+            )
+        with c2:
+            available_markets = list(sources.keys())
+            default_markets = [m for m in item["markets"] if m in available_markets] or available_markets[:2]
+            st.session_state["watch_topics"][i]["markets"] = st.multiselect(
+                "Marchés",
+                options=available_markets,
+                default=default_markets,
+                key=f"markets_{i}",
+                label_visibility="collapsed"
+            )
+        with c3:
+            st.session_state["watch_topics"][i]["timeframe"] = st.selectbox(
+                "Période",
+                options=list(TIMEFRAMES.keys()),
+                index=list(TIMEFRAMES.keys()).index(item["timeframe"]) if item["timeframe"] in TIMEFRAMES else 1,
+                key=f"timeframe_{i}",
+                label_visibility="collapsed"
+            )
+        with c4:
+            if st.button("🗑️", key=f"del_{i}", help="Supprimer ce sujet") and len(st.session_state["watch_topics"]) > 1:
+                topics_to_delete.append(i)
 
-ready = anthropic_key and tavily_key and topic and selected_markets
+for i in reversed(topics_to_delete):
+    st.session_state["watch_topics"].pop(i)
+    st.rerun()
+
+# Bouton ajout sujet
+col_add, col_run = st.columns([1, 3])
+with col_add:
+    if st.button("➕ Ajouter un sujet"):
+        st.session_state["watch_topics"].append(
+            {"topic": "", "markets": ["EU", "France"], "timeframe": "📅 12 derniers mois"}
+        )
+        st.rerun()
+
+# ── Lancement ─────────────────────────────────────────────────────────────────
+valid_topics = [t for t in st.session_state["watch_topics"] if t["topic"].strip() and t["markets"]]
+ready = anthropic_key and tavily_key and len(valid_topics) > 0
+
 if not ready:
-    st.warning("Renseignez un sujet et sélectionnez au moins un marché.")
+    st.warning("Renseignez au moins un sujet avec un marché sélectionné.")
 
-if st.button("📡 Lancer la veille", disabled=not ready, type="primary"):
-    domains_count = len(set(d for m in selected_markets for d in sources.get(m, [])))
+with col_run:
+    launch = st.button(
+        f"📡 Lancer la veille ({len(valid_topics)} sujet{'s' if len(valid_topics) > 1 else ''})",
+        disabled=not ready,
+        type="primary",
+        use_container_width=True
+    )
 
-    with st.status(f"🔍 Veille en cours : {topic}...", expanded=True) as status:
-        try:
-            st.write(f"**Étape 1** — Recherche Tavily sur {domains_count} domaines ({', '.join(selected_markets)})")
-            st.write(f"**Étape 2** — {'Enrichissement Jina.ai activé (EUR-Lex, PDFs)' if use_jina else 'Jina.ai désactivé'}")
-            st.write(f"**Étape 3** — Extraction Claude des entrées réglementaires")
+if launch:
+    all_entries = []
+    total_stats = {"tavily_results": 0, "jina_enriched": 0, "entries_found": 0,
+                   "input_tokens": 0, "output_tokens": 0, "cost_usd": 0.0}
 
-            entries, stats = run_watch(
-                anthropic_key=anthropic_key,
-                tavily_key=tavily_key,
-                topic=topic,
-                markets=selected_markets,
-                timeframe_label=timeframe,
-                sources_override=sources,
-                use_jina=use_jina,
-            )
+    progress = st.progress(0, text="Démarrage...")
 
-            # Mise à jour compteur session
-            st.session_state["session_tokens"]["input"]    += stats.get("input_tokens", 0)
-            st.session_state["session_tokens"]["output"]   += stats.get("output_tokens", 0)
-            st.session_state["session_tokens"]["cost_usd"] += stats.get("cost_usd", 0.0)
-            st.session_state["session_tokens"]["calls"]    += 1
+    for idx, item in enumerate(valid_topics):
+        topic    = item["topic"].strip()
+        markets  = item["markets"]
+        timeframe = item["timeframe"]
+        pct = int((idx / len(valid_topics)) * 100)
+        progress.progress(pct, text=f"Sujet {idx+1}/{len(valid_topics)} : {topic[:50]}...")
 
-            status.update(
-                label=f"✅ {stats['entries_found']} entrée(s) · "
-                      f"{stats['tavily_results']} résultats Tavily · "
-                      f"{stats['jina_enriched']} enrichi(s) Jina · "
-                      f"{stats['input_tokens']+stats['output_tokens']:,} tokens · "
-                      f"${stats['cost_usd']:.4f}",
-                state="complete"
-            )
-        except Exception as e:
-            status.update(label=f"❌ Erreur : {e}", state="error")
-            st.error(f"Détail : {e}")
-            entries = []
-            stats = {"tavily_results": 0, "jina_enriched": 0, "entries_found": 0,
-                     "input_tokens": 0, "output_tokens": 0, "cost_usd": 0.0}
+        with st.status(f"📡 [{idx+1}/{len(valid_topics)}] {topic}", expanded=False) as status:
+            try:
+                entries, stats = run_watch(
+                    anthropic_key=anthropic_key,
+                    tavily_key=tavily_key,
+                    topic=topic,
+                    markets=markets,
+                    timeframe_label=timeframe,
+                    sources_override=sources,
+                    use_jina=use_jina,
+                )
 
-    # ── Métriques de la session ───────────────────────────────────────────
+                # Accumuler stats
+                for key in ["tavily_results", "jina_enriched", "entries_found", "input_tokens", "output_tokens"]:
+                    total_stats[key] += stats.get(key, 0)
+                total_stats["cost_usd"] += stats.get("cost_usd", 0.0)
+
+                # Mise à jour compteur session
+                st.session_state["session_tokens"]["input"]    += stats.get("input_tokens", 0)
+                st.session_state["session_tokens"]["output"]   += stats.get("output_tokens", 0)
+                st.session_state["session_tokens"]["cost_usd"] += stats.get("cost_usd", 0.0)
+                st.session_state["session_tokens"]["calls"]    += 1
+
+                all_entries.extend(entries)
+
+                if stats.get("warning"):
+                    status.update(label=f"⚠️ {topic[:40]} — {stats['warning']}", state="error")
+                else:
+                    status.update(
+                        label=f"✅ {topic[:40]} — {stats['entries_found']} entrée(s) · "
+                              f"{stats['tavily_results']} résultats · "
+                              f"{stats['input_tokens']+stats['output_tokens']:,} tokens · "
+                              f"${stats['cost_usd']:.4f}",
+                        state="complete"
+                    )
+
+            except Exception as e:
+                status.update(label=f"❌ {topic[:40]} — Erreur : {e}", state="error")
+
+        # Pause courte entre sujets pour éviter rate limiting
+        if idx < len(valid_topics) - 1:
+            time.sleep(1)
+
+    progress.progress(100, text="Terminé ✓")
+
+    # ── Récapitulatif ─────────────────────────────────────────────────────
+    st.divider()
+    st.subheader("📊 Récapitulatif de session")
     m1, m2, m3, m4, m5 = st.columns(5)
-    m1.metric("Résultats Tavily", stats.get("tavily_results", 0))
-    m2.metric("Enrichis Jina", stats.get("jina_enriched", 0))
-    m3.metric("Entrées extraites", stats.get("entries_found", 0))
-    m4.metric("Tokens (in+out)", f"{stats.get('input_tokens',0)+stats.get('output_tokens',0):,}")
-    m5.metric("Coût appel", f"${stats.get('cost_usd', 0):.4f}")
+    m1.metric("Sujets traités", len(valid_topics))
+    m2.metric("Résultats Tavily", total_stats["tavily_results"])
+    m3.metric("Entrées extraites", total_stats["entries_found"])
+    m4.metric("Tokens totaux", f"{total_stats['input_tokens']+total_stats['output_tokens']:,}")
+    m5.metric("Coût total", f"${total_stats['cost_usd']:.4f}")
 
-    # ── Résultats ─────────────────────────────────────────────────────────
-    if stats.get("warning"):
-        st.warning(f"⚠️ {stats['warning']}")
-    elif not entries:
-        st.warning("Aucune entrée réglementaire trouvée. Essayez un sujet plus spécifique ou une période plus longue.")
+    # ── Résultats groupés par urgence ─────────────────────────────────────
+    if not all_entries:
+        st.warning("Aucune entrée réglementaire trouvée sur l'ensemble des sujets.")
     else:
-        st.success(f"**{len(entries)} texte(s) réglementaire(s) identifié(s)**")
+        st.success(f"**{len(all_entries)} entrée(s) réglementaire(s) identifiée(s)**")
 
-        for i, entry in enumerate(entries):
-            urgency = entry.get("urgency", "LOW")
-            color   = {"HIGH": "🔴", "MEDIUM": "🟡", "LOW": "🟢"}.get(urgency, "⚪")
-            cats    = ", ".join(entry.get("categories_concerned", []))
+        for urgency_level, icon in [("HIGH", "🔴"), ("MEDIUM", "🟡"), ("LOW", "🟢")]:
+            level_entries = [e for e in all_entries if e.get("urgency") == urgency_level]
+            if not level_entries:
+                continue
+            st.markdown(f"### {icon} Urgence {urgency_level} — {len(level_entries)} entrée(s)")
+            for entry in level_entries:
+                cats = ", ".join(entry.get("categories_concerned", []))
+                with st.expander(f"{entry.get('title','Sans titre')} — {cats}"):
+                    col_a, col_b = st.columns([3, 1])
+                    with col_a:
+                        st.markdown("**Résumé**")
+                        st.write(entry.get("summary_fr", ""))
+                        if entry.get("action_required"):
+                            st.info(f"**Action requise :** {entry['action_required']}")
+                        if entry.get("url"):
+                            st.markdown(f"[🔗 Voir la source]({entry['url']})")
+                        st.caption(f"Sujet veille : *{entry.get('watch_topic','')}*")
+                    with col_b:
+                        st.markdown("**Catégories**")
+                        for cat in entry.get("categories_concerned", []):
+                            st.markdown(f"- `{cat}`")
+                        st.caption(f"📅 {entry.get('date','?')}")
+                        st.caption(f"🌍 {', '.join(entry.get('markets',[]))}")
 
-            with st.expander(f"{color} {entry.get('title','Sans titre')} — {cats}", expanded=(i == 0)):
-                col_a, col_b = st.columns([3, 1])
-                with col_a:
-                    st.markdown("**Résumé**")
-                    st.write(entry.get("summary_fr", ""))
-                    if entry.get("action_required"):
-                        st.info(f"**Action requise :** {entry['action_required']}")
-                    if entry.get("url"):
-                        st.markdown(f"[🔗 Voir la source]({entry['url']})")
-                with col_b:
-                    st.metric("Urgence", f"{color} {urgency}")
-                    st.markdown("**Catégories concernées**")
-                    for cat in entry.get("categories_concerned", []):
-                        st.markdown(f"- `{cat}`")
-                    st.caption(f"📅 {entry.get('date','?')}")
-                    st.caption(f"🌍 {', '.join(entry.get('markets',[]))}")
-
-        # ── Export + stockage session ─────────────────────────────────────
+        # ── Export CSV ────────────────────────────────────────────────────
         st.divider()
         df = pd.DataFrame([{
             "Date": e.get("date", ""),
@@ -195,13 +274,13 @@ if st.button("📡 Lancer la veille", disabled=not ready, type="primary"):
             "Source URL": e.get("url", ""),
             "Sujet veille": e.get("watch_topic", ""),
             "Date veille": e.get("watch_date", ""),
-        } for e in entries])
+        } for e in all_entries])
 
         st.dataframe(df[["Date","Titre","Catégories","Urgence","Action"]], use_container_width=True)
 
         csv = df.to_csv(index=False).encode("utf-8")
         st.download_button(
-            "⬇️ Exporter CSV",
+            "⬇️ Exporter tous les résultats CSV",
             csv,
             f"regwatch_veille_{datetime.now().strftime('%Y%m%d_%H%M')}.csv",
             "text/csv"
@@ -210,5 +289,5 @@ if st.button("📡 Lancer la veille", disabled=not ready, type="primary"):
         # Stockage pour Agent 4
         if "veille_results" not in st.session_state:
             st.session_state["veille_results"] = []
-        st.session_state["veille_results"].extend(entries)
-        st.info(f"💾 {len(st.session_state['veille_results'])} entrée(s) stockée(s) en session · disponibles pour l'Agent 4.")
+        st.session_state["veille_results"].extend(all_entries)
+        st.info(f"💾 {len(st.session_state['veille_results'])} entrée(s) en mémoire · disponibles pour l'Agent 4.")
