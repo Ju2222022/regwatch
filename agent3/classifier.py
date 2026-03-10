@@ -124,7 +124,7 @@ class DecathlonClassifier:
         self.delay = delay_between_requests
         self.max_retries = max_retries
         self.api_url = "https://openrouter.ai/api/v1/chat/completions"
-        self.model = "mistralai/mistral-7b-instruct:free"
+        self.model = "deepseek/deepseek-r1:free"
 
     def _call_api(self, user_message: str) -> dict:
         """Appel API Groq avec retry et backoff exponentiel."""
