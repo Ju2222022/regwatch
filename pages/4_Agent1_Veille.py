@@ -99,6 +99,27 @@ with st.sidebar:
 st.title("📡 Agent 1 — Regulatory Watcher")
 st.caption("Surveillance des sources réglementaires officielles · Tavily + Jina.ai")
 
+# ── Pré-remplissage par catégorie ─────────────────────────────────────────────
+with st.expander("🏷️ Pré-remplir les sujets depuis les catégories Decathlon", expanded=False):
+    st.caption("Sélectionnez les catégories de votre périmètre — les sujets de veille correspondants seront générés automatiquement.")
+    from agent4.impact import CAT_DEFINITIONS, get_watch_queries_for_categories
+    cat_options = {k: f"{k} — {v['label']}" for k, v in CAT_DEFINITIONS.items()}
+    selected_cats = st.multiselect(
+        "Catégories actives",
+        options=list(cat_options.keys()),
+        default=["CAT3","CAT4","CAT9"],
+        format_func=lambda c: cat_options[c],
+        key="cat_prefill_select"
+    )
+    if st.button("🔄 Générer les sujets de veille", key="btn_prefill"):
+        queries = get_watch_queries_for_categories(selected_cats)
+        st.session_state["watch_topics"] = [
+            {"topic": q["topic"], "markets": q["markets"], "timeframe": q["timeframe"]}
+            for q in queries
+        ]
+        st.success(f"{len(queries)} sujet(s) générés pour : {', '.join(selected_cats)}")
+        st.rerun()
+
 # ── Formulaire ────────────────────────────────────────────────────────────────
 st.subheader("🔍 Sujets de veille")
 
