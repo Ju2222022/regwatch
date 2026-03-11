@@ -1,6 +1,6 @@
 # RegWatch — Regulatory Intelligence Platform · Julien DLUBALA
 
-AI-powered regulatory watch and compliance platform for Decathlon Electronics.
+AI-powered regulatory watch and compliance platform.
 Deployed at [regwatch.streamlit.app](https://regwatch.streamlit.app)
 
 ---
