@@ -52,7 +52,7 @@ with st.sidebar:
 
 # ── Page principale ───────────────────────────────────────────────────────────
 st.title("🗺️ Agent 5B — Risk Mapper")
-st.caption("Risk mapping réglementaire par produit · 3 niveaux de lecture")
+st.caption("Regulatory risk mapping by product · 3 reading levels")
 
 # ── Étape 1 — Vérification des données ───────────────────────────────────────
 st.subheader("① Data sources")
@@ -79,7 +79,7 @@ with col1:
 with col2:
     st.markdown("**Agent 5A — Approved updates**")
     if agent5a:
-        st.success(f"✓ {len(agent5a)} section(s) — comparaison avant/après enabled")
+        st.success(f"✓ {len(agent5a)} section(s) — before/after comparison enabled")
         with st.expander("Preview"):
             for upd in agent5a[:3]:
                 st.caption(f"• {upd.get('section_label','?')} ({upd.get('action','')})")
@@ -132,9 +132,10 @@ if launch:
     with st.status("🗺️ Generating...", expanded=True) as status:
         try:
             imp__ = impact.get("impacted_products", [])
-            st.write(f"Analyse de {len(imp__)} product(s) impacted...")
+            n_batches__ = max(1, -(-len(imp__) // 4))
+            st.write(f"Analysing {len(imp__)} impacted product(s) in {n_batches__} batch(es)...")
             if agent5a:
-                st.write(f"Intégration de {len(agent5a)} mise(s) à jour Agent 5A...")
+                st.write(f"Integrating {len(agent5a)} Agent 5A update(s) for before/after comparison...")
             result, token_usage = generate_risk_mapping(
                 anthropic_key=anthropic_key,
                 impact_product_result=impact,
@@ -143,11 +144,12 @@ if launch:
             st.session_state["5b_result"] = result
             n_prod = len(result.get("products", []))
             n_high = result.get("executive_summary", {}).get("total_high", 0)
+            total_tok = token_usage['input_tokens'] + token_usage['output_tokens']
             status.update(
                 label=(
-                    f"✅ Risk mapping terminé · {n_prod} product(s) · "
+                    f"✅ Risk mapping complete · {n_prod} product(s) · "
                     f"{n_high} HIGH risk(s) · "
-                    f"{token_usage['input_tokens']+token_usage['output_tokens']:,} tokens · "
+                    f"{total_tok:,} tokens · "
                     f"${token_usage['cost_usd']:.4f}"
                 ),
                 state="complete"
@@ -191,7 +193,7 @@ if "5b_result" in st.session_state:
         st.markdown("*Summary for management — global risk level per product*")
 
         risk_icon = {"HIGH": "🔴", "MEDIUM": "🟡", "LOW": "🟢"}
-        delta_icon = {"IMPROVED": "⬇️ Amélioré", "UNCHANGED": "➡️ Inchangé", "WORSENED": "⬆️ Dégradé"}
+        delta_icon = {"IMPROVED": "⬇️ Improved", "UNCHANGED": "➡️ Unchanged", "WORSENED": "⬆️ Worsened"}
 
         has_5a = any(p.get("risk_delta") and p.get("risk_delta") != "UNCHANGED" for p in products)
 
@@ -212,7 +214,7 @@ if "5b_result" in st.session_state:
             st.dataframe(pd.DataFrame(rows), use_container_width=True, hide_index=True)
 
         if agent5a:
-            st.caption("⚠️ *Les valeurs 'après 5A' sont une simulation — la conformité réelle dépend de l'implémentation dans My Conformity Box.*")
+            st.caption("⚠️ *After 5A values are simulated — actual compliance depends on implementation in My Conformity Box.*")
 
     # ── Onglet 2 : Product View ───────────────────────────────────────────────
     with tab_prod:
