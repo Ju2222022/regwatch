@@ -34,7 +34,20 @@ with st.sidebar:
     else:
         st.warning("No alerts.\nLancez l'Agent 1 d'abord.")
     st.divider()
-    st.caption("Workflow : upload fiche → analyse → approuver / éditer / rejeter → exporter")
+    st.caption("Workflow: upload sheet → analyse → approve / edit / reject → export")
+    st.divider()
+    st.header("📊 Session tokens")
+    if "session_tokens" not in st.session_state:
+        st.session_state["session_tokens"] = {"input": 0, "output": 0, "cost_usd": 0.0, "calls": 0}
+    t = st.session_state["session_tokens"]
+    ca, cb = st.columns(2)
+    ca.metric("Input",  f"{t['input']:,}")
+    cb.metric("Output", f"{t['output']:,}")
+    st.metric("Estimated cost", f"${t['cost_usd']:.4f}")
+    st.caption(f"{t['calls']} Claude call(s)")
+    if st.button("🔄 Reset", key="reset_tokens_sidebar"):
+        st.session_state["session_tokens"] = {"input": 0, "output": 0, "cost_usd": 0.0, "calls": 0}
+        st.rerun()
 
 # ── Page principale ───────────────────────────────────────────────────────────
 st.title("📋 Agent 5A — Legal Sheet Updater")

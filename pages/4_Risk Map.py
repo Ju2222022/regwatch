@@ -48,7 +48,20 @@ with st.sidebar:
         st.info("Agent 5A : aucune mise à jour\n(comparaison avant/après désenabled)")
 
     st.divider()
-    st.caption("Flux : Agent 1 → Agent 4 (Mode Produit) → Agent 5B")
+    st.caption("Workflow: Agent 1 → Agent 4 (Product Mode) → Agent 5B")
+    st.divider()
+    st.header("📊 Session tokens")
+    if "session_tokens" not in st.session_state:
+        st.session_state["session_tokens"] = {"input": 0, "output": 0, "cost_usd": 0.0, "calls": 0}
+    t = st.session_state["session_tokens"]
+    ca, cb = st.columns(2)
+    ca.metric("Input",  f"{t['input']:,}")
+    cb.metric("Output", f"{t['output']:,}")
+    st.metric("Estimated cost", f"${t['cost_usd']:.4f}")
+    st.caption(f"{t['calls']} Claude call(s)")
+    if st.button("🔄 Reset", key="reset_tokens_sidebar"):
+        st.session_state["session_tokens"] = {"input": 0, "output": 0, "cost_usd": 0.0, "calls": 0}
+        st.rerun()
 
 # ── Page principale ───────────────────────────────────────────────────────────
 st.title("🗺️ Agent 5B — Risk Mapper")
@@ -154,6 +167,12 @@ if launch:
                 ),
                 state="complete"
             )
+            if "session_tokens" not in st.session_state:
+                st.session_state["session_tokens"] = {"input": 0, "output": 0, "cost_usd": 0.0, "calls": 0}
+            st.session_state["session_tokens"]["input"]    += token_usage.get("input_tokens", 0)
+            st.session_state["session_tokens"]["output"]   += token_usage.get("output_tokens", 0)
+            st.session_state["session_tokens"]["cost_usd"] += token_usage.get("cost_usd", 0.0)
+            st.session_state["session_tokens"]["calls"]    += 1
         except Exception as e:
             status.update(label=f"❌ Error: {e}", state="error")
             st.error(str(e))

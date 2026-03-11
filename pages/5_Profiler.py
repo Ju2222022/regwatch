@@ -26,7 +26,20 @@ with st.sidebar:
         st.success("API key loaded ✓")
     else:
         st.warning("ANTHROPIC_API_KEY non trouvée")
-        api_key = st.text_input("Clé API Anthropic (secours)", type="password")
+        api_key = st.text_input("API Key (fallback)", type="password")
+    st.divider()
+    st.header("📊 Session tokens")
+    if "session_tokens" not in st.session_state:
+        st.session_state["session_tokens"] = {"input": 0, "output": 0, "cost_usd": 0.0, "calls": 0}
+    t = st.session_state["session_tokens"]
+    ca, cb = st.columns(2)
+    ca.metric("Input",  f"{t['input']:,}")
+    cb.metric("Output", f"{t['output']:,}")
+    st.metric("Estimated cost", f"${t['cost_usd']:.4f}")
+    st.caption(f"{t['calls']} Claude call(s)")
+    if st.button("🔄 Reset", key="reset_tokens_sidebar"):
+        st.session_state["session_tokens"] = {"input": 0, "output": 0, "cost_usd": 0.0, "calls": 0}
+        st.rerun()
 
 CAT_LABELS = {
     "CAT1": "🔋 Batteries & accumulators",

@@ -27,6 +27,19 @@ with st.sidebar:
         st.warning("ANTHROPIC_API_KEY secret not found in Streamlit Secrets")
         api_key = st.text_input("API Key (fallback)", type="password",
                                  help="Configure ANTHROPIC_API_KEY in Settings > Secrets")
+    st.divider()
+    st.header("📊 Session tokens")
+    if "session_tokens" not in st.session_state:
+        st.session_state["session_tokens"] = {"input": 0, "output": 0, "cost_usd": 0.0, "calls": 0}
+    t = st.session_state["session_tokens"]
+    ca, cb = st.columns(2)
+    ca.metric("Input",  f"{t['input']:,}")
+    cb.metric("Output", f"{t['output']:,}")
+    st.metric("Estimated cost", f"${t['cost_usd']:.4f}")
+    st.caption(f"{t['calls']} Claude call(s)")
+    if st.button("🔄 Reset", key="reset_tokens_sidebar"):
+        st.session_state["session_tokens"] = {"input": 0, "output": 0, "cost_usd": 0.0, "calls": 0}
+        st.rerun()
 
 # ── Mapping catégories ────────────────────────────────────────────────────────
 CAT_LABELS = {
@@ -64,6 +77,12 @@ with tab1:
             with st.spinner("Classifying..."):
                 try:
                     result = classify_product(api_key, model_code, product_name, product_type, extra_info)
+                    if "session_tokens" not in st.session_state:
+                        st.session_state["session_tokens"] = {"input": 0, "output": 0, "cost_usd": 0.0, "calls": 0}
+                    st.session_state["session_tokens"]["input"]    += 1500
+                    st.session_state["session_tokens"]["output"]   += 400
+                    st.session_state["session_tokens"]["cost_usd"] += round(((1500 * 0.80 + 400 * 4.00) / 1_000_000), 5)
+                    st.session_state["session_tokens"]["calls"]    += 1
                     
                     # ── Résultat principal
                     st.success("Classification complete")

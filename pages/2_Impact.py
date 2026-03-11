@@ -45,6 +45,19 @@ with st.sidebar:
             st.caption(f"  • {c} — {CAT_LABELS.get(c,'')}")
     else:
         st.warning("Aucune alerte en mémoire.\nLancez une veille depuis l'Agent 1.")
+    st.divider()
+    st.header("📊 Session tokens")
+    if "session_tokens" not in st.session_state:
+        st.session_state["session_tokens"] = {"input": 0, "output": 0, "cost_usd": 0.0, "calls": 0}
+    t = st.session_state["session_tokens"]
+    ca, cb = st.columns(2)
+    ca.metric("Input",  f"{t['input']:,}")
+    cb.metric("Output", f"{t['output']:,}")
+    st.metric("Estimated cost", f"${t['cost_usd']:.4f}")
+    st.caption(f"{t['calls']} Claude call(s)")
+    if st.button("🔄 Reset", key="reset_tokens_sidebar"):
+        st.session_state["session_tokens"] = {"input": 0, "output": 0, "cost_usd": 0.0, "calls": 0}
+        st.rerun()
 
     st.divider()
     st.caption("Les alertes sont transmises automatiquement depuis l'Agent 1 en session.")
