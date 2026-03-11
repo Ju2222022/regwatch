@@ -1,4 +1,13 @@
 {
+  "_market_languages": {
+    "EU":      "en",
+    "UK":      "en",
+    "USA":     "en",
+    "France":  "fr",
+    "China":   "zh",
+    "Germany": "de",
+    "Spain":   "es"
+  },
   "EU": [
     "eur-lex.europa.eu",
     "europa.eu",
@@ -21,5 +30,21 @@
     "fcc.gov",
     "cpsc.gov",
     "ftc.gov"
+  ],
+  "China": [
+    "samr.gov.cn",
+    "miit.gov.cn",
+    "cnca.org.cn",
+    "gb688.cn"
+  ],
+  "Germany": [
+    "bnetza.de",
+    "bsi.bund.de",
+    "gesetze-im-internet.de"
+  ],
+  "Spain": [
+    "mincotur.gob.es",
+    "boe.es",
+    "cnmc.es"
   ]
 }
