@@ -97,48 +97,30 @@ def _parse_json(raw: str) -> dict:
     raise ValueError(f"Aucun JSON trouvé. Début : {raw[:150]}")
 
 
-def generate_risk_mapping(
+def _call_risk_batch(
     anthropic_key: str,
-    impact_product_result: dict,
-    agent5a_approved: list = None,
-    category: str = "",
+    products_batch: list,
+    alerts_summary: list,
+    updates_5a_summary: list,
+    batch_label: str,
 ) -> tuple:
-    """
-    Génère le risk mapping produit avec comparaison avant/après 5A.
-
-    Args:
-        impact_product_result : sortie Agent 4 Mode Produit
-        agent5a_approved      : sections approuvées par Agent 5A (peut être None)
-        category              : catégorie principale analysée
-
-    Returns:
-        (result_dict, token_usage)
-    """
-    # Résumer les updates 5A pour le prompt
-    updates_5a_summary = []
-    if agent5a_approved:
-        for upd in agent5a_approved:
-            updates_5a_summary.append({
-                "section": upd.get("section_label", ""),
-                "action": upd.get("action", ""),
-                "update_reason": upd.get("update_reason", ""),
-                "priority": upd.get("priority", ""),
-            })
+    """Analyse un batch de produits pour le risk mapping."""
+    products_json = json.dumps(products_batch, indent=2, ensure_ascii=False)
+    alerts_json   = json.dumps(alerts_summary, indent=2, ensure_ascii=False)
+    updates_json  = json.dumps(updates_5a_summary, indent=2, ensure_ascii=False)
+    today = datetime.now().strftime("%Y-%m-%d")
 
     user_message = (
-        f"Generate a risk mapping for the following products based on regulatory alerts.\n\n"
-        f"AGENT 4 RESULTS (product impact analysis):\n"
-        f"{json.dumps(impact_product_result, indent=2, ensure_ascii=False)[:4000]}\n\n"
-        f"AGENT 5A APPROVED UPDATES ({len(updates_5a_summary)} sections updated):\n"
-        f"{json.dumps(updates_5a_summary, indent=2, ensure_ascii=False)}\n\n"
-        f"Today: {datetime.now().strftime('%Y-%m-%d')}\n\n"
-        f"Instructions:\n"
+        f"Generate a risk mapping for this product batch ({batch_label}).\n\n"
+        f"PRODUCTS TO ANALYZE ({len(products_batch)} products):\n{products_json}\n\n"
+        f"REGULATORY ALERTS CONTEXT:\n{alerts_json}\n\n"
+        f"AGENT 5A APPROVED UPDATES ({len(updates_5a_summary)} sections):\n{updates_json}\n\n"
+        f"Today: {today}\n"
         f"- Analyze each product individually\n"
-        f"- For BEFORE state: use Agent 4 alerts as-is\n"
-        f"- For AFTER state: simulate impact of Agent 5A approved updates\n"
-        f"- If no Agent 5A updates provided, BEFORE = AFTER\n"
-        f"- Keep corrective actions concrete and actionable\n"
-        f"- Flag the AFTER state clearly as a simulation\n"
+        f"- BEFORE state: current compliance based on alerts\n"
+        f"- AFTER state: simulate impact of Agent 5A updates (flag as simulation)\n"
+        f"- If no 5A updates, BEFORE = AFTER\n"
+        f"- Keep descriptions concise (max 100 chars each)\n"
         f"- Return valid JSON only, no markdown"
     )
 
@@ -167,7 +149,101 @@ def generate_risk_mapping(
     inp  = usage.get("input_tokens", 0)
     out  = usage.get("output_tokens", 0)
     cost = (inp * SONNET_INPUT_COST + out * SONNET_OUTPUT_COST) / 1_000_000
-    token_usage = {"input_tokens": inp, "output_tokens": out, "cost_usd": round(cost, 5)}
+    return _parse_json(data["content"][0]["text"].strip()),            {"input_tokens": inp, "output_tokens": out, "cost_usd": round(cost, 5)}
 
-    raw = data["content"][0]["text"].strip()
-    return _parse_json(raw), token_usage
+
+def generate_risk_mapping(
+    anthropic_key: str,
+    impact_product_result: dict,
+    agent5a_approved: list = None,
+    category: str = "",
+    batch_size: int = 4,
+) -> tuple:
+    """
+    Generates product risk mapping with before/after 5A comparison.
+    Processes products in batches to avoid token limits.
+
+    Args:
+        impact_product_result : Agent 4 Product Mode output
+        agent5a_approved      : Agent 5A approved sections (optional)
+        batch_size            : products per API call (default 4)
+
+    Returns:
+        (result_dict, token_usage)
+    """
+    impacted     = impact_product_result.get("impacted_products", [])
+    non_impacted = impact_product_result.get("non_impacted_products", [])
+
+    # Résumer les alertes depuis les produits impactés
+    alerts_summary = []
+    seen = set()
+    for p in impacted:
+        for alert in p.get("applicable_alerts", p.get("alerts", [])):
+            title = alert.get("alert_title", alert.get("title", ""))
+            if title and title not in seen:
+                seen.add(title)
+                alerts_summary.append({
+                    "title": title,
+                    "urgency": alert.get("alert_urgency", alert.get("urgency", "")),
+                    "change_type": alert.get("change_type", ""),
+                })
+
+    # Résumer les updates 5A
+    updates_5a_summary = []
+    if agent5a_approved:
+        for upd in agent5a_approved:
+            updates_5a_summary.append({
+                "section": upd.get("section_label", ""),
+                "action": upd.get("action", ""),
+                "update_reason": upd.get("update_reason", ""),
+                "priority": upd.get("priority", ""),
+            })
+
+    # Préparer produits allégés
+    products_light = [
+        {
+            "code": p.get("code", p.get("product_code", "")),
+            "name": p.get("name", p.get("product_name", "")),
+            "categories": p.get("categories", []),
+            "risk_score": p.get("risk_score", p.get("overall_risk", "")),
+            "alerts": [a.get("alert_title", a.get("title", ""))
+                       for a in p.get("applicable_alerts", p.get("alerts", []))[:3]],
+        }
+        for p in impacted
+    ]
+
+    # Découper en batches
+    batches = [products_light[i:i+batch_size]
+               for i in range(0, len(products_light), batch_size)]
+
+    all_products_result = []
+    all_reg_view        = []
+    total_tokens        = {"input_tokens": 0, "output_tokens": 0, "cost_usd": 0.0}
+    exec_summary        = {"total_high": 0, "total_medium": 0, "total_low": 0, "key_message": ""}
+
+    for idx, batch in enumerate(batches):
+        batch_label = f"batch {idx+1}/{len(batches)}"
+        result_batch, tu = _call_risk_batch(
+            anthropic_key, batch, alerts_summary, updates_5a_summary, batch_label
+        )
+        all_products_result += result_batch.get("products", [])
+        all_reg_view        += result_batch.get("regulatory_view", [])
+        bs = result_batch.get("executive_summary", {})
+        exec_summary["total_high"]   += bs.get("total_high", 0)
+        exec_summary["total_medium"] += bs.get("total_medium", 0)
+        exec_summary["total_low"]    += bs.get("total_low", 0)
+        if not exec_summary["key_message"] and bs.get("key_message"):
+            exec_summary["key_message"] = bs["key_message"]
+        total_tokens["input_tokens"]  += tu["input_tokens"]
+        total_tokens["output_tokens"] += tu["output_tokens"]
+        total_tokens["cost_usd"]       = round(total_tokens["cost_usd"] + tu["cost_usd"], 5)
+
+    return {
+        "analysis_date": datetime.now().strftime("%Y-%m-%d"),
+        "products_analyzed": len(all_products_result),
+        "alerts_used": len(alerts_summary),
+        "executive_summary": exec_summary,
+        "products": all_products_result,
+        "regulatory_view": all_reg_view,
+        "token_usage": total_tokens,
+    }, total_tokens
