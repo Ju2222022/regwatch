@@ -1,0 +1,244 @@
+{
+  "_meta": {
+    "version": "1.0",
+    "last_updated": "2026-03-12",
+    "description": "RegWatch central referential — legal categories and sub-categories. Single source of truth for all agents."
+  },
+  "legal_categories": [
+    {
+      "id": "electronic_measuring",
+      "label": "Electronic / Measuring devices",
+      "description": "All electronic and measuring products sold by Decathlon, from basic electronic equipment to connected devices.",
+      "classification_rules": {
+        "mandatory_fallback": "CAT3",
+        "fallback_label": "Electronic equipments",
+        "fallback_rule": "CAT3 applies to ALL electronic products — no exception. Every product implementing electronics receives CAT3 as a base.",
+        "specificity_rule": "Sub-categories (CAT5, CAT7, CAT8, CAT9) are added ONLY when the specific protocol is EXPLICITLY confirmed in the product specs or description. When in doubt, CAT3 alone is sufficient.",
+        "multi_label": true,
+        "multi_label_rule": "A product can and must have all applicable sub-categories simultaneously (e.g. CAT3 + CAT7 + CAT9 for a GPS Bluetooth watch)."
+      },
+      "subcategories": [
+        {
+          "id": "CAT1",
+          "label": "Battery and accumulators (including component)",
+          "definition": "This category stands for batteries defined as component (element inside finished good) and finished good (sold directly to the end consumer/spare parts). A battery is defined by its chemistry (lithium Li, Nickel NiMh, Alkaline...) and classification: primary and secondary. A primary battery is a non rechargeable battery (e.g. alkaline LR03 AAA, alkaline LR06 AA, lithium coin CR2032). A secondary battery is a rechargeable battery. Decathlon almost uses lithium technology but sometimes nickel. An alkaline primary battery is a quite safe technology, while lithium coin batteries are considered dangerous due to flammability of lithium and high swallowing risk for children.",
+          "scope": "Batteries as component (inside finished good) and as finished good. Covers primary (non-rechargeable: alkaline, lithium coin) and secondary (rechargeable: lithium, NiMH) batteries. STRICT RULE: applies ONLY when the product IS a battery. If a product simply uses batteries as its power source, CAT1 does NOT apply.",
+          "classification_rule": "Apply ONLY when the product IS a battery sold as finished good to end consumer OR identified as battery component. Do NOT apply when product merely uses batteries as power source.",
+          "key_regulations": [
+            "Battery Regulation EU 2023/1542",
+            "UN 38.3 transport testing",
+            "IEC 62133 safety standard",
+            "REACH Regulation EC 1907/2006"
+          ],
+          "keywords": [
+            "battery", "accumulator", "lithium", "alkaline", "NiMH", "cell",
+            "energy storage", "rechargeable battery", "primary battery", "secondary battery",
+            "Li-ion", "coin cell", "CR2032", "AA", "AAA", "battery pack"
+          ],
+          "watch_queries": [
+            "lithium battery regulation EU safety accumulators update",
+            "battery due diligence traceability regulation EU",
+            "UN 38.3 IEC 62133 battery testing standard update",
+            "battery regulation 2023 1542 implementation deadline EU"
+          ]
+        },
+        {
+          "id": "CAT2",
+          "label": "Lamp (cap lamp, LED, neon lantern, rainproof torch)",
+          "definition": "This category stands for products which primary function is lighting such as torch light, dynamo light, headlight, bike light. Common used technology for the lighting function is the LED. Every product in this category is already submitted to requirements from the Electronic equipments category which is the basis. According to the different functions and technologies implemented in the product, other categories shall be consulted such as battery, adaptor/transformator, rechargeable products etc. Products can be submitted to road regulation for bike lights.",
+          "scope": "Products whose primary function is lighting: torch, dynamo light, headlight, bike light. LED technology predominant. Always combined with CAT3 as base. May also combine with CAT1 (battery) or CAT4 (rechargeable).",
+          "classification_rule": "Apply when the PRIMARY function of the product is lighting. Always combined with CAT3.",
+          "key_regulations": [
+            "ErP Directive 2009/125/EC",
+            "Energy Labelling Regulation 2017/1369",
+            "EN 62471 photobiological safety",
+            "RoHS 2011/65/EU",
+            "Road traffic regulations (bike lights)"
+          ],
+          "keywords": [
+            "lamp", "light", "torch", "headlamp", "LED", "lumen", "lighting",
+            "headlight", "bike light", "dynamo", "lantern", "flashlight",
+            "cap lamp", "rainproof torch", "neon"
+          ],
+          "watch_queries": [
+            "LED lighting lamp ecodesign energy labelling regulation EU update",
+            "torch headlamp photobiological safety standard EN 62471 update",
+            "ErP ecodesign lighting directive update EU",
+            "bike light road regulation certification EU update"
+          ]
+        },
+        {
+          "id": "CAT3",
+          "label": "Electronic equipments (cardiofrequency, stopwatch, compass, disposable cameras, fitness console, pedometer, altimeter, watches)",
+          "definition": "This category stands for EVERY product implementing electronics. It groups every basic requirement for electronics. Every electronic product is concerned but pay attention that additional categories can apply linked to the implemented function and technologies. If your product implements wireless function please refer to meteorological/mini radio/GPS category. If your product implements household function (to charge or run the product) please refer to sun charger/electrical charger category. The only exception are the batteries, defined in the battery category.",
+          "scope": "Universal base category — every product implementing electronics falls here. Mandatory parachute. Additional sub-categories apply on top based on specific confirmed technologies.",
+          "classification_rule": "MANDATORY for every electronic product — no exception. Always assigned first. Other sub-categories are added on top.",
+          "key_regulations": [
+            "RoHS 2011/65/EU — restriction of hazardous substances",
+            "WEEE 2012/19/EU — waste electrical equipment",
+            "CE Marking — LVD 2014/35/EU",
+            "EMC Directive 2014/30/EU",
+            "Ecodesign Regulation 2019/1782",
+            "REACH Regulation EC 1907/2006"
+          ],
+          "keywords": [
+            "electronic", "electrical", "RoHS", "WEEE", "CE marking", "EMC", "LVD",
+            "hazardous substances", "ecodesign", "stopwatch", "compass", "fitness console",
+            "pedometer", "altimeter", "watch", "cardiofrequency", "heart rate monitor"
+          ],
+          "watch_queries": [
+            "RoHS hazardous substances electronics restriction update EU",
+            "WEEE waste electrical equipment directive update",
+            "EMC electromagnetic compatibility directive electronics EU",
+            "LVD low voltage directive CE marking electronics update",
+            "ecodesign electronics energy efficiency EU regulation update"
+          ]
+        },
+        {
+          "id": "CAT4",
+          "label": "Sun charger, Electrical charger, USB charger, adaptor/transformator, rechargeable products",
+          "definition": "This category stands for products as photovoltaic, household adapter, and product with rechargeable function (linked to secondary batteries). Every product in this category is already submitted to requirements from the Electronic equipments category which is the basis. You can also refer to other categories depending of the technology implemented. In this category, the household adapter requirements are specifically detailed.",
+          "scope": "Photovoltaic products, household adapters, products with rechargeable function linked to secondary batteries. Always combined with CAT3.",
+          "classification_rule": "Apply when product has a secondary (rechargeable) battery OR USB/mains charging capability. Always combined with CAT3.",
+          "key_regulations": [
+            "Common Charger Directive 2022/2380 — USB-C",
+            "Ecodesign Regulation 2019/1782",
+            "IEC 62684 — USB charger interoperability",
+            "IEC 62368-1 — audio/video and IT equipment safety",
+            "EN 55032 — electromagnetic compatibility"
+          ],
+          "keywords": [
+            "charger", "USB-C", "rechargeable", "power supply", "adapter",
+            "solar charger", "photovoltaic", "charging", "transformator",
+            "mains powered", "household adapter", "USB charging", "micro-USB"
+          ],
+          "watch_queries": [
+            "USB-C common charger ecodesign power supply regulation EU update",
+            "rechargeable battery charger efficiency directive update EU",
+            "photovoltaic solar charger regulation EU standard update",
+            "common charger directive 2022 2380 implementation update"
+          ]
+        },
+        {
+          "id": "CAT5",
+          "label": "Camera video (with laser device) + remote control using ANT+",
+          "definition": "This category stands for products with wireless function such as ANT+, and cameras with laser device. Every product in this category is already submitted to requirements from the Electronic equipments category which is the basis. You can also refer to GPS category, bluetooth category and rechargeable products category depending of the technology implemented.",
+          "scope": "Products with wireless function using ANT+ protocol specifically, cameras with laser device, remote controls using ANT+. Always combined with CAT3.",
+          "classification_rule": "Apply ONLY when ANT+ protocol is EXPLICITLY confirmed in product specs or description. Do not apply based on assumption.",
+          "key_regulations": [
+            "RED Directive 2014/53/EU — radio equipment",
+            "FCC Part 15 — USA",
+            "EN 62471 — laser safety",
+            "IEC 60825 — laser product safety"
+          ],
+          "keywords": [
+            "ANT+", "camera", "video", "action cam", "wireless sensor",
+            "2.4GHz ANT", "remote control", "laser", "laser device",
+            "ANT protocol", "sport sensor"
+          ],
+          "watch_queries": [
+            "ANT+ radio equipment directive RED regulation update EU",
+            "action camera video equipment radio frequency EU update",
+            "wireless sensor sport device RED directive update",
+            "laser device safety regulation IEC 60825 update"
+          ]
+        },
+        {
+          "id": "CAT6",
+          "label": "MP3 player",
+          "definition": "This category stands for products with specifically MP3 function. Every product in this category is already submitted to requirements from the Electronic equipments category which is the basis. You can also refer to bluetooth category, rechargeable products category depending of the technology implemented.",
+          "scope": "Products with specifically MP3 audio playback function as primary feature. Always combined with CAT3. May also combine with CAT9 (bluetooth) and CAT4 (rechargeable).",
+          "classification_rule": "Apply when MP3 audio playback is the primary or a key function of the product. Always combined with CAT3.",
+          "key_regulations": [
+            "RED Directive 2014/53/EU",
+            "EN 50332 — audio equipment noise exposure",
+            "IEC 60268 — sound system equipment"
+          ],
+          "keywords": [
+            "MP3", "audio", "music player", "headphones", "earphones",
+            "audio playback", "sound", "portable audio", "earbuds"
+          ],
+          "watch_queries": [
+            "audio equipment MP3 player regulation directive EU update",
+            "headphones earphones noise exposure standard EN 50332 update",
+            "portable audio device regulation update EU"
+          ]
+        },
+        {
+          "id": "CAT7",
+          "label": "Meteorological station, Mini radio, Global Position System, Talkie walkie, Telemeter",
+          "definition": "This category stands for products with wireless function such as GPS, radar, walkie talkie protocol, wifi etc. Products with wireless function are called ITE (Information and Technology Equipments) since information (data) are transmitted thanks to a specific wireless protocol. Wireless protocols are defined by 2 parameters: frequency bands and power. Certain frequency bands are submitted to specific regulation or forbidden. According to the signal power, additional tests can apply to ensure safety of the end user. The minimal power before entering additional safety test is 500mW (SAR). Telemeter is generally linked to laser technology which is submitted to safety tests to avoid eye injury.",
+          "scope": "Products with wireless function: GPS, radar, walkie-talkie, meteorological sensors, laser telemeter. ITE category. SAR applies above 500mW. Always combined with CAT3.",
+          "classification_rule": "Apply ONLY when EXPLICITLY confirmed: GPS module, radio reception, walkie-talkie, meteorological sensors, or laser telemeter. SAR testing required above 500mW.",
+          "key_regulations": [
+            "RED Directive 2014/53/EU — radio equipment",
+            "ITU Radio Regulations — frequency allocation",
+            "SAR limits — EN 50360, EN 62209",
+            "EN 18031 cybersecurity (if connected)",
+            "IEC 60825 laser safety (telemeter)"
+          ],
+          "keywords": [
+            "GPS", "GNSS", "radio", "walkie-talkie", "rangefinder", "laser telemeter",
+            "SAR", "meteorological", "frequency bands", "ITE", "radio frequency",
+            "barometer", "weather station", "mini radio", "FM radio"
+          ],
+          "watch_queries": [
+            "GPS GNSS radio frequency regulation SAR EU update",
+            "walkie talkie radio equipment directive RED update EU",
+            "laser rangefinder telemeter regulation EU safety update",
+            "meteorological device radio frequency ITU regulation update"
+          ]
+        },
+        {
+          "id": "CAT8",
+          "label": "Mobile Phone / products with wifi",
+          "definition": "This category stands for products with GSM/4G/5G function and also wifi protocol. They are linked to products with wireless function (ITE). Wireless protocols are defined by frequency bands and power. SAR applies above 500mW. Wifi is a protocol submitted to specific royalty fees if you want to use the logo. Cybersecurity rules apply to connected products.",
+          "scope": "Products with GSM/4G/5G and/or WiFi protocol. ITE category. SAR may apply. Cybersecurity rules apply. Always combined with CAT3.",
+          "classification_rule": "Apply ONLY when wifi or GSM/4G/5G is EXPLICITLY confirmed in product specs. Always combined with CAT3.",
+          "key_regulations": [
+            "RED Directive 2014/53/EU",
+            "EN 18031-1/2/3 cybersecurity for radio equipment",
+            "GDPR — data protection (if personal data processed)",
+            "CRA — Cyber Resilience Act (upcoming)",
+            "SAR limits — EN 50360"
+          ],
+          "keywords": [
+            "wifi", "GSM", "4G", "5G", "cellular", "NFC", "cybersecurity",
+            "EN 18031", "mobile", "CRA", "wireless LAN", "802.11",
+            "connected product", "IoT", "smart device"
+          ],
+          "watch_queries": [
+            "wifi cybersecurity EN 18031 radio equipment connected devices update",
+            "GSM 4G 5G radio equipment directive RED update EU",
+            "cybersecurity connected products regulation EU CRA update",
+            "NFC contactless device regulation EU standard update"
+          ]
+        },
+        {
+          "id": "CAT9",
+          "label": "Electronic equipment using bluetooth (bluetooth watch, earplug bluetooth...)",
+          "definition": "This category stands for products with wireless function using bluetooth technology. Products with wireless function are called ITE (Information and Technology Equipments). Bluetooth is a universal protocol with allowed frequency bands. Cybersecurity rules can apply. SAR considerations may apply depending on power level.",
+          "scope": "Products with Bluetooth wireless function (BLE or Classic). ITE category. Universal protocol with allowed frequency bands. Cybersecurity rules apply. Always combined with CAT3.",
+          "classification_rule": "Apply ONLY when Bluetooth is EXPLICITLY stated in product name, type, or description. BLE and Classic Bluetooth both qualify. Always combined with CAT3.",
+          "key_regulations": [
+            "RED Directive 2014/53/EU",
+            "EN 18031-1/2/3 cybersecurity for radio equipment",
+            "Bluetooth SIG specifications",
+            "EN 300 328 — 2.4 GHz wideband"
+          ],
+          "keywords": [
+            "bluetooth", "BLE", "wireless", "connected", "pairing", "2.4GHz",
+            "wearable", "earplug", "cybersecurity", "Bluetooth Low Energy",
+            "bluetooth watch", "wireless earphones", "connected device"
+          ],
+          "watch_queries": [
+            "bluetooth BLE connected devices cybersecurity EN 18031 update",
+            "bluetooth radio equipment directive RED 2.4GHz EU update",
+            "connected wearable device regulation cybersecurity EU update",
+            "cyber resilience act CRA bluetooth connected products"
+          ]
+        }
+      ]
+    }
+  ]
+}
