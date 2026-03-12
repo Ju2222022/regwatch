@@ -41,7 +41,7 @@ with tab_sources:
 
     LANG_KEY = "_market_languages"
     lang_map  = sources.get(LANG_KEY, {})
-    markets   = [k for k in sources if not k.startswith("_")]
+    markets   = sorted([k for k in sources if not k.startswith("_")])
 
     LANG_FLAGS = {"en": "🇬🇧", "fr": "🇫🇷", "zh": "🇨🇳", "es": "🇪🇸", "de": "🇩🇪",
                   "ja": "🇯🇵", "ko": "🇰🇷", "pt": "🇧🇷", "it": "🇮🇹", "nl": "🇳🇱"}
