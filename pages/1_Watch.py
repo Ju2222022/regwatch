@@ -20,15 +20,15 @@ st.set_page_config(page_title="Agent 1 — Watch", page_icon="📡", layout="wid
 
 # ── Référentiels ──────────────────────────────────────────────────────────────
 CAT_LABELS = {
-    "CAT1": "Batteries & accumulators",
-    "CAT2": "Lamps & lighting",
-    "CAT3": "Electronic equipment (base)",
-    "CAT4": "Chargers & rechargeable products",
-    "CAT5": "Camera / ANT+",
+    "CAT1": "Battery and accumulators (including component)",
+    "CAT2": "Lamp (cap lamp, LED, neon lantern, rainproof torch)",
+    "CAT3": "Electronic equipments (cardiofrequency, stopwatch, compass, watches...)",
+    "CAT4": "Sun charger, Electrical charger, USB charger, rechargeable products",
+    "CAT5": "Camera video (with laser device) + remote control using ANT+",
     "CAT6": "MP3 player",
-    "CAT7": "GPS / Radio / Walkie-talkie / Rangefinder",
-    "CAT8": "Phone / Wifi / GSM",
-    "CAT9": "Bluetooth equipment",
+    "CAT7": "Meteorological station, Mini radio, GPS, Talkie walkie, Telemeter",
+    "CAT8": "Mobile Phone / products with wifi",
+    "CAT9": "Electronic equipment using bluetooth (bluetooth watch, earplug bluetooth)",
 }
 
 URGENCY_DEF = {
