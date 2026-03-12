@@ -85,10 +85,6 @@ TIMEFRAMES = {
     "⚡ Last 30 days": "month",
     "📅 Last 12 months": "year",
     "🏛️ Last 3 years": "year",
-    # backward compat
-    "⚡ 30 derniers jours": "month",
-    "📅 12 derniers mois": "year",
-    "🏛️ 3 derniers ans": "year",
 }
 
 # Tarifs Claude Haiku
