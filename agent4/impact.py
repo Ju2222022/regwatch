@@ -13,58 +13,58 @@ from datetime import datetime
 
 CAT_DEFINITIONS = {
     "CAT1": {
-        "label": "Batteries & accumulateurs",
-        "scope": "Produits qui SONT une batterie ou un accumulateur (lithium, alcaline, NiMH...)",
+        "label": "Battery and accumulators (including component)",
+        "scope": "Batteries as component (inside finished good) and as finished good. Covers primary (non-rechargeable: alkaline, lithium coin) and secondary (rechargeable: lithium, NiMH) batteries.",
         "key_regulations": ["Battery Regulation EU 2023/1542", "UN 38.3", "IEC 62133"],
-        "keywords": ["battery", "accumulator", "lithium", "alkaline", "cell", "energy storage"]
+        "keywords": ["battery", "accumulator", "lithium", "alkaline", "NiMH", "cell", "energy storage", "rechargeable battery"]
     },
     "CAT2": {
-        "label": "Lampes & éclairage",
-        "scope": "Produits dont la fonction primaire est l'éclairage (lampes, torches, frontales...)",
-        "key_regulations": ["ErP Directive 2009/125/EC", "Energy Labelling 2017/1369"],
-        "keywords": ["lamp", "light", "torch", "headlamp", "LED", "lumen", "lighting"]
+        "label": "Lamp (cap lamp, LED, neon lantern, rainproof torch)",
+        "scope": "Products whose primary function is lighting: torch, dynamo light, headlight, bike light. LED technology. May overlap with Battery, Charger categories.",
+        "key_regulations": ["ErP Directive 2009/125/EC", "Energy Labelling 2017/1369", "EN 62471 photobiological safety"],
+        "keywords": ["lamp", "light", "torch", "headlamp", "LED", "lumen", "lighting", "headlight", "bike light", "dynamo"]
     },
     "CAT3": {
-        "label": "Équipements électroniques (base)",
-        "scope": "Tout produit électronique — catégorie parachute universelle",
+        "label": "Electronic equipments (cardiofrequency, stopwatch, compass, camera, fitness console, pedometer, altimeter, watches)",
+        "scope": "Every product implementing electronics. Universal base category — all electronic products fall here. Additional categories apply based on functions and technologies.",
         "key_regulations": ["RoHS 2011/65/EU", "WEEE 2012/19/EU", "CE Marking", "LVD 2014/35/EU", "EMC 2014/30/EU"],
-        "keywords": ["electronic", "electrical", "RoHS", "WEEE", "CE", "EMC", "LVD", "hazardous substances"]
+        "keywords": ["electronic", "electrical", "RoHS", "WEEE", "CE marking", "EMC", "LVD", "hazardous substances", "ecodesign"]
     },
     "CAT4": {
-        "label": "Chargeurs & produits rechargeables",
-        "scope": "Chargeurs, adaptateurs, produits avec batterie rechargeable intégrée",
+        "label": "Sun charger, Electrical charger, USB charger, adaptor/transformator, rechargeable products",
+        "scope": "Photovoltaic products, household adapters, products with rechargeable function linked to secondary batteries.",
         "key_regulations": ["Common Charger Directive 2022/2380", "Ecodesign 2019/1782", "IEC 62684"],
-        "keywords": ["charger", "USB-C", "rechargeable", "power supply", "adapter", "charging"]
+        "keywords": ["charger", "USB-C", "rechargeable", "power supply", "adapter", "solar charger", "photovoltaic", "charging", "transformator"]
     },
     "CAT5": {
-        "label": "Caméra / ANT+",
-        "scope": "Produits utilisant le protocole ANT+ ou caméras sportives",
-        "key_regulations": ["RED 2014/53/EU", "FCC Part 15"],
-        "keywords": ["ANT+", "camera", "video", "action cam", "wireless sensor", "2.4GHz"]
+        "label": "Camera video (with laser device) + remote control using ANT+",
+        "scope": "Products with wireless function using ANT+ protocol, cameras with laser device, remote controls.",
+        "key_regulations": ["RED 2014/53/EU", "FCC Part 15", "EN 62471 laser safety"],
+        "keywords": ["ANT+", "camera", "video", "action cam", "wireless sensor", "2.4GHz", "laser", "remote control"]
     },
     "CAT6": {
-        "label": "Lecteur MP3 / Audio",
-        "scope": "Appareils dont la fonction principale est la lecture audio",
-        "key_regulations": ["Audio Equipment Directive", "RED 2014/53/EU"],
-        "keywords": ["MP3", "audio", "music player", "headphones", "earphones"]
+        "label": "MP3 player",
+        "scope": "Products with specifically MP3 audio playback function. Overlaps with Bluetooth and rechargeable products categories.",
+        "key_regulations": ["RED 2014/53/EU", "EN 50332 audio equipment noise"],
+        "keywords": ["MP3", "audio", "music player", "headphones", "earphones", "audio playback"]
     },
     "CAT7": {
-        "label": "GPS / Radio / Talkie / Télémètre",
-        "scope": "Produits utilisant GPS, radio FM/AM, talkie-walkie, télémètre laser",
-        "key_regulations": ["RED 2014/53/EU", "ITU Radio Regulations", "SAR limits"],
-        "keywords": ["GPS", "GNSS", "radio", "walkie-talkie", "rangefinder", "laser", "frequency", "SAR"]
+        "label": "Meteorological station, Mini radio, Global Position System, Talkie walkie, Telemeter",
+        "scope": "Products with wireless function: GPS, radar, walkie-talkie, WiFi. ITE (Information and Technology Equipments). SAR applies above 500mW. Laser telemeter submitted to eye safety tests.",
+        "key_regulations": ["RED 2014/53/EU", "ITU Radio Regulations", "SAR limits", "EN 18031 cybersecurity"],
+        "keywords": ["GPS", "GNSS", "radio", "walkie-talkie", "rangefinder", "laser", "telemeter", "SAR", "meteorological", "frequency bands"]
     },
     "CAT8": {
-        "label": "Téléphone / Wifi / GSM",
-        "scope": "Produits avec connectivité Wifi, GSM/4G/5G ou NFC",
-        "key_regulations": ["RED 2014/53/EU", "EN 18031 cybersecurity", "GDPR"],
-        "keywords": ["wifi", "GSM", "4G", "5G", "cellular", "NFC", "cybersecurity", "EN 18031"]
+        "label": "Mobile Phone / products with wifi",
+        "scope": "Products with GSM/4G/5G and WiFi protocol. ITE category. SAR applies above 500mW. Cybersecurity rules apply.",
+        "key_regulations": ["RED 2014/53/EU", "EN 18031 cybersecurity", "GDPR", "CRA Cyber Resilience Act"],
+        "keywords": ["wifi", "GSM", "4G", "5G", "cellular", "NFC", "cybersecurity", "EN 18031", "mobile", "CRA"]
     },
     "CAT9": {
-        "label": "Équipement Bluetooth",
-        "scope": "Produits avec connectivité Bluetooth (BLE ou Classic)",
-        "key_regulations": ["RED 2014/53/EU", "EN 18031 cybersecurity", "BLE spec"],
-        "keywords": ["bluetooth", "BLE", "wireless", "connected", "pairing", "2.4GHz"]
+        "label": "Electronic equipment using bluetooth (bluetooth watch, earplug bluetooth)",
+        "scope": "Products with Bluetooth wireless function (BLE or Classic). ITE category. Universal protocol with allowed frequency bands. Cybersecurity rules apply.",
+        "key_regulations": ["RED 2014/53/EU", "EN 18031 cybersecurity", "Bluetooth SIG spec"],
+        "keywords": ["bluetooth", "BLE", "wireless", "connected", "pairing", "2.4GHz", "wearable", "earplug", "cybersecurity"]
     },
 }
 
