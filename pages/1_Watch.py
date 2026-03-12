@@ -119,7 +119,8 @@ with st.expander("🏷️ Pre-fill topics from Decathlon categories", expanded=F
             f"→ {len(selected_cats)} category(ies) selected · "
             f"**{len(preview_queries)} watch topic(s)** will be generated"
         )
-        with st.expander("Query preview"):
+        with st.container(border=True):
+            st.caption("**Query preview**")
             for cat in selected_cats:
                 topics = CAT_WATCH_QUERIES.get(cat, [])
                 st.markdown(f"**{cat}** — {CAT_DEFINITIONS[cat]['label']}")
