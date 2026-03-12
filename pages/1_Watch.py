@@ -268,7 +268,7 @@ def render_entry(entry, key):
     u_icon, u_desc = URGENCY_DEF.get(urgency, ("⚪",""))
     cats_raw = entry.get("categories_concerned",[])
     cats_inline = "  ·  ".join(f"**{c}** ({CAT_LABELS.get(c,c)})" for c in cats_raw)
-    with st.expander(f"{u_icon} {entry.get('title','Untitled')}", key=key):
+    with st.expander(f"{u_icon} {entry.get('title','Untitled')}"):
         col_a, col_b = st.columns([3,1])
         with col_a:
             st.markdown("**Summary**")
