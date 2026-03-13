@@ -56,17 +56,43 @@ def _display_specs_block(profile: dict):
         return
 
     techs = profile.get("technologies", {})
-    wireless = techs.get("wireless", [])
-    power    = techs.get("power", [])
-    sensors  = techs.get("sensors", [])
+    wireless     = techs.get("wireless", [])
+    power        = techs.get("power", [])
+    sensors      = techs.get("sensors", [])
+    connectivity = techs.get("connectivity", [])
+    primary      = techs.get("primary_function", "")
+    key_specs    = profile.get("key_specs", {})
 
-    st.markdown(f"**{profile.get('name','—')}** — {profile.get('description','')[:150]}")
+    name = profile.get("name", "—")
+    desc = profile.get("description", "")
+    st.markdown(f"**{name}**" + (f" — {desc[:180]}" if desc else ""))
+    if primary:
+        st.caption(f"Primary function: {primary}")
 
-    all_tech = wireless + power + sensors + techs.get("connectivity", [])
-    if all_tech:
-        st.caption("Detected: " + " · ".join(all_tech))
-    else:
-        st.caption("No specific technologies detected via scraping.")
+    col_a, col_b = st.columns(2)
+    with col_a:
+        if wireless:
+            st.markdown("🛜 **Wireless:** " + " · ".join(wireless))
+        if power:
+            st.markdown("⚡ **Power:** " + " · ".join(power))
+    with col_b:
+        if sensors:
+            st.markdown("📡 **Sensors:** " + " · ".join(sensors))
+        if connectivity:
+            st.markdown("🔗 **Connectivity:** " + " · ".join(connectivity))
+
+    # Key specs row
+    specs_parts = []
+    if key_specs.get("battery_life"):
+        specs_parts.append(f"🔋 {key_specs['battery_life']}")
+    if key_specs.get("water_resistance"):
+        specs_parts.append(f"💧 {key_specs['water_resistance']}")
+    if key_specs.get("weight"):
+        specs_parts.append(f"⚖️ {key_specs['weight']}")
+    for o in key_specs.get("other", []):
+        specs_parts.append(o)
+    if specs_parts:
+        st.caption(" · ".join(specs_parts))
 
     url = profile.get("url", "")
     if url:
@@ -91,22 +117,41 @@ def _display_classification(result: dict):
         st.error("No categories returned.")
         return
 
-    st.markdown("**Assigned categories:**")
-    badges_html = " ".join(_badge(c) for c in cats)
-    st.markdown(badges_html, unsafe_allow_html=True)
+    # Categories + confidence on same row
+    col_cat, col_conf = st.columns([3, 1])
+    with col_cat:
+        st.markdown("**Assigned categories:**")
+        badges_html = " ".join(_badge(c) for c in cats)
+        st.markdown(badges_html, unsafe_allow_html=True)
+    with col_conf:
+        conf_color = {"HIGH": "🟢", "MEDIUM": "🟡", "LOW": "🔴"}.get(
+            str(confidence).upper(), "⚪")
+        st.metric("Confidence", f"{conf_color} {confidence}" if confidence else "—")
 
-    col1, col2 = st.columns(2)
-    with col1:
-        st.metric("Confidence", confidence or "—")
-    with col2:
-        if flags:
-            st.markdown("**⚠️ Flags**")
+    # Detected technologies from A3
+    det = result.get("detected_technologies", {})
+    confirmed  = det.get("confirmed", [])
+    implied    = det.get("implied", [])
+    uncertain  = det.get("uncertain", [])
+    if confirmed or implied or uncertain:
+        with st.expander("🔬 Detected technologies (Agent 3 analysis)"):
+            if confirmed:
+                st.markdown("✅ **Confirmed:** " + " · ".join(confirmed))
+            if implied:
+                st.markdown("🟡 **Implied:** " + " · ".join(implied))
+            if uncertain:
+                st.markdown("❓ **Uncertain:** " + " · ".join(uncertain))
+
+    # Justification per category
+    if reasoning:
+        with st.expander("📋 Category justification"):
+            st.markdown(reasoning)
+
+    # Flags
+    if flags:
+        with st.expander("⚠️ Flags"):
             for f in flags:
                 st.markdown(f"- {f}")
-
-    if reasoning:
-        with st.expander("📋 Reasoning"):
-            st.markdown(reasoning)
 
 
 # ── Header ────────────────────────────────────────────────────────────────────
