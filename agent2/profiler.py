@@ -13,13 +13,13 @@ import streamlit as st
 
 # ── HTTP helpers ─────────────────────────────────────────────────────────────
 
-def _jina_fetch(url: str, jina_key: str) -> str:
-    """Fetch a URL via Jina.ai reader."""
+def _jina_fetch(url: str, jina_key: str = "") -> str:
+    """Fetch a URL via Jina.ai reader. Key is optional (anonymous quota available)."""
     jina_url = f"https://r.jina.ai/{url}"
-    req = urllib.request.Request(
-        jina_url,
-        headers={"Authorization": f"Bearer {jina_key}", "Accept": "application/json"},
-    )
+    headers = {"Accept": "application/json"}
+    if jina_key:
+        headers["Authorization"] = f"Bearer {jina_key}"
+    req = urllib.request.Request(jina_url, headers=headers)
     with urllib.request.urlopen(req, timeout=30) as resp:
         data = json.loads(resp.read())
     return data.get("data", {}).get("content", "")
