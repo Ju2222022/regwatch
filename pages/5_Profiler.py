@@ -136,7 +136,7 @@ if mode == "Single product":
             "Domain *",
             value="decathlon.fr",
             placeholder="e.g. decathlon.fr, decathlon.ca, decathlon.de",
-            help="Domain to scrape — the search URL will be: https://www.{domain}/search?Ntt={model_code}"
+            help="Tavily will find the direct product page on this domain (e.g. decathlon.fr, decathlon.de)"
         )
         submitted = st.form_submit_button("🔍 Fetch product specs", type="primary")
 
