@@ -101,7 +101,7 @@ def _display_specs_block(profile: dict):
         st.caption(f"Source: [{url}]({url})")
 
 
-def _display_classification(result: dict):
+def _display_classification(result: dict, nested: bool = False):
     """Display Agent 3 classification output."""
     cats        = result.get("assigned_categories", result.get("categories", []))
     confidence  = result.get("confidence_global", result.get("confidence", ""))
@@ -129,7 +129,8 @@ def _display_classification(result: dict):
     implied   = det.get("implied", [])
     uncertain = det.get("uncertain", [])
     if confirmed or implied or uncertain:
-        with st.expander("🔬 Detected technologies"):
+        _ctx = st.container() if nested else st.expander("🔬 Detected technologies")
+        with _ctx:
             if confirmed:
                 tags = "".join(
                     f'<span style="background:#1B5E20;color:white;padding:2px 8px;'
@@ -154,7 +155,8 @@ def _display_classification(result: dict):
 
     # ── Justification par catégorie ───────────────────────────────────────────
     if justif and isinstance(justif, dict):
-        with st.expander("📋 Category justification"):
+        _ctx2 = st.container() if nested else st.expander("📋 Category justification")
+        with _ctx2:
             for cat_id, reason in justif.items():
                 cat_label = CAT_LABELS.get(cat_id, cat_id).split("(")[0].strip()
                 conf_color = {"HIGH": "#1B5E20", "MEDIUM": "#E65100",
@@ -181,7 +183,8 @@ def _display_classification(result: dict):
         has_flags = bool(flags_raw)
 
     if has_flags:
-        with st.expander("⚠️ Flags"):
+        _ctx3 = st.container() if nested else st.expander("⚠️ Flags")
+        with _ctx3:
             if isinstance(flags_raw, dict):
                 for key, (label, color) in FLAG_CONFIG.items():
                     items = flags_raw.get(key, [])
@@ -339,6 +342,13 @@ else:
                 if alias in df.columns:
                     df = df.rename(columns={alias: "code"})
                     break
+            # Force code column as string — Excel converts codes to numbers (8788459 → 8,788,459)
+            if "code" in df.columns:
+                df["code"] = df["code"].apply(
+                    lambda x: str(int(float(str(x).replace(",", "").strip())))
+                    if str(x).replace(",", "").replace(".", "").strip().isdigit()
+                    else str(x).strip()
+                )
 
             if "code" not in df.columns:
                 st.error("❌ Column 'code' not found. Please check your file headers.")
@@ -441,7 +451,7 @@ else:
                             st.markdown("**📦 Specs (Agent 2)**")
                             _display_specs_block(prof)
                             st.markdown("**🏷️ Classification (Agent 3)**")
-                            _display_classification(result)
+                            _display_classification(result, nested=True)
 
                     # Export
                     export = [

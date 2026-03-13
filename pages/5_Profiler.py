@@ -116,7 +116,7 @@ def _display_profile(profile: dict):
 # ── Header ────────────────────────────────────────────────────────────────────
 st.title("🔍 Agent 2 — Product Profiler")
 st.caption("Fetches raw product specs from the web by model code. No classification — use Agent 3 for that.")
-st.info("📋 **Output:** product name, description, detected technologies (wireless, power, sensors) and key specs. Results are ready to feed into Agent 3 (Classifier).")
+st.info("📋 **Output:** product name, description, detected technologies (wireless, power, sensors) and key specs. Results are ready to feed into Agent 3 (Classifier).\n\n🔍 **Method:** Claude web search — searches the web for the model code on the specified domain.")
 st.divider()
 
 if not ANTHROPIC_KEY:
@@ -183,11 +183,17 @@ else:
 
             # Normalise column names
             df.columns = df.columns.str.lower().str.strip()
-            # Accept "model code", "model_code", "code"
             for alias in ["model code", "model_code", "modèle", "ref", "reference"]:
                 if alias in df.columns:
                     df = df.rename(columns={alias: "code"})
                     break
+            # Force code column as string — Excel converts codes to numbers (8788459 → 8,788,459)
+            if "code" in df.columns:
+                df["code"] = df["code"].apply(
+                    lambda x: str(int(float(str(x).replace(",", "").strip())))
+                    if str(x).replace(",", "").replace(".", "").strip().isdigit()
+                    else str(x).strip()
+                )
 
             if "code" not in df.columns:
                 st.error("❌ Column 'code' not found. Please check your file headers.")
