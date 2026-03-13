@@ -326,6 +326,13 @@ else:
         mime="text/csv",
     )
 
+    domain_batch = st.text_input(
+        "Domain *", value="decathlon.fr",
+        placeholder="e.g. decathlon.fr, decathlon.ca, decathlon.de",
+        key="domain_batch_cls",
+        help="Domain used to search all products in this batch"
+    )
+
     uploaded = st.file_uploader("Upload product list", type=["csv", "xlsx", "xls"])
 
     if uploaded:
@@ -369,12 +376,6 @@ else:
                 st.success(f"✅ {len(products)} products loaded.")
                 st.dataframe(df[preview_cols].head(10), use_container_width=True)
 
-                domain_batch = st.text_input(
-                    "Domain *", value="decathlon.fr",
-                    placeholder="e.g. decathlon.fr, decathlon.ca",
-                    key="domain_batch_cls",
-                    help="Domain to scrape for all products in this batch"
-                )
                 if st.button("🏷️ Fetch specs & classify all", type="primary"):
                     progress_bar = st.progress(0, text="Initialising…")
                     all_results = []
