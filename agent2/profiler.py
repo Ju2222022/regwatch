@@ -61,22 +61,69 @@ def _parse_json_safe(raw: str) -> dict:
     return {}
 
 
+# ── Tavily search ─────────────────────────────────────────────────────────────
+
+def _tavily_search(query: str, tavily_key: str, max_results: int = 5) -> list[dict]:
+    payload = json.dumps({
+        "api_key": tavily_key,
+        "query": query,
+        "max_results": max_results,
+        "search_depth": "basic",
+    }).encode()
+    req = urllib.request.Request(
+        "https://api.tavily.com/search",
+        data=payload,
+        headers={"content-type": "application/json"},
+    )
+    with urllib.request.urlopen(req, timeout=30) as resp:
+        data = json.loads(resp.read())
+    return data.get("results", [])
+
+
+def _clean_domain(domain: str) -> str:
+    """Normalize domain: decathlon.fr, www.decathlon.fr, https://decathlon.fr → decathlon.fr"""
+    d = domain.strip().lower()
+    for prefix in ["https://www.", "http://www.", "https://", "http://", "www."]:
+        if d.startswith(prefix):
+            d = d[len(prefix):]
+    return d.rstrip("/")
+
+
 # ── Main functions ────────────────────────────────────────────────────────────
 
-def build_search_url(model_code: str, domain: str = "decathlon.fr") -> str:
-    """Build the search URL for a given domain and model code."""
-    domain = domain.strip().rstrip("/").lstrip("https://").lstrip("http://").lstrip("www.")
-    return f"https://www.{domain}/search?Ntt={model_code}"
+def find_product_url(model_code: str, domain: str, tavily_key: str) -> str | None:
+    """Find the direct product page URL via Tavily, filtered by user-specified domain."""
+    clean = _clean_domain(domain)
+    query = f"{model_code} site:{clean}"
+    results = _tavily_search(query, tavily_key, max_results=5)
+    # Priority 1: URL contains model code on the right domain
+    for r in results:
+        url = r.get("url", "")
+        if clean in url and model_code in url:
+            return url
+    # Priority 2: any URL on the right domain
+    for r in results:
+        url = r.get("url", "")
+        if clean in url:
+            return url
+    return None
 
 
 def scrape_product_specs(model_code: str, domain: str,
-                          jina_key: str, api_key: str) -> dict:
+                          jina_key: str, api_key: str, tavily_key: str = "") -> dict:
     """
-    Scrape product specs from the domain search page (Jina.ai) and extract via Claude.
+    Find product URL via Tavily (filtered by domain), scrape via Jina, extract via Claude.
     Returns raw specs dict only — no classification.
     """
     raw_content = ""
-    source_url = build_search_url(model_code, domain)
+    # Step 1: find the direct product URL via Tavily
+    source_url = None
+    if tavily_key:
+        source_url = find_product_url(model_code, domain, tavily_key)
+    # Fallback: search page
+    if not source_url:
+        clean = _clean_domain(domain)
+        source_url = f"https://www.{clean}/search?Ntt={model_code}"
 
     try:
         raw_content = _jina_fetch(source_url, jina_key)
@@ -135,22 +182,23 @@ Page content:
         }
 
 
-def profile_product(model_code: str, domain: str, jina_key: str, api_key: str) -> dict:
+def profile_product(model_code: str, domain: str, jina_key: str, api_key: str,
+                    tavily_key: str = "") -> dict:
     """
-    Full pipeline: build search URL from domain → scrape via Jina → extract specs via Claude.
+    Full pipeline: Tavily finds direct product URL on domain → Jina scrapes → Claude extracts.
     Returns raw product profile dict.
     """
-    return scrape_product_specs(model_code, domain, jina_key, api_key)
+    return scrape_product_specs(model_code, domain, jina_key, api_key, tavily_key)
 
 
 def profile_batch(model_codes: list[str], domain: str, jina_key: str,
-                  api_key: str, progress_cb=None) -> list[dict]:
+                  api_key: str, progress_cb=None, tavily_key: str = "") -> list[dict]:
     """Profile multiple products. progress_cb(i, total, code) for UI updates."""
     results = []
     for i, code in enumerate(model_codes):
         if progress_cb:
             progress_cb(i, len(model_codes), code)
-        results.append(profile_product(code.strip(), domain, jina_key, api_key))
+        results.append(profile_product(code.strip(), domain, jina_key, api_key, tavily_key))
     return results
 
 
