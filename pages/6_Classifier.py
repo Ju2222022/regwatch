@@ -6,6 +6,7 @@ Both blocks are shown: specs (from A2) + classification (from A3).
 
 import streamlit as st
 import json
+import time
 import sys, os
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
@@ -394,17 +395,27 @@ else:
 
                         progress_bar.progress((i + 0.5) / len(products), text=f"[{i+1}/{len(products)}] {code} — classifying…")
 
-                        # A3
-                        extra = ci.get("extra_info", "")
-                        if ci.get("description"):
-                            extra = (ci["description"] + " " + extra).strip()
-                        result = classify_product(
-                            ANTHROPIC_KEY,
-                            ci["code"],
-                            ci.get("name") or ci["code"],
-                            ci.get("type", ""),
-                            extra,
-                        )
+                        # A3 — pause entre A2 et A3 pour éviter rate limit
+                        time.sleep(2)
+                        extra = ci.get("extra_info", "")[:500]
+                        desc  = ci.get("description", "")[:300]
+                        if desc:
+                            extra = (desc + " " + extra).strip()
+                        try:
+                            result = classify_product(
+                                ANTHROPIC_KEY,
+                                ci["code"],
+                                ci.get("name") or ci["code"],
+                                ci.get("type", "")[:200],
+                                extra,
+                            )
+                        except Exception as e3:
+                            result = {
+                                "assigned_categories": [],
+                                "confidence_global": "LOW",
+                                "error": str(e3),
+                                "_tokens": {"input": 0, "output": 0}
+                            }
                         tok3 = result.get("_tokens", {})
                         t3_in, t3_out = tok3.get("input", 0), tok3.get("output", 0)
                         st.session_state["session_tokens"]["input"]  += t3_in
@@ -412,6 +423,10 @@ else:
                         st.session_state["session_tokens"]["cost"]   += t3_in * HAIKU_COST_IN + t3_out * HAIKU_COST_OUT
 
                         all_results.append({"product": prod, "profile": profile, "classification": result})
+
+                        # Pause entre produits pour éviter rate limit (sauf dernier)
+                        if i < len(products) - 1:
+                            time.sleep(3)
 
                     progress_bar.progress(1.0, text="Done!")
                     st.success(f"✅ {len(all_results)} products classified.")
