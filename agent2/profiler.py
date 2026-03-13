@@ -94,19 +94,28 @@ def _clean_domain(domain: str) -> str:
 def find_product_url(model_code: str, domain: str, tavily_key: str) -> str | None:
     """Find the direct product page URL via Tavily, filtered by user-specified domain."""
     clean = _clean_domain(domain)
-    query = f"{model_code} site:{clean}"
-    results = _tavily_search(query, tavily_key, max_results=5)
-    # Priority 1: URL contains model code on the right domain
-    for r in results:
-        url = r.get("url", "")
-        if clean in url and model_code in url:
-            return url
-    # Priority 2: any URL on the right domain
-    for r in results:
-        url = r.get("url", "")
-        if clean in url:
-            return url
-    return None
+    # Try multiple query strategies
+    queries = [
+        f"{model_code} site:{clean}",
+        f"decathlon {model_code} fiche produit",
+    ]
+    for query in queries:
+        try:
+            results = _tavily_search(query, tavily_key, max_results=5)
+            # Priority 1: URL contains model code on the right domain
+            for r in results:
+                url = r.get("url", "")
+                if clean in url and model_code in url:
+                    return url
+            # Priority 2: any URL on the right domain (not search page)
+            for r in results:
+                url = r.get("url", "")
+                if clean in url and "search" not in url and "Ntt" not in url:
+                    return url
+        except Exception:
+            continue
+    # Fallback: try direct product URL patterns used by Decathlon
+    return f"https://www.{clean}/p/_/{model_code}"
 
 
 def scrape_product_specs(model_code: str, domain: str,
@@ -118,12 +127,15 @@ def scrape_product_specs(model_code: str, domain: str,
     raw_content = ""
     # Step 1: find the direct product URL via Tavily
     source_url = None
+    url_method = "fallback"
     if tavily_key:
         source_url = find_product_url(model_code, domain, tavily_key)
-    # Fallback: search page
+        if source_url:
+            url_method = "tavily"
+    # Fallback: direct product URL pattern (better than search page)
     if not source_url:
         clean = _clean_domain(domain)
-        source_url = f"https://www.{clean}/search?Ntt={model_code}"
+        source_url = f"https://www.{clean}/p/_/{model_code}"
 
     try:
         raw_content = _jina_fetch(source_url, jina_key)
