@@ -1,179 +1,173 @@
 """
 agent2/profiler.py — RegWatch Product Profiler
-Scrapes product specs from the web (Jina.ai + Tavily) by model code.
-Returns raw structured data only — no classification, no regulatory analysis.
+Extrait les technologies et specs clés d'un produit Decathlon
+à partir d'une recherche web par code modèle + nom produit.
+
+Méthode : web_search tool Claude (anthropic-beta: web-search-2025-03-05)
+Pas de Tavily, pas de Jina — recherche directement via Claude Haiku.
 """
 
 import json
 import urllib.request
 import urllib.parse
 import urllib.error
-import streamlit as st
+
+SYSTEM_PROMPT = """You are Agent 2, a product technology profiler for Decathlon Electronics.
+
+Your task: given a product name, model code, and web search results about this product,
+extract a structured technology profile to be used for regulatory classification.
+
+Focus ONLY on extracting factual technical information. Do not invent or assume.
+
+Extract the following when present:
+- Wireless protocols: Bluetooth, ANT+, GPS, WiFi, GSM/4G/5G, NFC, radio
+- Power: rechargeable battery, USB charging (USB-C, micro-USB), alkaline batteries, mains powered, solar
+- Primary function: lighting, audio, tracking, measurement, fitness, communication
+- Key sensors: heart rate, accelerometer, barometer, temperature, cadence, altimeter
+- Connectivity: app connectivity, Zwift, Strava compatible
+- Special features: waterproof rating, screen type, laser
+
+OUTPUT — respond ONLY with valid JSON, no markdown:
+{
+  "code": "<model_code>",
+  "name": "<product_name>",
+  "brand": "<brand>",
+  "description": "<1-2 sentence summary>",
+  "technologies": {
+    "wireless": ["Bluetooth", "GPS"],
+    "power": ["rechargeable battery", "USB-C charging"],
+    "primary_function": "fitness tracking",
+    "sensors": ["heart rate", "GPS"],
+    "connectivity": ["app sync", "Strava"]
+  },
+  "key_specs": {
+    "battery_life": "",
+    "water_resistance": "",
+    "weight": "",
+    "other": []
+  },
+  "found": true
+}
+"""
 
 
-# ── HTTP helpers ─────────────────────────────────────────────────────────────
-
-def _jina_fetch(url: str, jina_key: str = "") -> str:
-    """Fetch a URL via Jina.ai reader. Key is optional (anonymous quota available)."""
-    jina_url = f"https://r.jina.ai/{url}"
-    headers = {"Accept": "application/json"}
-    if jina_key:
-        headers["Authorization"] = f"Bearer {jina_key}"
-    req = urllib.request.Request(jina_url, headers=headers)
-    with urllib.request.urlopen(req, timeout=30) as resp:
-        data = json.loads(resp.read())
-    return data.get("data", {}).get("content", "")
+def _build_search_prompt(code: str, name: str, domain: str, extra_info: str = "") -> str:
+    domain_hint = f" Focus on results from {domain}." if domain else ""
+    extra = f"\nAdditional known info: {extra_info}" if extra_info else ""
+    return (
+        f"Search for: Decathlon {name} {code} specifications techniques caractéristiques"
+        f"{domain_hint}"
+        f"\n\nReturn the key technical specs found.{extra}"
+    )
 
 
-def _claude_call(prompt: str, api_key: str, max_tokens: int = 1000) -> tuple[str, int, int]:
-    """Call Claude Haiku. Returns (text, input_tokens, output_tokens)."""
+def _call_claude_with_search(query_prompt: str, api_key: str) -> str:
+    """Call Claude Haiku with web_search tool. Returns concatenated text from all blocks."""
     payload = json.dumps({
         "model": "claude-haiku-4-5-20251001",
-        "max_tokens": max_tokens,
-        "messages": [{"role": "user", "content": prompt}],
-    }).encode()
+        "max_tokens": 1024,
+        "tools": [{"type": "web_search_20250305", "name": "web_search"}],
+        "messages": [{"role": "user", "content": query_prompt}]
+    }).encode("utf-8")
+
     req = urllib.request.Request(
         "https://api.anthropic.com/v1/messages",
         data=payload,
         headers={
+            "Content-Type": "application/json",
             "x-api-key": api_key,
             "anthropic-version": "2023-06-01",
-            "content-type": "application/json",
+            "anthropic-beta": "web-search-2025-03-05",
         },
+        method="POST"
     )
-    with urllib.request.urlopen(req, timeout=60) as resp:
+    with urllib.request.urlopen(req, timeout=45) as resp:
         data = json.loads(resp.read())
-    text = data["content"][0]["text"]
-    usage = data.get("usage", {})
-    return text, usage.get("input_tokens", 0), usage.get("output_tokens", 0)
+
+    # Collect all text content from response blocks
+    full_text = ""
+    for block in data.get("content", []):
+        if block.get("type") == "text":
+            full_text += block.get("text", "")
+        elif block.get("type") == "tool_result":
+            for item in block.get("content", []):
+                if item.get("type") == "text":
+                    full_text += item.get("text", "")
+    return full_text
 
 
-def _parse_json_safe(raw: str) -> dict:
-    """Robustly extract JSON from a Claude response."""
-    raw = raw.strip()
-    start = raw.find("{")
-    end = raw.rfind("}") + 1
-    if start >= 0 and end > start:
-        try:
-            return json.loads(raw[start:end])
-        except json.JSONDecodeError:
-            pass
-    return {}
-
-
-# ── Tavily search ─────────────────────────────────────────────────────────────
-
-def _tavily_search(query: str, tavily_key: str, max_results: int = 5) -> list[dict]:
+def _call_claude_extract(user_message: str, api_key: str) -> tuple[dict, int, int]:
+    """Call Claude Haiku to extract structured JSON from search results."""
     payload = json.dumps({
-        "api_key": tavily_key,
-        "query": query,
-        "max_results": max_results,
-        "search_depth": "basic",
-    }).encode()
+        "model": "claude-haiku-4-5-20251001",
+        "max_tokens": 1024,
+        "system": SYSTEM_PROMPT,
+        "messages": [{"role": "user", "content": user_message}]
+    }).encode("utf-8")
+
     req = urllib.request.Request(
-        "https://api.tavily.com/search",
+        "https://api.anthropic.com/v1/messages",
         data=payload,
-        headers={"content-type": "application/json"},
+        headers={
+            "Content-Type": "application/json",
+            "x-api-key": api_key,
+            "anthropic-version": "2023-06-01",
+        },
+        method="POST"
     )
-    with urllib.request.urlopen(req, timeout=30) as resp:
+    with urllib.request.urlopen(req, timeout=45) as resp:
         data = json.loads(resp.read())
-    return data.get("results", [])
+
+    raw = data["content"][0]["text"].strip()
+    usage = data.get("usage", {})
+    tok_in  = usage.get("input_tokens", 0)
+    tok_out = usage.get("output_tokens", 0)
+
+    # Parse JSON robustly
+    if "```" in raw:
+        for part in raw.split("```"):
+            part = part.strip()
+            if part.startswith("json"):
+                part = part[4:].strip()
+            try:
+                return json.loads(part), tok_in, tok_out
+            except json.JSONDecodeError:
+                continue
+    start = raw.find("{")
+    end   = raw.rfind("}") + 1
+    if start >= 0 and end > start:
+        return json.loads(raw[start:end]), tok_in, tok_out
+    return {}, tok_in, tok_out
 
 
-def _clean_domain(domain: str) -> str:
-    """Normalize domain: decathlon.fr, www.decathlon.fr, https://decathlon.fr → decathlon.fr"""
-    d = domain.strip().lower()
-    for prefix in ["https://www.", "http://www.", "https://", "http://", "www."]:
-        if d.startswith(prefix):
-            d = d[len(prefix):]
-    return d.rstrip("/")
-
-
-# ── Main functions ────────────────────────────────────────────────────────────
-
-def find_product_url(model_code: str, domain: str, tavily_key: str) -> str | None:
+def profile_product(model_code: str, domain: str = "decathlon.fr",
+                    jina_key: str = "", api_key: str = "",
+                    tavily_key: str = "") -> dict:
     """
-    Find the direct product page URL via Tavily general web search,
-    then filter results by the user-specified domain.
-    No site: operator — Tavily searches the whole web.
+    Profile a product by model code + domain.
+    Step 1: Claude web_search finds specs on the web (filtered by domain hint).
+    Step 2: Claude Haiku extracts structured JSON from search results.
     """
-    clean = _clean_domain(domain)
-    query = f"decathlon {model_code}"
+    name_hint = model_code  # we only have the code at this stage
+
+    # Step 1: web search
+    search_prompt = _build_search_prompt(model_code, name_hint, domain)
     try:
-        results = _tavily_search(query, tavily_key, max_results=5)
-        # Priority 1: URL contains model code AND matches the domain
-        for r in results:
-            url = r.get("url", "")
-            if clean in url and model_code in url:
-                return url
-        # Priority 2: any product page on the domain (no search/listing pages)
-        for r in results:
-            url = r.get("url", "")
-            if clean in url and "search" not in url and "Ntt" not in url:
-                return url
-    except Exception:
-        pass
-    # Fallback: direct product URL pattern
-    return f"https://www.{clean}/p/_/{model_code}"
-
-
-def scrape_product_specs(model_code: str, domain: str,
-                          jina_key: str, api_key: str, tavily_key: str = "") -> dict:
-    """
-    Find product URL via Tavily (filtered by domain), scrape via Jina, extract via Claude.
-    Returns raw specs dict only — no classification.
-    """
-    raw_content = ""
-    # Step 1: find the direct product URL via Tavily
-    # Step 1: find direct product URL via Tavily (general search, filtered by domain)
-    source_url = None
-    if tavily_key:
-        source_url = find_product_url(model_code, domain, tavily_key)
-    # Fallback: direct product URL pattern
-    if not source_url:
-        clean = _clean_domain(domain)
-        source_url = f"https://www.{clean}/p/_/{model_code}"
-
-    try:
-        raw_content = _jina_fetch(source_url, jina_key)
+        search_text = _call_claude_with_search(search_prompt, api_key)
     except Exception as e:
-        raw_content = f"[Fetch failed: {e}]"
+        search_text = f"[Search failed: {e}]"
 
-    prompt = f"""You are a product data extraction assistant.
-Extract structured specifications from the following product page content for model code: {model_code}
-
-Return ONLY a valid JSON object with this exact structure:
-{{
-  "code": "{model_code}",
-  "name": "product name or empty string",
-  "brand": "brand name or empty string",
-  "url": "{source_url}",
-  "description": "short product description (2-3 sentences max) or empty string",
-  "technologies": {{
-    "wireless": ["list of wireless protocols found: Bluetooth, BLE, GPS, ANT+, WiFi, etc."],
-    "power": ["list of power/charging info: rechargeable, USB-C, solar, AA battery, etc."],
-    "sensors": ["list of sensors: heart rate, barometer, accelerometer, etc."],
-    "connectivity": ["list of connectivity features: app sync, phone pairing, etc."],
-    "primary_function": "main product function in 1-5 words"
-  }},
-  "key_specs": {{
-    "battery_life": "battery life info or empty string",
-    "water_resistance": "water resistance rating or empty string",
-    "weight": "weight or empty string",
-    "other": ["any other notable specs"]
-  }},
-  "found": true
-}}
-
-If the product is not found or content is irrelevant, return the same structure with "found": false and empty strings/lists.
-
-Page content:
-{raw_content[:4000]}
-"""
-
+    # Step 2: structured extraction
+    extract_prompt = (
+        f"Extract technology profile for Decathlon product code: {model_code}\n"
+        f"Domain hint: {domain}\n\n"
+        f"Search results:\n{search_text[:3000]}\n\n"
+        f"Return JSON only."
+    )
     try:
-        raw, tok_in, tok_out = _claude_call(prompt, api_key, max_tokens=800)
-        result = _parse_json_safe(raw)
+        result, tok_in, tok_out = _call_claude_extract(extract_prompt, api_key)
+        if not result:
+            result = {"code": model_code, "found": False}
         result["_tokens"] = {"input": tok_in, "output": tok_out}
         return result
     except Exception as e:
@@ -181,9 +175,9 @@ Page content:
             "code": model_code,
             "name": "",
             "brand": "",
-            "url": source_url,
             "description": "",
-            "technologies": {"wireless": [], "power": [], "sensors": [], "connectivity": [], "primary_function": ""},
+            "technologies": {"wireless": [], "power": [], "sensors": [],
+                             "connectivity": [], "primary_function": ""},
             "key_specs": {"battery_life": "", "water_resistance": "", "weight": "", "other": []},
             "found": False,
             "error": str(e),
@@ -191,18 +185,10 @@ Page content:
         }
 
 
-def profile_product(model_code: str, domain: str, jina_key: str, api_key: str,
-                    tavily_key: str = "") -> dict:
-    """
-    Full pipeline: Tavily finds direct product URL on domain → Jina scrapes → Claude extracts.
-    Returns raw product profile dict.
-    """
-    return scrape_product_specs(model_code, domain, jina_key, api_key, tavily_key)
-
-
-def profile_batch(model_codes: list[str], domain: str, jina_key: str,
-                  api_key: str, progress_cb=None, tavily_key: str = "") -> list[dict]:
-    """Profile multiple products. progress_cb(i, total, code) for UI updates."""
+def profile_batch(model_codes: list, domain: str = "decathlon.fr",
+                  jina_key: str = "", api_key: str = "",
+                  progress_cb=None, tavily_key: str = "") -> list:
+    """Profile multiple products."""
     results = []
     for i, code in enumerate(model_codes):
         if progress_cb:
@@ -212,21 +198,18 @@ def profile_batch(model_codes: list[str], domain: str, jina_key: str,
 
 
 def profile_to_classifier_input(profile: dict) -> dict:
-    """
-    Convert a raw profile (Agent 2 output) into structured input for Agent 3 classifier.
-    """
+    """Convert a raw profile (Agent 2 output) into structured input for Agent 3."""
     techs = profile.get("technologies", {})
-    wireless = techs.get("wireless", [])
-    power = techs.get("power", [])
-    sensors = techs.get("sensors", [])
-    connectivity = techs.get("connectivity", [])
-    all_info = wireless + power + sensors + connectivity
-    extra_info = ", ".join(all_info) if all_info else ""
-
+    all_info = (
+        techs.get("wireless", []) +
+        techs.get("power", []) +
+        techs.get("sensors", []) +
+        techs.get("connectivity", [])
+    )
     return {
-        "code": profile.get("code", ""),
-        "name": profile.get("name", ""),
-        "type": techs.get("primary_function", ""),
+        "code":        profile.get("code", ""),
+        "name":        profile.get("name", ""),
+        "type":        techs.get("primary_function", ""),
         "description": profile.get("description", ""),
-        "extra_info": extra_info,
+        "extra_info":  ", ".join(all_info) if all_info else "",
     }
