@@ -133,11 +133,23 @@ def profile_product(model_code: str, domain: str = "decathlon.fr",
     # ── Step 1 : Tavily search ────────────────────────────────────────────────
     snippets_text = ""
     if tavily_key:
-        # Search by model code ONLY — no name to avoid cross-product contamination
-        # (e.g. "W500" would match unrelated products with similar names)
-        query = f"Decathlon {model_code} {domain_clean}"
-        results = _tavily_search(query, tavily_key)
-        # Priority: results containing the exact model code
+        # Query 1: code + domain (most precise)
+        q1 = f"{model_code} {domain_clean}"
+        results = _tavily_search(q1, tavily_key, max_results=5)
+
+        # If no result contains the exact code, try broader query
+        has_code = any(
+            model_code in r.get("url", "") or model_code in r.get("content", "")
+            for r in results
+        )
+        if not has_code:
+            q2 = f"Decathlon {model_code}"
+            results2 = _tavily_search(q2, tavily_key, max_results=5)
+            # Merge, deduplicate by URL
+            seen = {r["url"] for r in results}
+            results += [r for r in results2 if r["url"] not in seen]
+
+        # Sort: exact code match first, then domain, then others
         code_results   = [r for r in results if model_code in r.get("url", "") or model_code in r.get("content", "")]
         domain_results = [r for r in results if domain_clean in r.get("url", "") and r not in code_results]
         other_results  = [r for r in results if r not in code_results and r not in domain_results]
