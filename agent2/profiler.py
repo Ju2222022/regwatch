@@ -84,15 +84,21 @@ def _tavily_search(query: str, tavily_key: str, max_results: int = 3) -> list[di
 
 def search_product_url(model_code: str, tavily_key: str) -> str | None:
     """Find the best Decathlon URL for a model code via Tavily."""
-    query = f'site:decathlon.fr "{model_code}" fiche produit'
-    results = _tavily_search(query, tavily_key, max_results=3)
+    # Try 1: direct Decathlon search with model code
+    query = f'decathlon {model_code} produit'
+    results = _tavily_search(query, tavily_key, max_results=5)
+    # Prefer URLs containing the model code
     for r in results:
         url = r.get("url", "")
-        if "decathlon.fr" in url and model_code.lower() in url.lower():
+        if "decathlon" in url and model_code in url:
             return url
-    if results:
-        return results[0].get("url")
-    return None
+    # Accept any Decathlon result
+    for r in results:
+        url = r.get("url", "")
+        if "decathlon" in url:
+            return url
+    # Fallback: direct Decathlon product URL pattern
+    return f"https://www.decathlon.fr/p/_/{model_code}"
 
 
 def scrape_product_specs(model_code: str, product_url: str | None,
