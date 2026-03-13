@@ -25,9 +25,10 @@ if "session_tokens" not in st.session_state:
 try:
     ANTHROPIC_KEY = st.secrets["ANTHROPIC_API_KEY"]
     TAVILY_KEY    = st.secrets["TAVILY_API_KEY"]
-    JINA_KEY      = st.secrets["JINA_API_KEY"]
+    JINA_KEY      = st.secrets.get("JINA_API_KEY", "")  # optional
 except Exception:
-    ANTHROPIC_KEY = TAVILY_KEY = JINA_KEY = ""
+    ANTHROPIC_KEY = TAVILY_KEY = ""
+    JINA_KEY = ""
 
 HAIKU_COST_IN   = 0.80  / 1_000_000
 HAIKU_COST_OUT  = 4.00  / 1_000_000
@@ -106,7 +107,7 @@ st.caption("Fetches product specs via Agent 2, then classifies CAT1–CAT9 again
 st.info("**Workflow:** 🔍 Agent 2 fetches specs by model code → 🏷️ Agent 3 classifies based on specs + your input")
 st.divider()
 
-if not ANTHROPIC_KEY or not TAVILY_KEY or not JINA_KEY:
+if not ANTHROPIC_KEY or not TAVILY_KEY:
     st.error("⚠️ Missing API keys — check Streamlit secrets.")
     st.stop()
 
@@ -196,103 +197,134 @@ if mode == "Single product":
 # BATCH MODE
 # ─────────────────────────────────────────────────────────────────────────────
 else:
-    st.markdown("**Format:** one product per line — `model_code | product_name | type (optional) | extra_info (optional)`")
-    with st.form("classifier_batch"):
-        batch_raw = st.text_area(
-            "Products (one per line) *",
-            placeholder="8788459 | GPS Watch W500 | GPS sports watch | Bluetooth, USB-C rechargeable\n2679873 | Heart Rate Sensor | chest strap | ANT+, Bluetooth",
-            height=150,
-        )
-        submitted = st.form_submit_button("🏷️ Fetch specs & classify all", type="primary")
+    st.markdown("**Upload a CSV or Excel file** with your product list.")
+    st.caption("Required column: `code` (model code). Optional: `name`, `type`, `extra_info`.")
 
-    if submitted:
-        lines = [l.strip() for l in batch_raw.strip().splitlines() if l.strip()]
-        if not lines:
-            st.warning("Please enter at least one product.")
-        else:
-            products = []
-            for line in lines:
-                parts = [p.strip() for p in line.split("|")]
-                products.append({
-                    "code":        parts[0] if len(parts) > 0 else "",
-                    "name":        parts[1] if len(parts) > 1 else "",
-                    "type":        parts[2] if len(parts) > 2 else "",
-                    "extra_info":  parts[3] if len(parts) > 3 else "",
-                })
+    # ── Download template ──────────────────────────────────────────────────
+    template_csv = "code,name,type,extra_info\n8788459,GPS Watch W500,GPS sports watch,Bluetooth rechargeable USB-C\n2679873,Heart Rate Sensor,chest strap,ANT+ Bluetooth\n"
+    st.download_button(
+        "⬇️ Download CSV template",
+        data=template_csv,
+        file_name="classifier_batch_template.csv",
+        mime="text/csv",
+    )
 
-            progress_bar = st.progress(0, text="Initialising…")
-            all_results = []
+    uploaded = st.file_uploader("Upload product list", type=["csv", "xlsx", "xls"])
 
-            for i, prod in enumerate(products):
-                code = prod["code"]
-                progress_bar.progress(i / len(products), text=f"[{i+1}/{len(products)}] {code} — fetching specs…")
+    if uploaded:
+        try:
+            import pandas as pd
+            if uploaded.name.endswith(".csv"):
+                df = pd.read_csv(uploaded)
+            else:
+                df = pd.read_excel(uploaded)
 
-                # A2
-                profile = profile_product(code, TAVILY_KEY, JINA_KEY, ANTHROPIC_KEY)
-                tok2 = profile.get("_tokens", {})
-                t2_in, t2_out = tok2.get("input", 0), tok2.get("output", 0)
-                st.session_state["session_tokens"]["input"]  += t2_in
-                st.session_state["session_tokens"]["output"] += t2_out
-                st.session_state["session_tokens"]["cost"]   += t2_in * HAIKU_COST_IN + t2_out * HAIKU_COST_OUT
+            # Normalise column names
+            df.columns = df.columns.str.lower().str.strip()
+            for alias in ["model code", "model_code", "modèle", "ref", "reference"]:
+                if alias in df.columns:
+                    df = df.rename(columns={alias: "code"})
+                    break
 
-                # Merge inputs
-                ci = profile_to_classifier_input(profile)
-                ci["name"] = prod["name"] or ci.get("name", "")
-                ci["type"] = prod["type"] or ci.get("type", "")
-                if prod["extra_info"]:
-                    ci["extra_info"] = (ci.get("extra_info", "") + ", " + prod["extra_info"]).strip(", ")
+            if "code" not in df.columns:
+                st.error("❌ Column 'code' not found. Please check your file headers.")
+            else:
+                df = df.fillna("")
+                products = []
+                for _, row in df.iterrows():
+                    code = str(row.get("code", "")).strip()
+                    if code:
+                        products.append({
+                            "code":       code,
+                            "name":       str(row.get("name", "")).strip(),
+                            "type":       str(row.get("type", "")).strip(),
+                            "extra_info": str(row.get("extra_info", "")).strip(),
+                        })
 
-                progress_bar.progress((i + 0.5) / len(products), text=f"[{i+1}/{len(products)}] {code} — classifying…")
+                preview_cols = [col for col in ["code", "name", "type", "extra_info"] if col in df.columns]
+                st.success(f"✅ {len(products)} products loaded.")
+                st.dataframe(df[preview_cols].head(10), use_container_width=True)
 
-                # A3
-                result = classify_product(
-                    code=ci["code"], name=ci["name"],
-                    product_type=ci.get("type", ""),
-                    description=ci.get("description", ""),
-                    extra_info=ci.get("extra_info", ""),
-                    api_key=ANTHROPIC_KEY,
-                )
-                tok3 = result.get("_tokens", {})
-                t3_in, t3_out = tok3.get("input", 0), tok3.get("output", 0)
-                st.session_state["session_tokens"]["input"]  += t3_in
-                st.session_state["session_tokens"]["output"] += t3_out
-                st.session_state["session_tokens"]["cost"]   += t3_in * HAIKU_COST_IN + t3_out * HAIKU_COST_OUT
+                if st.button("🏷️ Fetch specs & classify all", type="primary"):
+                    progress_bar = st.progress(0, text="Initialising…")
+                    all_results = []
 
-                all_results.append({"product": prod, "profile": profile, "classification": result})
+                    for i, prod in enumerate(products):
+                        code = prod["code"]
+                        progress_bar.progress(i / len(products), text=f"[{i+1}/{len(products)}] {code} — fetching specs…")
 
-            progress_bar.progress(1.0, text="Done!")
-            st.success(f"✅ {len(all_results)} products classified.")
+                        # A2
+                        profile = profile_product(code, TAVILY_KEY, JINA_KEY, ANTHROPIC_KEY)
+                        tok2 = profile.get("_tokens", {})
+                        t2_in, t2_out = tok2.get("input", 0), tok2.get("output", 0)
+                        st.session_state["session_tokens"]["input"]  += t2_in
+                        st.session_state["session_tokens"]["output"] += t2_out
+                        st.session_state["session_tokens"]["cost"]   += t2_in * HAIKU_COST_IN + t2_out * HAIKU_COST_OUT
 
-            for item in all_results:
-                prod   = item["product"]
-                prof   = item["profile"]
-                result = item["classification"]
-                cats   = result.get("categories", [])
-                label  = f"{'✅' if prof.get('found') else '⚠️'} {prod['code']} — {prod['name'] or prof.get('name','?')} → {', '.join(cats) if cats else '?'}"
+                        # Merge inputs — A2 scrape is priority, CSV fields fill gaps only
+                        ci = profile_to_classifier_input(profile)
+                        # A2 scraped name takes priority — CSV value is fallback only
+                        if not ci.get("name"):
+                            ci["name"] = prod["name"]
+                        # A2 scraped type takes priority — CSV value is fallback only
+                        if not ci.get("type"):
+                            ci["type"] = prod["type"]
+                        # extra_info is always additive (CSV can enrich)
+                        if prod["extra_info"]:
+                            ci["extra_info"] = (ci.get("extra_info", "") + ", " + prod["extra_info"]).strip(", ")
 
-                with st.expander(label):
-                    st.markdown("**📦 Specs (Agent 2)**")
-                    _display_specs_block(prof)
-                    st.markdown("**🏷️ Classification (Agent 3)**")
-                    _display_classification(result)
+                        progress_bar.progress((i + 0.5) / len(products), text=f"[{i+1}/{len(products)}] {code} — classifying…")
 
-            # Export
-            export = [
-                {
-                    "code": item["product"]["code"],
-                    "name": item["product"]["name"],
-                    "found": item["profile"].get("found"),
-                    "categories": item["classification"].get("categories", []),
-                    "confidence": item["classification"].get("confidence", ""),
-                }
-                for item in all_results
-            ]
-            st.download_button(
-                "⬇️ Download results (JSON)",
-                data=json.dumps(export, indent=2, ensure_ascii=False),
-                file_name="classifier_batch_results.json",
-                mime="application/json",
-            )
+                        # A3
+                        result = classify_product(
+                            code=ci["code"], name=ci["name"],
+                            product_type=ci.get("type", ""),
+                            description=ci.get("description", ""),
+                            extra_info=ci.get("extra_info", ""),
+                            api_key=ANTHROPIC_KEY,
+                        )
+                        tok3 = result.get("_tokens", {})
+                        t3_in, t3_out = tok3.get("input", 0), tok3.get("output", 0)
+                        st.session_state["session_tokens"]["input"]  += t3_in
+                        st.session_state["session_tokens"]["output"] += t3_out
+                        st.session_state["session_tokens"]["cost"]   += t3_in * HAIKU_COST_IN + t3_out * HAIKU_COST_OUT
+
+                        all_results.append({"product": prod, "profile": profile, "classification": result})
+
+                    progress_bar.progress(1.0, text="Done!")
+                    st.success(f"✅ {len(all_results)} products classified.")
+
+                    for item in all_results:
+                        prod   = item["product"]
+                        prof   = item["profile"]
+                        result = item["classification"]
+                        cats   = result.get("categories", [])
+                        label  = f"{'✅' if prof.get('found') else '⚠️'} {prod['code']} — {prod['name'] or prof.get('name','?')} → {', '.join(cats) if cats else '?'}"
+                        with st.expander(label):
+                            st.markdown("**📦 Specs (Agent 2)**")
+                            _display_specs_block(prof)
+                            st.markdown("**🏷️ Classification (Agent 3)**")
+                            _display_classification(result)
+
+                    # Export
+                    export = [
+                        {
+                            "code":       item["product"]["code"],
+                            "name":       item["profile"].get("name") or item["product"]["name"],
+                            "found":      item["profile"].get("found"),
+                            "categories": item["classification"].get("categories", []),
+                            "confidence": item["classification"].get("confidence", ""),
+                        }
+                        for item in all_results
+                    ]
+                    st.download_button(
+                        "⬇️ Download results (JSON)",
+                        data=json.dumps(export, indent=2, ensure_ascii=False),
+                        file_name="classifier_batch_results.json",
+                        mime="application/json",
+                    )
+        except Exception as e:
+            st.error(f"❌ Error reading file: {e}")
 
 # ── Footer ────────────────────────────────────────────────────────────────────
 st.divider()

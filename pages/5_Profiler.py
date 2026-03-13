@@ -21,9 +21,10 @@ if "session_tokens" not in st.session_state:
 try:
     ANTHROPIC_KEY = st.secrets["ANTHROPIC_API_KEY"]
     TAVILY_KEY    = st.secrets["TAVILY_API_KEY"]
-    JINA_KEY      = st.secrets["JINA_API_KEY"]
+    JINA_KEY      = st.secrets.get("JINA_API_KEY", "")  # optional
 except Exception:
-    ANTHROPIC_KEY = TAVILY_KEY = JINA_KEY = ""
+    ANTHROPIC_KEY = TAVILY_KEY = ""
+    JINA_KEY = ""
 
 HAIKU_COST_IN  = 0.80 / 1_000_000
 HAIKU_COST_OUT = 4.00 / 1_000_000
@@ -117,8 +118,8 @@ st.caption("Fetches raw product specs from the web by model code. No classificat
 st.info("📋 **Output:** product name, description, detected technologies (wireless, power, sensors) and key specs. Results are ready to feed into Agent 3 (Classifier).")
 st.divider()
 
-if not ANTHROPIC_KEY or not TAVILY_KEY or not JINA_KEY:
-    st.error("⚠️ Missing API keys — check Streamlit secrets (ANTHROPIC_API_KEY, TAVILY_API_KEY, JINA_API_KEY).")
+if not ANTHROPIC_KEY or not TAVILY_KEY:
+    st.error("⚠️ Missing API keys — check Streamlit secrets (ANTHROPIC_API_KEY, TAVILY_API_KEY). JINA_API_KEY is optional.")
     st.stop()
 
 mode = st.radio("Mode", ["Single product", "Batch"], horizontal=True)
@@ -151,51 +152,76 @@ if mode == "Single product":
             _display_profile(profile)
 
 else:
-    with st.form("profiler_batch"):
-        codes_raw = st.text_area(
-            "Model codes (one per line) *",
-            placeholder="8788459\n2679873\n1234567",
-            height=120,
-        )
-        submitted = st.form_submit_button("🔍 Fetch all products", type="primary")
+    st.markdown("**Upload a CSV or Excel file** with a `code` column (one model code per row).")
+    st.caption("Accepted columns: `code` (required). Other columns are ignored.")
 
-    if submitted:
-        codes = [c.strip() for c in codes_raw.strip().splitlines() if c.strip()]
-        if not codes:
-            st.warning("Please enter at least one model code.")
-        else:
-            progress_bar = st.progress(0, text="Initialising…")
-            results = []
+    # ── Download template ──────────────────────────────────────────────────
+    import io
+    template_csv = "code\n8788459\n2679873\n1234567\n"
+    st.download_button(
+        "⬇️ Download CSV template",
+        data=template_csv,
+        file_name="profiler_batch_template.csv",
+        mime="text/csv",
+    )
 
-            def _progress_cb(i, total, code):
-                progress_bar.progress(i / total, text=f"[{i+1}/{total}] Fetching {code}…")
+    uploaded = st.file_uploader("Upload product list", type=["csv", "xlsx", "xls"])
 
-            with st.spinner("Fetching product specs…"):
-                from agent2.profiler import profile_batch
-                results = profile_batch(codes, TAVILY_KEY, JINA_KEY, ANTHROPIC_KEY, _progress_cb)
+    if uploaded:
+        try:
+            import pandas as pd
+            if uploaded.name.endswith(".csv"):
+                df = pd.read_csv(uploaded)
+            else:
+                df = pd.read_excel(uploaded)
 
-            progress_bar.progress(1.0, text="Done!")
+            # Normalise column names
+            df.columns = df.columns.str.lower().str.strip()
+            # Accept "model code", "model_code", "code"
+            for alias in ["model code", "model_code", "modèle", "ref", "reference"]:
+                if alias in df.columns:
+                    df = df.rename(columns={alias: "code"})
+                    break
 
-            total_in  = sum(r.get("_tokens", {}).get("input", 0) for r in results)
-            total_out = sum(r.get("_tokens", {}).get("output", 0) for r in results)
-            cost = total_in * HAIKU_COST_IN + total_out * HAIKU_COST_OUT
-            st.session_state["session_tokens"]["input"]  += total_in
-            st.session_state["session_tokens"]["output"] += total_out
-            st.session_state["session_tokens"]["cost"]   += cost
+            if "code" not in df.columns:
+                st.error("❌ Column 'code' not found. Please check your file headers.")
+            else:
+                codes = [str(c).strip() for c in df["code"].dropna() if str(c).strip()]
+                st.success(f"✅ {len(codes)} model codes loaded.")
+                st.dataframe(df[["code"]].head(10), use_container_width=True)
 
-            st.success(f"✅ {len(results)} products fetched.")
-            for r in results:
-                label = f"{'✅' if r.get('found') else '❌'} {r.get('code','?')} — {r.get('name') or 'Not found'}"
-                with st.expander(label):
-                    _display_profile(r)
+                if st.button("🔍 Fetch all products", type="primary"):
+                    progress_bar = st.progress(0, text="Initialising…")
+                    results = []
 
-            clean = [{k: v for k, v in r.items() if k != "_tokens"} for r in results]
-            st.download_button(
-                "⬇️ Download batch results (JSON)",
-                data=json.dumps(clean, indent=2, ensure_ascii=False),
-                file_name="profiler_batch_results.json",
-                mime="application/json",
-            )
+                    def _progress_cb(i, total, code):
+                        progress_bar.progress(i / total, text=f"[{i+1}/{total}] Fetching {code}…")
+
+                    results = profile_batch(codes, TAVILY_KEY, JINA_KEY, ANTHROPIC_KEY, _progress_cb)
+                    progress_bar.progress(1.0, text="Done!")
+
+                    total_in  = sum(r.get("_tokens", {}).get("input", 0) for r in results)
+                    total_out = sum(r.get("_tokens", {}).get("output", 0) for r in results)
+                    cost = total_in * HAIKU_COST_IN + total_out * HAIKU_COST_OUT
+                    st.session_state["session_tokens"]["input"]  += total_in
+                    st.session_state["session_tokens"]["output"] += total_out
+                    st.session_state["session_tokens"]["cost"]   += cost
+
+                    st.success(f"✅ {len(results)} products fetched.")
+                    for r in results:
+                        label = f"{'✅' if r.get('found') else '❌'} {r.get('code','?')} — {r.get('name') or 'Not found'}"
+                        with st.expander(label):
+                            _display_profile(r)
+
+                    clean = [{k: v for k, v in r.items() if k != "_tokens"} for r in results]
+                    st.download_button(
+                        "⬇️ Download batch results (JSON)",
+                        data=json.dumps(clean, indent=2, ensure_ascii=False),
+                        file_name="profiler_batch_results.json",
+                        mime="application/json",
+                    )
+        except Exception as e:
+            st.error(f"❌ Error reading file: {e}")
 
 # ── Footer ────────────────────────────────────────────────────────────────────
 st.divider()
