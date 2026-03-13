@@ -74,10 +74,17 @@ def _display_specs_block(profile: dict):
 
 def _display_classification(result: dict):
     """Display Agent 3 classification output."""
-    cats = result.get("categories", [])
-    confidence = result.get("confidence", "")
-    reasoning  = result.get("reasoning", "")
-    flags      = result.get("flags", [])
+    cats = result.get("assigned_categories", result.get("categories", []))
+    confidence = result.get("confidence_global", result.get("confidence", ""))
+    reasoning  = json.dumps(result.get("category_justification", {}), indent=2) if result.get("category_justification") else result.get("reasoning", "")
+    flags_raw  = result.get("flags", {})
+    flags = []
+    if isinstance(flags_raw, dict):
+        for k, v in flags_raw.items():
+            if v:
+                flags += [f"{k}: {', '.join(v) if isinstance(v, list) else v}"]
+    elif isinstance(flags_raw, list):
+        flags = flags_raw
 
     if not cats:
         st.error("No categories returned.")
@@ -171,13 +178,15 @@ if mode == "Single product":
 
             # Step 2: Classify via Agent 3
             with st.spinner("🏷️ Agent 3 — Classifying…"):
+                extra = classifier_input.get("extra_info", "")
+                if classifier_input.get("description"):
+                    extra = (classifier_input["description"] + " " + extra).strip()
                 result = classify_product(
-                    code=classifier_input["code"],
-                    name=classifier_input["name"],
-                    product_type=classifier_input.get("type", ""),
-                    description=classifier_input.get("description", ""),
-                    extra_info=classifier_input.get("extra_info", ""),
-                    api_key=ANTHROPIC_KEY,
+                    ANTHROPIC_KEY,
+                    classifier_input["code"],
+                    classifier_input["name"],
+                    classifier_input.get("type", ""),
+                    extra,
                 )
 
             # Display classification block
@@ -276,12 +285,15 @@ else:
                         progress_bar.progress((i + 0.5) / len(products), text=f"[{i+1}/{len(products)}] {code} — classifying…")
 
                         # A3
+                        extra = ci.get("extra_info", "")
+                        if ci.get("description"):
+                            extra = (ci["description"] + " " + extra).strip()
                         result = classify_product(
-                            code=ci["code"], name=ci["name"],
-                            product_type=ci.get("type", ""),
-                            description=ci.get("description", ""),
-                            extra_info=ci.get("extra_info", ""),
-                            api_key=ANTHROPIC_KEY,
+                            ANTHROPIC_KEY,
+                            ci["code"],
+                            ci["name"],
+                            ci.get("type", ""),
+                            extra,
                         )
                         tok3 = result.get("_tokens", {})
                         t3_in, t3_out = tok3.get("input", 0), tok3.get("output", 0)
@@ -298,7 +310,7 @@ else:
                         prod   = item["product"]
                         prof   = item["profile"]
                         result = item["classification"]
-                        cats   = result.get("categories", [])
+                        cats   = result.get("assigned_categories", result.get("categories", []))
                         label  = f"{'✅' if prof.get('found') else '⚠️'} {prod['code']} — {prod['name'] or prof.get('name','?')} → {', '.join(cats) if cats else '?'}"
                         with st.expander(label):
                             st.markdown("**📦 Specs (Agent 2)**")
@@ -312,8 +324,8 @@ else:
                             "code":       item["product"]["code"],
                             "name":       item["profile"].get("name") or item["product"]["name"],
                             "found":      item["profile"].get("found"),
-                            "categories": item["classification"].get("categories", []),
-                            "confidence": item["classification"].get("confidence", ""),
+                            "categories": item["classification"].get("assigned_categories", item["classification"].get("categories", [])),
+                            "confidence": item["classification"].get("confidence_global", item["classification"].get("confidence", "")),
                         }
                         for item in all_results
                     ]
