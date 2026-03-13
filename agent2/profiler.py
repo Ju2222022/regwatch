@@ -162,26 +162,25 @@ def profile_product(model_code: str, domain: str = "decathlon.fr",
 
     # ── Single call: search + extract in one shot ─────────────────────────────
     user_msg = (
-        f"Search for Decathlon product code {model_code} ({search_name}) on {domain_clean}.\n"
-        f"Find its full technical specifications, then return ONLY a JSON object "
-        f"following the structure in your instructions. No explanation, JSON only."
+        f"Decathlon {model_code} {search_name} {domain_clean} technical specifications. "
+        f"Return ONLY the JSON object from your instructions. No text outside JSON."
     )
 
     try:
         payload = {
             "model": "claude-haiku-4-5-20251001",
-            "max_tokens": 1024,
+            "max_tokens": 800,
             "system": SYSTEM_PROMPT,
             "tools": [{"type": "web_search_20250305", "name": "web_search"}],
             "messages": [{"role": "user", "content": user_msg}]
         }
         data = _call_api(payload, api_key, beta="web-search-2025-03-05")
 
-        # Extract the final text block (after search results)
+        # Extract the final text block (last text block = Claude's final answer)
         raw = ""
         for block in data.get("content", []):
             if block.get("type") == "text":
-                raw = block.get("text", "")  # keep last text block = final answer
+                raw = block.get("text", "")
 
         usage = data.get("usage", {})
         tok_in  = usage.get("input_tokens", 0)
