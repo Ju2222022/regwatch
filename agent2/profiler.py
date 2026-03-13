@@ -133,12 +133,15 @@ def profile_product(model_code: str, domain: str = "decathlon.fr",
     # ── Step 1 : Tavily search ────────────────────────────────────────────────
     snippets_text = ""
     if tavily_key:
-        query = f"Decathlon {model_code} {search_name} specifications {domain_clean}"
+        # Search by model code ONLY — no name to avoid cross-product contamination
+        # (e.g. "W500" would match unrelated products with similar names)
+        query = f"Decathlon {model_code} {domain_clean}"
         results = _tavily_search(query, tavily_key)
-        # Filtrer les résultats du bon domaine en priorité
-        domain_results = [r for r in results if domain_clean in r.get("url", "")]
-        other_results  = [r for r in results if domain_clean not in r.get("url", "")]
-        ordered = domain_results + other_results
+        # Priority: results containing the exact model code
+        code_results   = [r for r in results if model_code in r.get("url", "") or model_code in r.get("content", "")]
+        domain_results = [r for r in results if domain_clean in r.get("url", "") and r not in code_results]
+        other_results  = [r for r in results if r not in code_results and r not in domain_results]
+        ordered = code_results + domain_results + other_results
 
         parts = []
         for r in ordered[:4]:
@@ -161,10 +164,10 @@ def profile_product(model_code: str, domain: str = "decathlon.fr",
                 "role": "user",
                 "content": (
                     f"Model code: {model_code}\n"
-                    f"Name: {search_name}\n"
                     f"Domain: {domain_clean}\n\n"
-                    f"Search snippets:\n{snippets_text[:2000]}\n\n"
-                    f"Return JSON only."
+                    f"Search snippets (extract info ONLY for product with code {model_code}):\n"
+                    f"{snippets_text[:2000]}\n\n"
+                    f"Return JSON only. If snippets describe a different product, set found: false."
                 )
             }]
         }
