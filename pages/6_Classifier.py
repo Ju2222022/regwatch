@@ -24,9 +24,11 @@ if "session_tokens" not in st.session_state:
 # ── API keys ──────────────────────────────────────────────────────────────────
 try:
     ANTHROPIC_KEY = st.secrets["ANTHROPIC_API_KEY"]
-    JINA_KEY      = st.secrets.get("JINA_API_KEY", "")  # optional
+    TAVILY_KEY    = st.secrets.get("TAVILY_API_KEY", "")
+    JINA_KEY      = st.secrets.get("JINA_API_KEY", "")
 except Exception:
     ANTHROPIC_KEY = ""
+    TAVILY_KEY = ""
     JINA_KEY = ""
 
 HAIKU_COST_IN   = 0.80  / 1_000_000
@@ -152,7 +154,7 @@ if mode == "Single product":
         else:
             # Step 1: Fetch specs via Agent 2
             with st.spinner(f"🔍 Agent 2 — Scraping **{domain.strip()}** for **{model_code.strip()}**…"):
-                profile = profile_product(model_code.strip(), domain.strip(), JINA_KEY, ANTHROPIC_KEY)
+                profile = profile_product(model_code.strip(), domain.strip(), JINA_KEY, ANTHROPIC_KEY, TAVILY_KEY)
 
             # Display specs block
             st.markdown("### 📦 Product specs (Agent 2)")
@@ -269,7 +271,7 @@ else:
                         progress_bar.progress(i / len(products), text=f"[{i+1}/{len(products)}] {code} — fetching specs…")
 
                         # A2
-                        profile = profile_product(code, domain_batch, JINA_KEY, ANTHROPIC_KEY)
+                        profile = profile_product(code, domain_batch, JINA_KEY, ANTHROPIC_KEY, TAVILY_KEY)
                         tok2 = profile.get("_tokens", {})
                         t2_in, t2_out = tok2.get("input", 0), tok2.get("output", 0)
                         st.session_state["session_tokens"]["input"]  += t2_in

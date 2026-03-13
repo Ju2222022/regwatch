@@ -20,9 +20,11 @@ if "session_tokens" not in st.session_state:
 # ── API keys ──────────────────────────────────────────────────────────────────
 try:
     ANTHROPIC_KEY = st.secrets["ANTHROPIC_API_KEY"]
-    JINA_KEY      = st.secrets.get("JINA_API_KEY", "")  # optional
+    TAVILY_KEY    = st.secrets.get("TAVILY_API_KEY", "")
+    JINA_KEY      = st.secrets.get("JINA_API_KEY", "")
 except Exception:
     ANTHROPIC_KEY = ""
+    TAVILY_KEY = ""
     JINA_KEY = ""
 
 HAIKU_COST_IN  = 0.80 / 1_000_000
@@ -143,7 +145,7 @@ if mode == "Single product":
             st.warning("Please enter a model code.")
         else:
             with st.spinner(f"Scraping **{domain.strip()}** for **{model_code.strip()}**…"):
-                profile = profile_product(model_code.strip(), domain.strip(), JINA_KEY, ANTHROPIC_KEY)
+                profile = profile_product(model_code.strip(), domain.strip(), JINA_KEY, ANTHROPIC_KEY, TAVILY_KEY)
 
             tok = profile.get("_tokens", {})
             tok_in  = tok.get("input", 0)
@@ -208,7 +210,7 @@ else:
                     def _progress_cb(i, total, code):
                         progress_bar.progress(i / total, text=f"[{i+1}/{total}] Fetching {code}…")
 
-                    results = profile_batch(codes, domain_batch.strip(), JINA_KEY, ANTHROPIC_KEY, _progress_cb)
+                    results = profile_batch(codes, domain_batch.strip(), JINA_KEY, ANTHROPIC_KEY, _progress_cb, TAVILY_KEY)
                     progress_bar.progress(1.0, text="Done!")
 
                     total_in  = sum(r.get("_tokens", {}).get("input", 0) for r in results)
