@@ -24,10 +24,9 @@ if "session_tokens" not in st.session_state:
 # ── API keys ──────────────────────────────────────────────────────────────────
 try:
     ANTHROPIC_KEY = st.secrets["ANTHROPIC_API_KEY"]
-    TAVILY_KEY    = st.secrets["TAVILY_API_KEY"]
     JINA_KEY      = st.secrets.get("JINA_API_KEY", "")  # optional
 except Exception:
-    ANTHROPIC_KEY = TAVILY_KEY = ""
+    ANTHROPIC_KEY = ""
     JINA_KEY = ""
 
 HAIKU_COST_IN   = 0.80  / 1_000_000
@@ -114,8 +113,8 @@ st.caption("Fetches product specs via Agent 2, then classifies CAT1–CAT9 again
 st.info("**Workflow:** 🔍 Agent 2 fetches specs by model code → 🏷️ Agent 3 classifies based on specs + your input")
 st.divider()
 
-if not ANTHROPIC_KEY or not TAVILY_KEY:
-    st.error("⚠️ Missing API keys — check Streamlit secrets.")
+if not ANTHROPIC_KEY:
+    st.error("⚠️ Missing API key — check Streamlit secrets (ANTHROPIC_API_KEY).")
     st.stop()
 
 mode = st.radio("Mode", ["Single product", "Batch"], horizontal=True)
@@ -130,29 +129,30 @@ if mode == "Single product":
         with col1:
             model_code   = st.text_input("Model code *", placeholder="e.g. 8788459")
         with col2:
-            product_name = st.text_input("Product name *", placeholder="e.g. Decathlon GPS Watch W500")
+            domain = st.text_input("Domain *", value="decathlon.fr",
+                                   placeholder="e.g. decathlon.fr, decathlon.ca",
+                                   help="Domain to scrape — https://www.{domain}/search?Ntt={model_code}")
 
         col3, col4 = st.columns(2)
         with col3:
-            product_type = st.text_input(
-                "Type / Description (optional)",
-                placeholder="e.g. GPS sports watch with heart rate monitor"
-            )
+            product_name = st.text_input("Product name (fallback if not found)",
+                                         placeholder="e.g. GPS Watch W500")
         with col4:
-            extra_info = st.text_input(
-                "Additional info (optional)",
-                placeholder="e.g. Bluetooth, rechargeable via USB-C, barometric altimeter"
-            )
+            product_type = st.text_input("Type / Description (optional)",
+                                         placeholder="e.g. GPS sports watch")
+
+        extra_info = st.text_input("Additional info (optional)",
+                                   placeholder="e.g. Bluetooth, rechargeable via USB-C")
 
         submitted = st.form_submit_button("🏷️ Fetch specs & classify", type="primary")
 
     if submitted:
-        if not model_code.strip() or not product_name.strip():
-            st.warning("Model code and product name are required.")
+        if not model_code.strip():
+            st.warning("Model code is required.")
         else:
             # Step 1: Fetch specs via Agent 2
-            with st.spinner(f"🔍 Agent 2 — Fetching specs for **{model_code.strip()}**…"):
-                profile = profile_product(model_code.strip(), TAVILY_KEY, JINA_KEY, ANTHROPIC_KEY)
+            with st.spinner(f"🔍 Agent 2 — Scraping **{domain.strip()}** for **{model_code.strip()}**…"):
+                profile = profile_product(model_code.strip(), domain.strip(), JINA_KEY, ANTHROPIC_KEY)
 
             # Display specs block
             st.markdown("### 📦 Product specs (Agent 2)")
@@ -254,6 +254,12 @@ else:
                 st.success(f"✅ {len(products)} products loaded.")
                 st.dataframe(df[preview_cols].head(10), use_container_width=True)
 
+                domain_batch = st.text_input(
+                    "Domain *", value="decathlon.fr",
+                    placeholder="e.g. decathlon.fr, decathlon.ca",
+                    key="domain_batch_cls",
+                    help="Domain to scrape for all products in this batch"
+                )
                 if st.button("🏷️ Fetch specs & classify all", type="primary"):
                     progress_bar = st.progress(0, text="Initialising…")
                     all_results = []
@@ -263,7 +269,7 @@ else:
                         progress_bar.progress(i / len(products), text=f"[{i+1}/{len(products)}] {code} — fetching specs…")
 
                         # A2
-                        profile = profile_product(code, TAVILY_KEY, JINA_KEY, ANTHROPIC_KEY)
+                        profile = profile_product(code, domain_batch, JINA_KEY, ANTHROPIC_KEY)
                         tok2 = profile.get("_tokens", {})
                         t2_in, t2_out = tok2.get("input", 0), tok2.get("output", 0)
                         st.session_state["session_tokens"]["input"]  += t2_in

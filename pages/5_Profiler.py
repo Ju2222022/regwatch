@@ -20,10 +20,9 @@ if "session_tokens" not in st.session_state:
 # ── API keys ──────────────────────────────────────────────────────────────────
 try:
     ANTHROPIC_KEY = st.secrets["ANTHROPIC_API_KEY"]
-    TAVILY_KEY    = st.secrets["TAVILY_API_KEY"]
     JINA_KEY      = st.secrets.get("JINA_API_KEY", "")  # optional
 except Exception:
-    ANTHROPIC_KEY = TAVILY_KEY = ""
+    ANTHROPIC_KEY = ""
     JINA_KEY = ""
 
 HAIKU_COST_IN  = 0.80 / 1_000_000
@@ -118,8 +117,8 @@ st.caption("Fetches raw product specs from the web by model code. No classificat
 st.info("📋 **Output:** product name, description, detected technologies (wireless, power, sensors) and key specs. Results are ready to feed into Agent 3 (Classifier).")
 st.divider()
 
-if not ANTHROPIC_KEY or not TAVILY_KEY:
-    st.error("⚠️ Missing API keys — check Streamlit secrets (ANTHROPIC_API_KEY, TAVILY_API_KEY). JINA_API_KEY is optional.")
+if not ANTHROPIC_KEY:
+    st.error("⚠️ Missing API key — check Streamlit secrets (ANTHROPIC_API_KEY). JINA_API_KEY is optional.")
     st.stop()
 
 mode = st.radio("Mode", ["Single product", "Batch"], horizontal=True)
@@ -130,7 +129,12 @@ if mode == "Single product":
         model_code = st.text_input(
             "Model code *",
             placeholder="e.g. 8788459",
-            help="Decathlon model code — will be searched on decathlon.fr"
+        )
+        domain = st.text_input(
+            "Domain *",
+            value="decathlon.fr",
+            placeholder="e.g. decathlon.fr, decathlon.ca, decathlon.de",
+            help="Domain to scrape — the search URL will be: https://www.{domain}/search?Ntt={model_code}"
         )
         submitted = st.form_submit_button("🔍 Fetch product specs", type="primary")
 
@@ -138,8 +142,8 @@ if mode == "Single product":
         if not model_code.strip():
             st.warning("Please enter a model code.")
         else:
-            with st.spinner(f"Searching and scraping specs for **{model_code.strip()}**…"):
-                profile = profile_product(model_code.strip(), TAVILY_KEY, JINA_KEY, ANTHROPIC_KEY)
+            with st.spinner(f"Scraping **{domain.strip()}** for **{model_code.strip()}**…"):
+                profile = profile_product(model_code.strip(), domain.strip(), JINA_KEY, ANTHROPIC_KEY)
 
             tok = profile.get("_tokens", {})
             tok_in  = tok.get("input", 0)
@@ -190,6 +194,13 @@ else:
                 st.success(f"✅ {len(codes)} model codes loaded.")
                 st.dataframe(df[["code"]].head(10), use_container_width=True)
 
+                domain_batch = st.text_input(
+                    "Domain *",
+                    value="decathlon.fr",
+                    placeholder="e.g. decathlon.fr, decathlon.ca",
+                    key="domain_batch",
+                    help="Domain to scrape for all products in this batch"
+                )
                 if st.button("🔍 Fetch all products", type="primary"):
                     progress_bar = st.progress(0, text="Initialising…")
                     results = []
@@ -197,7 +208,7 @@ else:
                     def _progress_cb(i, total, code):
                         progress_bar.progress(i / total, text=f"[{i+1}/{total}] Fetching {code}…")
 
-                    results = profile_batch(codes, TAVILY_KEY, JINA_KEY, ANTHROPIC_KEY, _progress_cb)
+                    results = profile_batch(codes, domain_batch.strip(), JINA_KEY, ANTHROPIC_KEY, _progress_cb)
                     progress_bar.progress(1.0, text="Done!")
 
                     total_in  = sum(r.get("_tokens", {}).get("input", 0) for r in results)
