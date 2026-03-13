@@ -1,47 +1,47 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="700" height="420" viewBox="0 0 700 420">
+<svg xmlns="http://www.w3.org/2000/svg" width="700" height="430" viewBox="0 0 700 430">
+  <rect width="700" height="430" rx="10" fill="#ffffff"/>
 
-  <rect width="700" height="420" rx="12" fill="#ffffff"/>
+  <!-- Outer border -->
+  <rect x="10" y="10" width="680" height="410" rx="6" fill="white" stroke="#1a3a8f" stroke-width="1.5"/>
 
-  <!-- Table border -->
-  <rect x="20" y="20" width="660" height="380" rx="6" fill="white" stroke="#1a3a8f" stroke-width="1.5"/>
+  <!-- Vertical separator: col1=120px, col2=rest -->
+  <line x1="120" y1="10" x2="120" y2="420" stroke="#1a3a8f" stroke-width="1"/>
 
-  <!-- Header separator after each row: heights 60 each -->
-  <line x1="20"  y1="80"  x2="680" y2="80"  stroke="#1a3a8f" stroke-width="1"/>
-  <line x1="20"  y1="140" x2="680" y2="140" stroke="#1a3a8f" stroke-width="1"/>
-  <line x1="20"  y1="220" x2="680" y2="220" stroke="#1a3a8f" stroke-width="1"/>
-  <line x1="20"  y1="280" x2="680" y2="280" stroke="#1a3a8f" stroke-width="1"/>
-  <line x1="20"  y1="340" x2="680" y2="340" stroke="#1a3a8f" stroke-width="1"/>
+  <!-- Row separators -->
+  <line x1="10" y1="78"  x2="690" y2="78"  stroke="#1a3a8f" stroke-width="1"/>
+  <line x1="10" y1="130" x2="690" y2="130" stroke="#1a3a8f" stroke-width="1"/>
+  <line x1="10" y1="210" x2="690" y2="210" stroke="#1a3a8f" stroke-width="1"/>
+  <line x1="10" y1="262" x2="690" y2="262" stroke="#1a3a8f" stroke-width="1"/>
+  <line x1="10" y1="328" x2="690" y2="328" stroke="#1a3a8f" stroke-width="1"/>
 
-  <!-- Vertical separator -->
-  <line x1="130" y1="20" x2="130" y2="400" stroke="#1a3a8f" stroke-width="1"/>
+  <!-- Agent labels — vertically centred in each row -->
+  <text x="65" y="48"  font-family="Segoe UI,sans-serif" font-size="13" font-weight="700" fill="#1a3a8f" text-anchor="middle">Agent 1</text>
+  <text x="65" y="109" font-family="Segoe UI,sans-serif" font-size="13" font-weight="700" fill="#1a3a8f" text-anchor="middle">Agent 2</text>
+  <text x="65" y="175" font-family="Segoe UI,sans-serif" font-size="13" font-weight="700" fill="#1a3a8f" text-anchor="middle">Agent 3</text>
+  <text x="65" y="241" font-family="Segoe UI,sans-serif" font-size="13" font-weight="700" fill="#1a3a8f" text-anchor="middle">Agent 4</text>
+  <text x="65" y="300" font-family="Segoe UI,sans-serif" font-size="13" font-weight="700" fill="#1a3a8f" text-anchor="middle">Agent 5A</text>
+  <text x="65" y="379" font-family="Segoe UI,sans-serif" font-size="13" font-weight="700" fill="#1a3a8f" text-anchor="middle">Agent 5B</text>
 
-  <!-- Row 1 — Agent 1 -->
-  <text x="75"  y="56" font-family="Segoe UI,sans-serif" font-size="13" font-weight="600" fill="#1a3a8f" text-anchor="middle">Agent 1</text>
-  <text x="400" y="43" font-family="Segoe UI,sans-serif" font-size="12" fill="#222" text-anchor="middle">Monitors official sources (Tavily + Jina.ai), multi-topic,</text>
-  <text x="400" y="61" font-family="Segoe UI,sans-serif" font-size="12" fill="#222" text-anchor="middle">auto pre-fill by category, persistent history</text>
+  <!-- Row 1 — Agent 1 (y=10 to 78, mid=44) -->
+  <text x="136" y="34" font-family="Segoe UI,sans-serif" font-size="12" fill="#222">Monitors official sources (Tavily + Jina.ai), multi-topic,</text>
+  <text x="136" y="52" font-family="Segoe UI,sans-serif" font-size="12" fill="#222">auto pre-fill by category, persistent history</text>
 
-  <!-- Row 2 — Agent 2 -->
-  <text x="75"  y="116" font-family="Segoe UI,sans-serif" font-size="13" font-weight="600" fill="#1a3a8f" text-anchor="middle">Agent 2</text>
-  <text x="400" y="116" font-family="Segoe UI,sans-serif" font-size="12" fill="#222" text-anchor="middle">Extracts product specs</text>
+  <!-- Row 2 — Agent 2 (y=78 to 130, mid=104) -->
+  <text x="136" y="109" font-family="Segoe UI,sans-serif" font-size="12" fill="#222">Extracts product specs</text>
 
-  <!-- Row 3 — Agent 3 -->
-  <text x="75"  y="167" font-family="Segoe UI,sans-serif" font-size="13" font-weight="600" fill="#1a3a8f" text-anchor="middle">Agent 3</text>
-  <text x="400" y="155" font-family="Segoe UI,sans-serif" font-size="12" fill="#222" text-anchor="middle">Classifies products against Decathlon's regulatory</text>
-  <text x="400" y="173" font-family="Segoe UI,sans-serif" font-size="12" fill="#222" text-anchor="middle">framework (internal referentials legal/sub legal</text>
-  <text x="400" y="191" font-family="Segoe UI,sans-serif" font-size="12" fill="#222" text-anchor="middle">categories)</text>
+  <!-- Row 3 — Agent 3 (y=130 to 210, mid=170) -->
+  <text x="136" y="158" font-family="Segoe UI,sans-serif" font-size="12" fill="#222">Classifies products against Decathlon&#39;s regulatory</text>
+  <text x="136" y="176" font-family="Segoe UI,sans-serif" font-size="12" fill="#222">framework (internal referentials legal/sub legal</text>
+  <text x="136" y="194" font-family="Segoe UI,sans-serif" font-size="12" fill="#222">categories)</text>
 
-  <!-- Row 4 — Agent 4 -->
-  <text x="75"  y="256" font-family="Segoe UI,sans-serif" font-size="13" font-weight="600" fill="#1a3a8f" text-anchor="middle">Agent 4</text>
-  <text x="400" y="256" font-family="Segoe UI,sans-serif" font-size="12" fill="#222" text-anchor="middle">Crosses alerts × internal referentials or product</text>
+  <!-- Row 4 — Agent 4 (y=210 to 262, mid=236) -->
+  <text x="136" y="241" font-family="Segoe UI,sans-serif" font-size="12" fill="#222">Crosses alerts &#215; internal referentials or product</text>
 
-  <!-- Row 5 — Agent 5A -->
-  <text x="75"  y="316" font-family="Segoe UI,sans-serif" font-size="13" font-weight="600" fill="#1a3a8f" text-anchor="middle">Agent 5A</text>
-  <text x="400" y="304" font-family="Segoe UI,sans-serif" font-size="12" fill="#222" text-anchor="middle">Audits and proposes updates to "My Conformity Box"</text>
-  <text x="400" y="322" font-family="Segoe UI,sans-serif" font-size="12" fill="#222" text-anchor="middle">legal sheets by category</text>
+  <!-- Row 5 — Agent 5A (y=262 to 328, mid=295) -->
+  <text x="136" y="290" font-family="Segoe UI,sans-serif" font-size="12" fill="#222">Audits and proposes updates to &#34;My Conformity Box&#34;</text>
+  <text x="136" y="308" font-family="Segoe UI,sans-serif" font-size="12" fill="#222">legal sheets by category</text>
 
-  <!-- Row 6 — Agent 5B -->
-  <text x="75"  y="376" font-family="Segoe UI,sans-serif" font-size="13" font-weight="600" fill="#1a3a8f" text-anchor="middle">Agent 5B</text>
-  <text x="400" y="364" font-family="Segoe UI,sans-serif" font-size="12" fill="#222" text-anchor="middle">Generates product risk mapping with before/after</text>
-  <text x="400" y="382" font-family="Segoe UI,sans-serif" font-size="12" fill="#222" text-anchor="middle">comparison post Agent 5A updates</text>
-
+  <!-- Row 6 — Agent 5B (y=328 to 420, mid=374) -->
+  <text x="136" y="362" font-family="Segoe UI,sans-serif" font-size="12" fill="#222">Generates product risk mapping with before/after</text>
+  <text x="136" y="380" font-family="Segoe UI,sans-serif" font-size="12" fill="#222">comparison post Agent 5A updates</text>
 </svg>
