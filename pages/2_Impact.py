@@ -53,7 +53,7 @@ with st.sidebar:
     ca, cb = st.columns(2)
     ca.metric("Input",  f"{t['input']:,}")
     cb.metric("Output", f"{t['output']:,}")
-    st.metric("Estimated cost", f"${t['cost_usd']:.4f}")
+    st.metric("Estimated cost", ("N/A" if t['cost_usd'] == 0 else f"${t['cost_usd']:.4f}"))
     st.caption(f"{t['calls']} Claude call(s)")
     if st.button("🔄 Reset", key="reset_tokens_sidebar"):
         st.session_state["session_tokens"] = {"input": 0, "output": 0, "cost_usd": 0.0, "calls": 0}
@@ -162,7 +162,7 @@ if "Product Mode" in mode:
                 status.update(
                     label=f"✅ Analyse terminée · "
                           f"{token_usage['input_tokens']+token_usage['output_tokens']:,} tokens · "
-                          f"${token_usage['cost_usd']:.4f}",
+                          ("N/A" if token_usage['cost_usd'] == 0 else f"${token_usage['cost_usd']:.4f}"),
                     state="complete"
                 )
             except Exception as e:
@@ -279,7 +279,7 @@ else:
                 status.update(
                     label=f"✅ Analyse terminée · "
                           f"{token_usage_cat['input_tokens']+token_usage_cat['output_tokens']:,} tokens · "
-                          f"${token_usage_cat['cost_usd']:.4f}",
+                          ("N/A" if token_usage_cat['cost_usd'] == 0 else f"${token_usage_cat['cost_usd']:.4f}"),
                     state="complete"
                 )
             except Exception as e:

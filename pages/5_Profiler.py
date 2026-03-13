@@ -1,165 +1,210 @@
 """
-Page 3 — Agent 2 : Product Profiler
-Recherche les specs d'un produit Decathlon par code modèle
-puis lance automatiquement la classification Agent 3.
+pages/5_Profiler.py — Agent 2: Product Profiler
+Scrapes and displays raw product specs from the web by model code.
+No classification here — that's Agent 3's job.
 """
 
 import streamlit as st
 import json
-import sys
-import os
+import sys, os
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from agent2.profiler import search_and_profile, profile_to_classifier_input
-from agent3.classifier import classify_product
+from agent2.profiler import profile_product, profile_batch
 
-st.set_page_config(page_title="Agent 2 — Profiler", page_icon="🔎", layout="wide")
-st.title("🔎 Agent 2 — Product Profiler")
-st.caption("Recherche automatique des specs produit → Classification réglementaire")
+st.set_page_config(page_title="Product Profiler · RegWatch", page_icon="🔍", layout="wide")
 
-# Clé API depuis les Secrets
-api_key = st.secrets.get("ANTHROPIC_API_KEY", "")
+# ── Session state ─────────────────────────────────────────────────────────────
+if "session_tokens" not in st.session_state:
+    st.session_state["session_tokens"] = {"input": 0, "output": 0, "cost": 0.0}
 
-with st.sidebar:
-    st.header("⚙️ Settings")
-    if api_key:
-        st.success("API key loaded ✓")
-    else:
-        st.warning("ANTHROPIC_API_KEY non trouvée")
-        api_key = st.text_input("API Key (fallback)", type="password")
+# ── API keys ──────────────────────────────────────────────────────────────────
+try:
+    ANTHROPIC_KEY = st.secrets["ANTHROPIC_API_KEY"]
+    TAVILY_KEY    = st.secrets["TAVILY_API_KEY"]
+    JINA_KEY      = st.secrets["JINA_API_KEY"]
+except Exception:
+    ANTHROPIC_KEY = TAVILY_KEY = JINA_KEY = ""
+
+HAIKU_COST_IN  = 0.80 / 1_000_000
+HAIKU_COST_OUT = 4.00 / 1_000_000
+
+
+def _display_profile(profile: dict):
+    """Render a product profile as structured Streamlit blocks."""
+    found = profile.get("found", False)
+    code  = profile.get("code", "?")
+    name  = profile.get("name") or "—"
+    brand = profile.get("brand") or "—"
+    url   = profile.get("url", "")
+    desc  = profile.get("description") or "—"
+    error = profile.get("error")
+
+    if error:
+        st.error(f"⚠️ Error fetching **{code}**: {error}")
+        return
+
+    if not found:
+        st.warning(f"⚠️ Product **{code}** not found or page content not relevant.")
+        if url:
+            st.caption(f"URL attempted: [{url}]({url})")
+        return
+
+    col1, col2 = st.columns([3, 1])
+    with col1:
+        st.markdown(f"### {name}")
+        st.caption(f"**Code:** {code} · **Brand:** {brand}")
+    with col2:
+        if url:
+            st.link_button("🔗 View product page", url)
+
+    st.markdown(f"**Description:** {desc}")
     st.divider()
-    st.header("📊 Session tokens")
-    if "session_tokens" not in st.session_state:
-        st.session_state["session_tokens"] = {"input": 0, "output": 0, "cost_usd": 0.0, "calls": 0}
-    t = st.session_state["session_tokens"]
-    ca, cb = st.columns(2)
-    ca.metric("Input",  f"{t['input']:,}")
-    cb.metric("Output", f"{t['output']:,}")
-    st.metric("Estimated cost", f"${t['cost_usd']:.4f}")
-    st.caption(f"{t['calls']} Claude call(s)")
-    if st.button("🔄 Reset", key="reset_tokens_sidebar"):
-        st.session_state["session_tokens"] = {"input": 0, "output": 0, "cost_usd": 0.0, "calls": 0}
-        st.rerun()
 
-CAT_LABELS = {
-    "CAT1": "🔋 Batteries & accumulators",
-    "CAT2": "💡 Lamps & lighting",
-    "CAT3": "⚡ Electronic equipment (base)",
-    "CAT4": "🔌 Chargers & rechargeable products",
-    "CAT5": "📡 Camera / ANT+",
-    "CAT6": "🎵 MP3 player",
-    "CAT7": "🛰️ GPS / Radio / Walkie-talkie / Rangefinder",
-    "CAT8": "📶 Phone / Wifi",
-    "CAT9": "📲 Bluetooth equipment",
-}
+    techs = profile.get("technologies", {})
+    col_a, col_b = st.columns(2)
 
-st.info("💡 Entrez un code modèle Decathlon — l'Agent 2 recherche les specs sur le web, puis l'Agent 3 classifie automatiquement.")
+    with col_a:
+        st.markdown("**🛜 Wireless protocols**")
+        wireless = techs.get("wireless", [])
+        for w in wireless:
+            st.markdown(f"- {w}")
+        if not wireless:
+            st.caption("None detected")
 
-col1, col2 = st.columns(2)
-with col1:
-    model_code = st.text_input("Model code *", placeholder="ex: 8941337")
-    product_name = st.text_input("Product name *", placeholder="ex: FIT100M")
-with col2:
-    extra_info = st.text_input("Additional info (optional)",
-                                placeholder="ex: GPS Bluetooth rechargeable")
-    st.caption("Si vous avez déjà des infos, ajoutez-les ici pour améliorer la précision.")
+        st.markdown("**⚡ Power / Charging**")
+        power = techs.get("power", [])
+        for p in power:
+            st.markdown(f"- {p}")
+        if not power:
+            st.caption("None detected")
 
-if st.button("🚀 Profiler + Classifier", disabled=not api_key, type="primary"):
-    if not model_code or not product_name:
-        st.error("Model code et nom commercial requis.")
-    else:
-        # ── Étape 1 : Agent 2 — Profiling ─────────────────────────────────
-        with st.status("🔎 Agent 2 — Recherche des specs produit...", expanded=True) as status:
-            try:
-                st.write(f"Recherche en cours pour **{product_name}** (code {model_code})...")
-                profile = search_and_profile(api_key, model_code, product_name, extra_info)
-                status.update(label="✅ Agent 2 — Profil extrait", state="complete")
-            except Exception as e:
-                status.update(label=f"⚠️ Agent 2 — Error: {e}", state="error")
-                st.warning("Passage en mode dégradé : classification sans profil web.")
-                profile = {
-                    "code": model_code, "name": product_name,
-                    "technologies": {
-                        "wireless": [], "power": [], "primary_function": "",
-                        "sensors": [], "connectivity": []
-                    },
-                    "data_confidence": "LOW",
-                    "missing_info": ["web search failed"]
-                }
+    with col_b:
+        st.markdown("**📡 Sensors**")
+        sensors = techs.get("sensors", [])
+        for s in sensors:
+            st.markdown(f"- {s}")
+        if not sensors:
+            st.caption("None detected")
 
-        # Afficher le profil
-        st.subheader("📋 Profil technologique extrait")
-        techs = profile.get("technologies", {})
-        col_a, col_b, col_c = st.columns(3)
-        with col_a:
-            st.markdown("**Sans-fil**")
-            for t in techs.get("wireless", []) or ["—"]:
-                st.markdown(f"- {t}")
-        with col_b:
-            st.markdown("**Alimentation**")
-            for t in techs.get("power", []) or ["—"]:
-                st.markdown(f"- {t}")
-        with col_c:
-            st.markdown("**Capteurs**")
-            for t in techs.get("sensors", []) or ["—"]:
-                st.markdown(f"- {t}")
+        st.markdown("**🔗 Connectivity**")
+        connectivity = techs.get("connectivity", [])
+        for c in connectivity:
+            st.markdown(f"- {c}")
+        if not connectivity:
+            st.caption("None detected")
 
-        if profile.get("product_description_summary"):
-            st.caption(f"📝 {profile['product_description_summary']}")
+    st.divider()
+    key_specs = profile.get("key_specs", {})
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        st.metric("Battery life", key_specs.get("battery_life") or "—")
+    with col2:
+        st.metric("Water resistance", key_specs.get("water_resistance") or "—")
+    with col3:
+        st.metric("Weight", key_specs.get("weight") or "—")
+    other = key_specs.get("other", [])
+    if other:
+        st.caption("Other specs: " + " · ".join(other))
 
-        confidence_color = {"HIGH": "🟢", "MEDIUM": "🟡", "LOW": "🔴"}
-        conf = profile.get("data_confidence", "?")
-        st.caption(f"Confiance données : {confidence_color.get(conf, '⚪')} {conf}")
+    with st.expander("🔧 Raw JSON output"):
+        clean = {k: v for k, v in profile.items() if k != "_tokens"}
+        st.json(clean)
 
-        # ── Étape 2 : Agent 3 — Classification ────────────────────────────
-        classifier_input = profile_to_classifier_input(profile)
 
-        with st.status("🏷️ Agent 3 — Classification réglementaire...", expanded=True) as status:
-            try:
-                st.write("Classifying...")
-                result = classify_product(
-                    api_key,
-                    classifier_input["code"],
-                    classifier_input["name"],
-                    classifier_input["type"],
-                    classifier_input["extra_info"]
-                )
-                status.update(label="✅ Agent 3 — Classification complete", state="complete")
-            except Exception as e:
-                status.update(label=f"❌ Agent 3 — Error: {e}", state="error")
-                st.stop()
+# ── Header ────────────────────────────────────────────────────────────────────
+st.title("🔍 Agent 2 — Product Profiler")
+st.caption("Fetches raw product specs from the web by model code. No classification — use Agent 3 for that.")
+st.info("📋 **Output:** product name, description, detected technologies (wireless, power, sensors) and key specs. Results are ready to feed into Agent 3 (Classifier).")
+st.divider()
 
-        # Afficher la classification
-        st.subheader("📂 Résultat de classification")
-        col_res, col_conf = st.columns([2, 1])
+if not ANTHROPIC_KEY or not TAVILY_KEY or not JINA_KEY:
+    st.error("⚠️ Missing API keys — check Streamlit secrets (ANTHROPIC_API_KEY, TAVILY_API_KEY, JINA_API_KEY).")
+    st.stop()
 
-        with col_res:
-            for cat in result.get("assigned_categories", []):
-                label = CAT_LABELS.get(cat, cat)
-                justif = result.get("category_justification", {}).get(cat, "")
-                st.markdown(f"**{cat}** — {label}")
-                if justif:
-                    st.caption(f"↳ {justif}")
+mode = st.radio("Mode", ["Single product", "Batch"], horizontal=True)
 
-        with col_conf:
-            confidence = result.get("confidence_global", "?")
-            color = {"HIGH": "🟢", "MEDIUM": "🟡", "LOW": "🔴"}.get(confidence, "⚪")
-            st.metric("Confiance", f"{color} {confidence}")
+# ─────────────────────────────────────────────────────────────────────────────
+if mode == "Single product":
+    with st.form("profiler_single"):
+        model_code = st.text_input(
+            "Model code *",
+            placeholder="e.g. 8788459",
+            help="Decathlon model code — will be searched on decathlon.fr"
+        )
+        submitted = st.form_submit_button("🔍 Fetch product specs", type="primary")
 
-        # Flags
-        flags = result.get("flags", {})
-        to_confirm = flags.get("protocol_to_confirm", [])
-        if_confirmed = flags.get("categories_if_confirmed", [])
-        edge_cases = flags.get("regulatory_edge_cases", [])
+    if submitted:
+        if not model_code.strip():
+            st.warning("Please enter a model code.")
+        else:
+            with st.spinner(f"Searching and scraping specs for **{model_code.strip()}**…"):
+                profile = profile_product(model_code.strip(), TAVILY_KEY, JINA_KEY, ANTHROPIC_KEY)
 
-        if to_confirm or if_confirmed or edge_cases:
-            st.subheader("⚠️ Points of attention")
-            for f in to_confirm:
-                st.info(f"📌 Protocol to confirm: {f}")
-            for f in if_confirmed:
-                st.info(f"💡 Potential category: {f}")
-            for f in edge_cases:
-                st.warning(f"⚖️ Edge case: {f}")
+            tok = profile.get("_tokens", {})
+            tok_in  = tok.get("input", 0)
+            tok_out = tok.get("output", 0)
+            cost    = tok_in * HAIKU_COST_IN + tok_out * HAIKU_COST_OUT
+            st.session_state["session_tokens"]["input"]  += tok_in
+            st.session_state["session_tokens"]["output"] += tok_out
+            st.session_state["session_tokens"]["cost"]   += cost
 
-        with st.expander("Voir les données complètes (profil + classification)"):
-            st.json({"profil_agent2": profile, "classification_agent3": result})
+            _display_profile(profile)
+
+else:
+    with st.form("profiler_batch"):
+        codes_raw = st.text_area(
+            "Model codes (one per line) *",
+            placeholder="8788459\n2679873\n1234567",
+            height=120,
+        )
+        submitted = st.form_submit_button("🔍 Fetch all products", type="primary")
+
+    if submitted:
+        codes = [c.strip() for c in codes_raw.strip().splitlines() if c.strip()]
+        if not codes:
+            st.warning("Please enter at least one model code.")
+        else:
+            progress_bar = st.progress(0, text="Initialising…")
+            results = []
+
+            def _progress_cb(i, total, code):
+                progress_bar.progress(i / total, text=f"[{i+1}/{total}] Fetching {code}…")
+
+            with st.spinner("Fetching product specs…"):
+                from agent2.profiler import profile_batch
+                results = profile_batch(codes, TAVILY_KEY, JINA_KEY, ANTHROPIC_KEY, _progress_cb)
+
+            progress_bar.progress(1.0, text="Done!")
+
+            total_in  = sum(r.get("_tokens", {}).get("input", 0) for r in results)
+            total_out = sum(r.get("_tokens", {}).get("output", 0) for r in results)
+            cost = total_in * HAIKU_COST_IN + total_out * HAIKU_COST_OUT
+            st.session_state["session_tokens"]["input"]  += total_in
+            st.session_state["session_tokens"]["output"] += total_out
+            st.session_state["session_tokens"]["cost"]   += cost
+
+            st.success(f"✅ {len(results)} products fetched.")
+            for r in results:
+                label = f"{'✅' if r.get('found') else '❌'} {r.get('code','?')} — {r.get('name') or 'Not found'}"
+                with st.expander(label):
+                    _display_profile(r)
+
+            clean = [{k: v for k, v in r.items() if k != "_tokens"} for r in results]
+            st.download_button(
+                "⬇️ Download batch results (JSON)",
+                data=json.dumps(clean, indent=2, ensure_ascii=False),
+                file_name="profiler_batch_results.json",
+                mime="application/json",
+            )
+
+# ── Footer ────────────────────────────────────────────────────────────────────
+st.divider()
+sess = st.session_state["session_tokens"]
+tot_in  = sess["input"]
+tot_out = sess["output"]
+tot_cost = sess["cost"]
+cost_str = "N/A" if (tot_in == 0 and tot_out == 0) else ("N/A" if tot_cost == 0 else f"${tot_cost:.4f}")
+st.caption(
+    f"📊 Session tokens — Input: {tot_in:,} · Output: {tot_out:,} · "
+    f"Estimated cost: {cost_str} (Haiku)"
+)

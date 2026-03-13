@@ -15,21 +15,14 @@ import sys, os
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from agent1.watcher import run_watch, load_sources, TIMEFRAMES
+from data.referential import get_cat_labels as _get_cat_labels
+from data.referential import get_cat_labels as _get_cat_labels
+
 
 st.set_page_config(page_title="Agent 1 — Watch", page_icon="📡", layout="wide")
 
 # ── Référentiels ──────────────────────────────────────────────────────────────
-CAT_LABELS = {
-    "CAT1": "Battery and accumulators (including component)",
-    "CAT2": "Lamp (cap lamp, LED, neon lantern, rainproof torch)",
-    "CAT3": "Electronic equipments (cardiofrequency, stopwatch, compass, watches...)",
-    "CAT4": "Sun charger, Electrical charger, USB charger, rechargeable products",
-    "CAT5": "Camera video (with laser device) + remote control using ANT+",
-    "CAT6": "MP3 player",
-    "CAT7": "Meteorological station, Mini radio, GPS, Talkie walkie, Telemeter",
-    "CAT8": "Mobile Phone / products with wifi",
-    "CAT9": "Electronic equipment using bluetooth (bluetooth watch, earplug bluetooth)",
-}
+CAT_LABELS = _get_cat_labels()
 
 URGENCY_DEF = {
     "HIGH":   ("🔴", "In force or deadline < 6 months — immediate action"),
@@ -299,7 +292,7 @@ if st.session_state["last_results"]:
     m2.metric("Tavily results",    total_stats.get("tavily_results",0))
     m3.metric("Entries extracted", len(all_entries))
     m4.metric("Total tokens",      f"{total_stats.get('input_tokens',0)+total_stats.get('output_tokens',0):,}")
-    m5.metric("Total cost",        f"${total_stats.get('cost_usd',0):.4f}")
+    m5.metric("Total cost",        ("N/A" if total_stats.get('cost_usd',0) == 0 else f"${total_stats.get('cost_usd',0):.4f}"))
 
     st.success(f"**{len(all_entries)} regulatory entr(ies) identified**")
 

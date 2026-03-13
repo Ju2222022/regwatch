@@ -57,7 +57,7 @@ with st.sidebar:
     ca, cb = st.columns(2)
     ca.metric("Input",  f"{t['input']:,}")
     cb.metric("Output", f"{t['output']:,}")
-    st.metric("Estimated cost", f"${t['cost_usd']:.4f}")
+    st.metric("Estimated cost", ("N/A" if t['cost_usd'] == 0 else f"${t['cost_usd']:.4f}"))
     st.caption(f"{t['calls']} Claude call(s)")
     if st.button("🔄 Reset", key="reset_tokens_sidebar"):
         st.session_state["session_tokens"] = {"input": 0, "output": 0, "cost_usd": 0.0, "calls": 0}
@@ -163,7 +163,7 @@ if launch:
                     f"✅ Risk mapping complete · {n_prod} product(s) · "
                     f"{n_high} HIGH risk(s) · "
                     f"{total_tok:,} tokens · "
-                    f"${token_usage['cost_usd']:.4f}"
+                    ("N/A" if token_usage['cost_usd'] == 0 else f"${token_usage['cost_usd']:.4f}")
                 ),
                 state="complete"
             )
