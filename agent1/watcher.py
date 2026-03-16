@@ -85,10 +85,10 @@ DEFAULT_SOURCES = {
 }
 
 TIMEFRAMES = {
-    "⚡ Last 7 days":   "week",
-    "⚡ Last 30 days":  "month",
-    "📅 Last 12 months": "year",
-    # Note: Tavily time_range max is "year" — no 3-year option available
+    "⚡ Last 7 days":    "w",
+    "⚡ Last 30 days":   "m",
+    "📅 Last 12 months": "y",
+    # Tavily time_range values: d / w / m / y (short form required since 2025)
 }
 
 # Tarifs Claude Haiku
