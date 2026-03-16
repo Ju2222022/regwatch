@@ -208,27 +208,24 @@ def search_tavily(tavily_key: str, query: str, domains: list, timeframe: str = "
             return json.loads(resp.read()).get("results", [])
 
     # Step 1 — try with domain filter
+    # time_range omitted if empty to avoid API rejection on dev keys
+    base = {
+        "query": query,
+        "search_depth": "advanced",
+        "max_results": 10,
+        "include_raw_content": False,
+    }
+    if timeframe:
+        base["time_range"] = timeframe
+
     try:
-        results = _call({
-            "query": query,
-            "search_depth": "advanced",
-            "max_results": 10,
-            "include_domains": domains,
-            "time_range": timeframe,
-            "include_raw_content": False,
-        })
+        results = _call({**base, "include_domains": domains})
     except Exception:
         results = []
 
     # Step 2 — fallback without domain filter if empty
     if not results:
-        results = _call({
-            "query": query,
-            "search_depth": "advanced",
-            "max_results": 10,
-            "time_range": timeframe,
-            "include_raw_content": False,
-        })
+        results = _call(base)
 
     return [
         {
