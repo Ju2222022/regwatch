@@ -215,13 +215,38 @@ def search_tavily(tavily_key: str, query: str, domains: list, timeframe: str = "
     with urllib.request.urlopen(req, timeout=30) as resp:
         data = json.loads(resp.read())
 
+    results = data.get("results", [])
+
+    # If include_domains filter returns nothing, retry without domain filter
+    # This handles cases where Tavily's domain filtering is too strict
+    if not results and domains:
+        payload_open = json.dumps({
+            "query": query,
+            "search_depth": "advanced",
+            "max_results": 10,
+            "time_range": timeframe,
+            "include_raw_content": False,
+        }).encode("utf-8")
+        req2 = urllib.request.Request(
+            "https://api.tavily.com/search",
+            data=payload_open,
+            headers={
+                "Content-Type": "application/json",
+                "Authorization": f"Bearer {tavily_key}"
+            },
+            method="POST"
+        )
+        with urllib.request.urlopen(req2, timeout=30) as resp2:
+            data2 = json.loads(resp2.read())
+        results = data2.get("results", [])
+
     return [
         {
             "title": r.get("title", ""),
             "url":   r.get("url", ""),
             "content": r.get("content", "")[:800],
         }
-        for r in data.get("results", [])
+        for r in results
     ]
 
 
