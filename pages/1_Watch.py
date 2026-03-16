@@ -217,24 +217,12 @@ if launch:
                 st.session_state["session_tokens"]["cost_usd"] += stats.get("cost_usd", 0.0)
                 st.session_state["session_tokens"]["calls"]    += 1
                 all_entries.extend(entries)
-                # TEMP DEBUG — afficher stats brutes pour diagnostic
-                with st.expander("🔧 Debug stats (temporaire)", expanded=True):
-                    st.json({
-                        "tavily_results": stats.get("tavily_results", 0),
-                        "entries_found": stats.get("entries_found", 0),
-                        "input_tokens": stats.get("input_tokens", 0),
-                        "output_tokens": stats.get("output_tokens", 0),
-                        "language_groups": [
-                            {
-                                "lang": g.get("lang"),
-                                "markets": g.get("markets"),
-                                "tavily_results": g.get("tavily_results", "N/A"),
-                                "entries_found": g.get("entries_found", "N/A"),
-                                "warning": g.get("warning", None),
-                            }
-                            for g in stats.get("language_groups", [])
-                        ]
-                    })
+                # TEMP DEBUG
+                _grp_debug = " | ".join([
+                    f"{g.get('lang','?')} tavily={g.get('tavily_results','?')} entries={g.get('entries_found','?')} warn={g.get('warning','')}"
+                    for g in stats.get("language_groups", [])
+                ])
+                st.info(f"🔧 DEBUG — tavily={stats.get('tavily_results',0)} entries={stats.get('entries_found',0)} tokens={stats.get('input_tokens',0)+stats.get('output_tokens',0)} | {_grp_debug}")
                 if stats.get("warning"):
                     status.update(label=f"⚠️ {topic[:40]} — {stats['warning']}", state="error")
                 else:
