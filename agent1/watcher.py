@@ -11,6 +11,9 @@ import json
 import urllib.request
 import urllib.error
 from datetime import datetime
+import sys as _sys, os as _os
+_sys.path.insert(0, _os.path.dirname(_os.path.dirname(_os.path.abspath(__file__))))
+from data.referential import get_cat_descriptions_short
 
 # ── Language groups ────────────────────────────────────────────────────────────
 # Each market belongs to a language group.
@@ -91,17 +94,8 @@ TIMEFRAMES = {
 HAIKU_INPUT_COST  = 0.80
 HAIKU_OUTPUT_COST = 4.00
 
-CAT_DESCRIPTIONS = {
-    "CAT1": "batteries, accumulators, lithium, alkaline, primary, secondary battery",
-    "CAT2": "lamps, lighting, LED, torch, headlight, bike light",
-    "CAT3": "electronic equipment, RoHS, WEEE, EMC, LVD, general electronics",
-    "CAT4": "chargers, USB charger, power supply, adapter, rechargeable, photovoltaic",
-    "CAT5": "ANT+, camera, video, remote control, wireless sensor",
-    "CAT6": "MP3, audio player, music player",
-    "CAT7": "GPS, radio, walkie talkie, telemeter, meteorological, ITE, SAR, frequency",
-    "CAT8": "wifi, mobile phone, GSM, 4G, 5G, cellular, cybersecurity",
-    "CAT9": "bluetooth, wireless earphone, connected watch, BLE",
-}
+# CAT_DESCRIPTIONS loaded dynamically from data/legal_categories.json
+CAT_DESCRIPTIONS = get_cat_descriptions_short()
 
 SYSTEM_EXTRACT = f"""You are Agent 1, a regulatory intelligence extractor for Decathlon Electronics.
 
@@ -439,6 +433,7 @@ def run_watch(
         if not group_domains:
             group_stats.append({
                 "lang": lang, "markets": group_markets,
+                "lang_label": LANGUAGE_LABELS.get(lang, lang),
                 "warning": "No domains configured for this market group."
             })
             continue
@@ -453,6 +448,7 @@ def run_watch(
         except Exception as e:
             group_stats.append({
                 "lang": lang, "markets": group_markets,
+                "lang_label": LANGUAGE_LABELS.get(lang, lang),
                 "warning": f"Tavily error: {e}"
             })
             continue
