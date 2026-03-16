@@ -222,12 +222,14 @@ if launch:
                 else:
                     # Show per-language-group details
                     for grp in stats.get("language_groups", []):
+                        label = grp.get("lang_label") or grp.get("lang", "?")
+                        markets_str = ", ".join(grp.get("markets", []))
                         if grp.get("warning"):
-                            st.warning(f"⚠️ {grp['lang_label']}: {grp['warning']}")
+                            st.warning(f"⚠️ {label} ({markets_str}): {grp['warning']}")
                         else:
                             xlat = f" → *{grp['translated_topic']}*" if grp.get("translated_topic") else ""
                             st.caption(
-                                f"🌐 **{grp['lang_label']}** ({', '.join(grp['markets'])}){xlat} — "
+                                f"🌐 **{label}** ({markets_str}){xlat} — "
                                 f"{grp['tavily_results']} results · {grp['entries_found']} entries"
                             )
                     dupes = stats.get("duplicates_removed", 0)
