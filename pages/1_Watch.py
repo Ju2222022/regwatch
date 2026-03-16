@@ -152,7 +152,7 @@ for i, item in enumerate(st.session_state["watch_topics"]):
                 label_visibility="collapsed"
             )
             st.session_state["watch_topics"][i]["topic"] = new_val
-            avail = list(sources.keys())
+            avail = [k for k in sources.keys() if not k.startswith("_")]
             def_m = [m for m in item["markets"] if m in avail] or avail[:2]
             st.session_state["watch_topics"][i]["markets"] = st.multiselect(
                 "Markets", avail, default=def_m,
