@@ -193,57 +193,42 @@ def translate_topic(anthropic_key: str, topic: str, target_lang: str) -> str:
 # ── Tavily search ──────────────────────────────────────────────────────────────
 
 def search_tavily(tavily_key: str, query: str, domains: list, timeframe: str = "month") -> list:
-    payload = json.dumps({
-        "query": query,
-        "search_depth": "advanced",
-        "max_results": 10,
-        "include_domains": domains,
-        "time_range": timeframe,
-        "include_raw_content": False,
-    }).encode("utf-8")
-
-    req = urllib.request.Request(
-        "https://api.tavily.com/search",
-        data=payload,
-        headers={
-            "Content-Type": "application/json",
-            "Authorization": f"Bearer {tavily_key}"
-        },
-        method="POST"
-    )
-
-    with urllib.request.urlopen(req, timeout=30) as resp:
-        raw_resp = resp.read()
-        data = json.loads(raw_resp)
-
-    # DEBUG — log raw response keys and result count
-    import sys
-    print(f"[TAVILY DEBUG] keys={list(data.keys())} results={len(data.get('results',[]))} query={query[:50]!r}", file=sys.stderr)
-
-    results = data.get("results", [])
-
-    # If include_domains filter returns nothing, retry without domain filter
-    # This handles cases where Tavily's domain filtering is too strict
-    if not results and domains:
-        payload_open = json.dumps({
-            "query": query,
-            "search_depth": "advanced",
-            "max_results": 10,
-            "time_range": timeframe,
-            "include_raw_content": False,
-        }).encode("utf-8")
-        req2 = urllib.request.Request(
+    def _call(payload_dict: dict) -> list:
+        """Single Tavily call — returns results list or raises."""
+        req = urllib.request.Request(
             "https://api.tavily.com/search",
-            data=payload_open,
+            data=json.dumps(payload_dict).encode("utf-8"),
             headers={
                 "Content-Type": "application/json",
                 "Authorization": f"Bearer {tavily_key}"
             },
             method="POST"
         )
-        with urllib.request.urlopen(req2, timeout=30) as resp2:
-            data2 = json.loads(resp2.read())
-        results = data2.get("results", [])
+        with urllib.request.urlopen(req, timeout=30) as resp:
+            return json.loads(resp.read()).get("results", [])
+
+    # Step 1 — try with domain filter
+    try:
+        results = _call({
+            "query": query,
+            "search_depth": "advanced",
+            "max_results": 10,
+            "include_domains": domains,
+            "time_range": timeframe,
+            "include_raw_content": False,
+        })
+    except Exception:
+        results = []
+
+    # Step 2 — fallback without domain filter if empty
+    if not results:
+        results = _call({
+            "query": query,
+            "search_depth": "advanced",
+            "max_results": 10,
+            "time_range": timeframe,
+            "include_raw_content": False,
+        })
 
     return [
         {
