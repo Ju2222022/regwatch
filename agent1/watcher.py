@@ -213,7 +213,12 @@ def search_tavily(tavily_key: str, query: str, domains: list, timeframe: str = "
     )
 
     with urllib.request.urlopen(req, timeout=30) as resp:
-        data = json.loads(resp.read())
+        raw_resp = resp.read()
+        data = json.loads(raw_resp)
+
+    # DEBUG — log raw response keys and result count
+    import sys
+    print(f"[TAVILY DEBUG] keys={list(data.keys())} results={len(data.get('results',[]))} query={query[:50]!r}", file=sys.stderr)
 
     results = data.get("results", [])
 
