@@ -85,10 +85,12 @@ DEFAULT_SOURCES = {
 }
 
 TIMEFRAMES = {
-    "⚡ Last 7 days":    "w",
-    "⚡ Last 30 days":   "m",
-    "📅 Last 12 months": "y",
-    # Tavily time_range values: d / w / m / y (short form required since 2025)
+    "⚡ Last 7 days":    {"time_range": "week"},
+    "⚡ Last 30 days":   {"time_range": "month"},
+    "📅 Last 12 months": {"time_range": "year"},
+    "🏛️ Last 3 years":  {"use_date_range": True, "years": 3},
+    # Tavily: time_range accepts "day"/"week"/"month"/"year"
+    # For 3 years, use start_date + end_date instead
 }
 
 # Tarifs Claude Haiku
@@ -192,9 +194,13 @@ def translate_topic(anthropic_key: str, topic: str, target_lang: str) -> str:
 
 # ── Tavily search ──────────────────────────────────────────────────────────────
 
-def search_tavily(tavily_key: str, query: str, domains: list, timeframe: str = "month") -> list:
+def search_tavily(tavily_key: str, query: str, domains: list, timeframe_cfg: dict = None) -> list:
+    """
+    timeframe_cfg examples:
+      {"time_range": "month"}
+      {"use_date_range": True, "years": 3}
+    """
     def _call(payload_dict: dict) -> list:
-        """Single Tavily call — returns results list or raises."""
         req = urllib.request.Request(
             "https://api.tavily.com/search",
             data=json.dumps(payload_dict).encode("utf-8"),
@@ -207,17 +213,27 @@ def search_tavily(tavily_key: str, query: str, domains: list, timeframe: str = "
         with urllib.request.urlopen(req, timeout=30) as resp:
             return json.loads(resp.read()).get("results", [])
 
-    # Step 1 — try with domain filter
-    # time_range omitted if empty to avoid API rejection on dev keys
+    # Build time filter
+    time_params = {}
+    if timeframe_cfg:
+        if timeframe_cfg.get("use_date_range"):
+            years = timeframe_cfg.get("years", 3)
+            end   = datetime.now()
+            start = end.replace(year=end.year - years)
+            time_params["start_date"] = start.strftime("%Y-%m-%d")
+            time_params["end_date"]   = end.strftime("%Y-%m-%d")
+        elif timeframe_cfg.get("time_range"):
+            time_params["time_range"] = timeframe_cfg["time_range"]
+
     base = {
         "query": query,
         "search_depth": "advanced",
         "max_results": 10,
         "include_raw_content": False,
+        **time_params,
     }
-    if timeframe:
-        base["time_range"] = timeframe
 
+    # Step 1 — try with domain filter
     try:
         results = _call({**base, "include_domains": domains})
     except Exception:
@@ -429,7 +445,7 @@ def run_watch(
         (entries, stats)
     """
     sources  = sources_override or load_sources()
-    timeframe = TIMEFRAMES.get(timeframe_label, "month")
+    timeframe_cfg = TIMEFRAMES.get(timeframe_label, {"time_range": "month"})
 
     groups = build_language_groups(markets, sources)
 
@@ -456,7 +472,7 @@ def run_watch(
 
         # Step 2 — Tavily search
         try:
-            results = search_tavily(tavily_key, translated_topic, group_domains, timeframe)
+            results = search_tavily(tavily_key, translated_topic, group_domains, timeframe_cfg)
             total_tavily += len(results)
         except Exception as e:
             group_stats.append({
