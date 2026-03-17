@@ -200,10 +200,21 @@ def profile_product(model_code: str, domain: str = "decathlon.fr",
         ordered = code_results + domain_results + other_results
 
         # Essayer de lire la page complète via Jina sur la meilleure URL
-        best_url = ordered[0].get("url", "") if ordered else ""
+        # Chercher en priorité une URL de fiche produit Decathlon (/p/ ou /product/)
+        product_url = ""
+        for r in ordered:
+            url_candidate = r.get("url", "")
+            if any(pat in url_candidate for pat in ["/p/", "/product/", model_code]):
+                product_url = url_candidate
+                break
+        best_url = product_url or (ordered[0].get("url", "") if ordered else "")
+
         jina_content = ""
-        if best_url and (model_code in best_url or domain_clean in best_url):
+        if best_url and (model_code in best_url or domain_clean in best_url or "/p/" in best_url):
             jina_content = _fetch_jina(best_url, jina_key)
+
+        # Stocker les URLs trouvées pour debug (visible dans Raw JSON output)
+        _tavily_urls = [r.get("url", "") for r in ordered[:5]]
 
         parts = []
         if jina_content:
@@ -249,6 +260,7 @@ def profile_product(model_code: str, domain: str = "decathlon.fr",
             result = {"code": model_code, "found": False, "error": "JSON parse failed"}
         result.setdefault("code", model_code)
         result["_tokens"] = {"input": tok_in, "output": tok_out}
+        result["_sources"] = {"jina_url": best_url, "jina_chars": len(jina_content), "tavily_urls": _tavily_urls if tavily_key else []}
         return result
 
     except Exception as e:
