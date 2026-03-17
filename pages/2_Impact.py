@@ -276,10 +276,9 @@ else:
                     anthropic_key, filtered_alerts_cat, active_cats
                 )
                 st.session_state["impact_category_result"] = result_cat
+                cost_str_cat = "N/A" if token_usage_cat['cost_usd'] == 0 else f"${token_usage_cat['cost_usd']:.4f}"
                 status.update(
-                    label=f"✅ Analyse terminée · "
-                          f"{token_usage_cat['input_tokens']+token_usage_cat['output_tokens']:,} tokens · "
-                          ("N/A" if token_usage_cat['cost_usd'] == 0 else f"${token_usage_cat['cost_usd']:.4f}"),
+                    label=f"✅ Analyse terminée · {token_usage_cat['input_tokens']+token_usage_cat['output_tokens']:,} tokens · {cost_str_cat}",
                     state="complete"
                 )
             except Exception as e:
