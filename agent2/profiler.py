@@ -53,7 +53,7 @@ def _tavily_search(query: str, tavily_key: str, max_results: int = 5) -> list:
         "api_key": tavily_key,
         "query": query,
         "max_results": max_results,
-        "search_depth": "basic",
+        "search_depth": "advanced",
         "include_answer": False,
     }).encode()
     req = urllib.request.Request(
@@ -156,9 +156,9 @@ def profile_product(model_code: str, domain: str = "decathlon.fr",
         ordered = code_results + domain_results + other_results
 
         parts = []
-        for r in ordered[:4]:
+        for r in ordered[:5]:
             title   = r.get("title", "")
-            content = r.get("content", "")[:400]  # 400 chars max par snippet
+            content = r.get("content", "")[:800]  # 800 chars max par snippet
             url     = r.get("url", "")
             parts.append(f"[{title}] ({url})\n{content}")
         snippets_text = "\n\n".join(parts)
@@ -170,7 +170,7 @@ def profile_product(model_code: str, domain: str = "decathlon.fr",
     try:
         payload = {
             "model": "claude-haiku-4-5-20251001",
-            "max_tokens": 800,
+            "max_tokens": 1000,
             "system": SYSTEM_PROMPT,
             "messages": [{
                 "role": "user",
@@ -178,7 +178,7 @@ def profile_product(model_code: str, domain: str = "decathlon.fr",
                     f"Model code: {model_code}\n"
                     f"Domain: {domain_clean}\n\n"
                     f"Search snippets (extract info ONLY for product with code {model_code}):\n"
-                    f"{snippets_text[:2000]}\n\n"
+                    f"{snippets_text[:3000]}\n\n"
                     f"Return JSON only. If snippets describe a different product, set found: false."
                 )
             }]
