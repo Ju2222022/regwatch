@@ -158,13 +158,9 @@ if launch:
             n_prod = len(result.get("products", []))
             n_high = result.get("executive_summary", {}).get("total_high", 0)
             total_tok = token_usage['input_tokens'] + token_usage['output_tokens']
+            _cost_5b = "N/A" if token_usage['cost_usd'] == 0 else f"${token_usage['cost_usd']:.4f}"
             status.update(
-                label=(
-                    f"✅ Risk mapping complete · {n_prod} product(s) · "
-                    f"{n_high} HIGH risk(s) · "
-                    f"{total_tok:,} tokens · "
-                    ("N/A" if token_usage['cost_usd'] == 0 else f"${token_usage['cost_usd']:.4f}")
-                ),
+                label=f"✅ Risk mapping complete · {n_prod} product(s) · {n_high} HIGH risk(s) · {total_tok:,} tokens · {_cost_5b}",
                 state="complete"
             )
             if "session_tokens" not in st.session_state:
