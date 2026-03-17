@@ -141,7 +141,7 @@ if mode == "Single product":
             "Domain *",
             value="decathlon.fr",
             placeholder="e.g. decathlon.fr, decathlon.ca, decathlon.de",
-            help="Tavily will find the direct product page on this domain (e.g. decathlon.fr, decathlon.de)"
+            help="Tavily will find the product page on this domain"
         )
         submitted = st.form_submit_button("🔍 Fetch product specs", type="primary")
 
