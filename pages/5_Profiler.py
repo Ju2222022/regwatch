@@ -15,7 +15,7 @@ st.set_page_config(page_title="Product Profiler · RegWatch", page_icon="🔍", 
 
 # ── Session state ─────────────────────────────────────────────────────────────
 if "session_tokens" not in st.session_state:
-    st.session_state["session_tokens"] = {"input": 0, "output": 0, "cost": 0.0}
+    st.session_state["session_tokens"] = {"input": 0, "output": 0, "cost_usd": 0.0, "calls": 0}
 
 # ── API keys ──────────────────────────────────────────────────────────────────
 try:
@@ -153,7 +153,7 @@ if mode == "Single product":
             cost    = tok_in * HAIKU_COST_IN + tok_out * HAIKU_COST_OUT
             st.session_state["session_tokens"]["input"]  += tok_in
             st.session_state["session_tokens"]["output"] += tok_out
-            st.session_state["session_tokens"]["cost"]   += cost
+            st.session_state["session_tokens"]["cost_usd"] += cost
 
             _display_profile(profile)
 
@@ -224,7 +224,7 @@ else:
                     cost = total_in * HAIKU_COST_IN + total_out * HAIKU_COST_OUT
                     st.session_state["session_tokens"]["input"]  += total_in
                     st.session_state["session_tokens"]["output"] += total_out
-                    st.session_state["session_tokens"]["cost"]   += cost
+                    st.session_state["session_tokens"]["cost_usd"] += cost
 
                     st.success(f"✅ {len(results)} products fetched.")
                     for r in results:

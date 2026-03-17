@@ -20,7 +20,7 @@ CAT_LABELS = _get_cat_labels()
 
 # ── Session state ─────────────────────────────────────────────────────────────
 if "session_tokens" not in st.session_state:
-    st.session_state["session_tokens"] = {"input": 0, "output": 0, "cost": 0.0}
+    st.session_state["session_tokens"] = {"input": 0, "output": 0, "cost_usd": 0.0, "calls": 0}
 
 # ── API keys ──────────────────────────────────────────────────────────────────
 try:
@@ -266,7 +266,7 @@ if mode == "Single product":
             cost2  = t2_in * HAIKU_COST_IN + t2_out * HAIKU_COST_OUT
             st.session_state["session_tokens"]["input"]  += t2_in
             st.session_state["session_tokens"]["output"] += t2_out
-            st.session_state["session_tokens"]["cost"]   += cost2
+            st.session_state["session_tokens"]["cost_usd"] += cost2
 
             # Build classifier input: A2 scrape is priority, user inputs fill gaps
             classifier_input = profile_to_classifier_input(profile)
@@ -305,7 +305,7 @@ if mode == "Single product":
                 cost3  = t3_in * HAIKU_COST_IN + t3_out * HAIKU_COST_OUT
                 st.session_state["session_tokens"]["input"]  += t3_in
                 st.session_state["session_tokens"]["output"] += t3_out
-                st.session_state["session_tokens"]["cost"]   += cost3
+                st.session_state["session_tokens"]["cost_usd"] += cost3
 
             except Exception as e:
                 st.error(f"⚠️ Agent 3 error: {e}")
@@ -390,7 +390,7 @@ else:
                         t2_in, t2_out = tok2.get("input", 0), tok2.get("output", 0)
                         st.session_state["session_tokens"]["input"]  += t2_in
                         st.session_state["session_tokens"]["output"] += t2_out
-                        st.session_state["session_tokens"]["cost"]   += t2_in * HAIKU_COST_IN + t2_out * HAIKU_COST_OUT
+                        st.session_state["session_tokens"]["cost_usd"] += t2_in * HAIKU_COST_IN + t2_out * HAIKU_COST_OUT
 
                         # Merge inputs — A2 scrape is priority, CSV fields fill gaps only
                         ci = profile_to_classifier_input(profile)
@@ -431,7 +431,7 @@ else:
                         t3_in, t3_out = tok3.get("input", 0), tok3.get("output", 0)
                         st.session_state["session_tokens"]["input"]  += t3_in
                         st.session_state["session_tokens"]["output"] += t3_out
-                        st.session_state["session_tokens"]["cost"]   += t3_in * HAIKU_COST_IN + t3_out * HAIKU_COST_OUT
+                        st.session_state["session_tokens"]["cost_usd"] += t3_in * HAIKU_COST_IN + t3_out * HAIKU_COST_OUT
 
                         all_results.append({"product": prod, "profile": profile, "classification": result})
 

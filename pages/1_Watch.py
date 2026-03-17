@@ -60,6 +60,11 @@ tavily_key    = st.secrets.get("TAVILY_API_KEY", "")
 # ── Session state ─────────────────────────────────────────────────────────────
 if "session_tokens" not in st.session_state:
     st.session_state["session_tokens"] = {"input": 0, "output": 0, "cost_usd": 0.0, "calls": 0}
+# Ensure all keys exist (guards against stale session state from older versions)
+_st = st.session_state["session_tokens"]
+for _k, _v in {"input": 0, "output": 0, "cost_usd": 0.0, "calls": 0}.items():
+    if _k not in _st:
+        _st[_k] = _v
 if "watch_topics" not in st.session_state:
     st.session_state["watch_topics"] = [
         {"topic": "", "markets": ["EU", "France"], "timeframe": "📅 Last 12 months"}
@@ -78,10 +83,11 @@ with st.sidebar:
     st.header("📊 Session tokens")
     t = st.session_state["session_tokens"]
     ca, cb = st.columns(2)
-    ca.metric("Input",  f"{t['input']:,}")
-    cb.metric("Output", f"{t['output']:,}")
-    st.metric("Estimated cost", f"${t['cost_usd']:.4f}")
-    st.caption(f"{t['calls']} Claude call(s)")
+    ca.metric("Input",  f"{t.get('input', 0):,}")
+    cb.metric("Output", f"{t.get('output', 0):,}")
+    cost_val = t.get("cost_usd") or t.get("cost") or 0.0
+    st.metric("Estimated cost", f"${cost_val:.4f}")
+    st.caption(f"{t.get('calls', 0)} Claude call(s)")
     if st.button("🔄 Reset"):
         st.session_state["session_tokens"] = {"input": 0, "output": 0, "cost_usd": 0.0, "calls": 0}
         st.rerun()
