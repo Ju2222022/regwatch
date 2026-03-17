@@ -117,45 +117,30 @@ def _parse_json(raw: str) -> dict:
     return {}
 
 
-# Markers indicating end of product specs on Decathlon pages
-# (reviews section starts here — not useful for tech profiling)
+
+
+
 _DECATHLON_STOP_MARKERS = [
     "Avis clients", "Avis (", "Customer reviews", "Reviews (",
     "Commentaires", "Note moyenne", "Average rating",
     "Produits similaires", "Similar products", "You may also like",
-    "Frequently bought", "Also viewed",
 ]
-# Decathlon product pages: specs are in the first ~2500 chars
-# Stop before review sections to avoid noise and keep token count low
-_DECATHLON_SPEC_LIMIT = 2500
-
 
 def _fetch_jina(url: str, jina_key: str = "") -> str:
-    """
-    Fetch Decathlon product page via Jina.ai.
-    Calibrated for Decathlon page structure:
-      - 0-2500 chars = title + description + technical specs
-      - 2500+ chars  = reviews, similar products, footer (ignored)
-    """
+    """Fetch Decathlon product page via Jina — specs section only (before reviews)."""
     try:
         jina_url = f"https://r.jina.ai/{url}"
-        headers = {
-            "Accept": "text/plain",
-            "X-Return-Format": "text",
-        }
+        headers = {"Accept": "text/plain", "X-Return-Format": "text"}
         if jina_key:
             headers["Authorization"] = f"Bearer {jina_key}"
         req = urllib.request.Request(jina_url, headers=headers, method="GET")
         with urllib.request.urlopen(req, timeout=20) as resp:
             content = resp.read().decode("utf-8", errors="ignore")
-
-        # Cut at first review/noise marker found within the content
-        cut = _DECATHLON_SPEC_LIMIT
+        cut = 2500
         for marker in _DECATHLON_STOP_MARKERS:
             idx = content.find(marker)
             if 0 < idx < cut:
                 cut = idx
-
         return content[:cut]
     except Exception:
         return ""
@@ -199,33 +184,27 @@ def profile_product(model_code: str, domain: str = "decathlon.fr",
         other_results  = [r for r in results if r not in code_results and r not in domain_results]
         ordered = code_results + domain_results + other_results
 
-        # Essayer de lire la page complète via Jina sur la meilleure URL
-        # Chercher en priorité une URL de fiche produit Decathlon (/p/ ou /product/)
-        product_url = ""
+        # Jina sur la meilleure URL de fiche produit
+        best_url = ""
         for r in ordered:
-            url_candidate = r.get("url", "")
-            if any(pat in url_candidate for pat in ["/p/", "/product/", model_code]):
-                product_url = url_candidate
+            u = r.get("url", "")
+            if any(p in u for p in ["/p/", "/product/", model_code]):
+                best_url = u
                 break
-        best_url = product_url or (ordered[0].get("url", "") if ordered else "")
+        if not best_url and ordered:
+            best_url = ordered[0].get("url", "")
 
-        jina_content = ""
-        if best_url and (model_code in best_url or domain_clean in best_url or "/p/" in best_url):
-            jina_content = _fetch_jina(best_url, jina_key)
-
-        # Stocker les URLs trouvées pour debug (visible dans Raw JSON output)
-        _tavily_urls = [r.get("url", "") for r in ordered[:5]]
+        jina_content = _fetch_jina(best_url, jina_key) if best_url else ""
 
         parts = []
         if jina_content:
-            # Jina a réussi — on a le contenu complet de la page
-            parts.append(f"[Full page content from {best_url}]\n{jina_content}")
-        else:
-            # Fallback sur les snippets Tavily
-            for r in ordered[:5]:
-                title   = r.get("title", "")
-                content = r.get("content", "")[:800]
-                url     = r.get("url", "")
+            parts.append(f"[Full product page: {best_url}]\n{jina_content}")
+        # Toujours ajouter les snippets Tavily en complément
+        for r in ordered[:4]:
+            title   = r.get("title", "")
+            content = r.get("content", "")[:600]
+            url     = r.get("url", "")
+            if url != best_url:
                 parts.append(f"[{title}] ({url})\n{content}")
         snippets_text = "\n\n".join(parts)
 
@@ -244,7 +223,7 @@ def profile_product(model_code: str, domain: str = "decathlon.fr",
                     f"Model code: {model_code}\n"
                     f"Domain: {domain_clean}\n\n"
                     f"Search snippets (extract info ONLY for product with code {model_code}):\n"
-                    f"{snippets_text[:5000]}\n\n"
+                    f"{snippets_text[:4000]}\n\n"
                     f"Return JSON only. If snippets describe a different product, set found: false."
                 )
             }]
@@ -260,7 +239,6 @@ def profile_product(model_code: str, domain: str = "decathlon.fr",
             result = {"code": model_code, "found": False, "error": "JSON parse failed"}
         result.setdefault("code", model_code)
         result["_tokens"] = {"input": tok_in, "output": tok_out}
-        result["_sources"] = {"jina_url": best_url, "jina_chars": len(jina_content), "tavily_urls": _tavily_urls if tavily_key else []}
         return result
 
     except Exception as e:
