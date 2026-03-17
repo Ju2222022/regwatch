@@ -21,6 +21,11 @@ CAT_LABELS = _get_cat_labels()
 # ── Session state ─────────────────────────────────────────────────────────────
 if "session_tokens" not in st.session_state:
     st.session_state["session_tokens"] = {"input": 0, "output": 0, "cost_usd": 0.0, "calls": 0}
+# Guard against stale session state from older versions
+_st = st.session_state["session_tokens"]
+for _k, _v in {"input": 0, "output": 0, "cost_usd": 0.0, "calls": 0}.items():
+    if _k not in _st:
+        _st[_k] = _v
 
 # ── API keys ──────────────────────────────────────────────────────────────────
 try:
@@ -479,7 +484,7 @@ st.divider()
 sess = st.session_state["session_tokens"]
 tot_in  = sess["input"]
 tot_out = sess["output"]
-tot_cost = sess["cost"]
+tot_cost = sess["cost_usd"]
 cost_str = "N/A" if (tot_in == 0 and tot_out == 0) else f"${tot_cost:.4f}"
 st.caption(
     f"📊 Session tokens — Input: {tot_in:,} · Output: {tot_out:,} · "
