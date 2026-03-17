@@ -178,7 +178,7 @@ def profile_product(model_code: str, domain: str = "decathlon.fr",
                     f"Model code: {model_code}\n"
                     f"Domain: {domain_clean}\n\n"
                     f"Search snippets (extract info ONLY for product with code {model_code}):\n"
-                    f"{snippets_text[:3000]}\n\n"
+                    f"{snippets_text[:3500]}\n\n"
                     f"Return JSON only. If snippets describe a different product, set found: false."
                 )
             }]
