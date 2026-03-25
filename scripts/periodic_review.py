@@ -232,6 +232,44 @@ def get_previous_titles(history: dict) -> set:
 
 
 
+
+def send_email_resend(
+    resend_key: str,
+    from_email: str,
+    to_emails: list,
+    subject: str,
+    html_body: str,
+):
+    """Envoie un email via Resend.com API (3000 emails/mois gratuits)."""
+    if not to_emails:
+        print("No recipients configured — skipping email.")
+        return
+
+    payload = json.dumps({
+        "from":    f"RegWatch <{from_email}>",
+        "to":      to_emails,
+        "subject": subject,
+        "html":    html_body,
+    }).encode("utf-8")
+
+    req = urllib.request.Request(
+        "https://api.resend.com/emails",
+        data=payload,
+        headers={
+            "Content-Type": "application/json",
+            "Authorization": f"Bearer {resend_key}",
+        },
+        method="POST"
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=30) as resp:
+            data = json.loads(resp.read())
+            print(f"✅ Email sent — id: {data.get('id', '?')}")
+    except urllib.error.HTTPError as e:
+        body = e.read().decode("utf-8", errors="ignore")
+        print(f"❌ Email error {e.code}: {body[:300]}")
+
+
 def build_email_html(review_date: str, results: dict, new_counts: dict) -> str:
     total_new  = sum(new_counts.values())
     high_count = sum(
