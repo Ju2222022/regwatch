@@ -267,7 +267,9 @@ def send_email_resend(
             print(f"✅ Email sent — id: {data.get('id', '?')}")
     except urllib.error.HTTPError as e:
         body = e.read().decode("utf-8", errors="ignore")
-        print(f"❌ Email error {e.code}: {body[:300]}")
+        print(f"❌ Email error {e.code}: {body}")
+        print(f"   from={from_email}")
+        print(f"   to={to_emails}")
 
 
 def build_email_html(review_date: str, results: dict, new_counts: dict) -> str:
