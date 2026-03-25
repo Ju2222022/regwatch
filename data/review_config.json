@@ -1,0 +1,12 @@
+{
+  "_meta": {
+    "description": "RegWatch periodic review configuration",
+    "updated": "2026-03-25"
+  },
+  "active_categories": ["CAT1", "CAT3", "CAT4", "CAT7", "CAT8", "CAT9"],
+  "markets": ["EU", "France"],
+  "timeframe": "📅 Last 12 months",
+  "email_recipients": [],
+  "frequency": "weekly",
+  "enabled": true
+}
