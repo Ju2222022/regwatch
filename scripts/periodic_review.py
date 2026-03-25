@@ -12,9 +12,9 @@ Flow :
 Variables d'environnement requises (GitHub Secrets) :
   ANTHROPIC_API_KEY
   TAVILY_API_KEY
-  SENDGRID_API_KEY
+  RESEND_API_KEY        (clé API Resend.com, ex: re_xxxxxxxxxxxx)
   REVIEW_EMAIL_TO       (destinataire, ex: ju@decathlon.com)
-  REVIEW_EMAIL_FROM     (expéditeur vérifié SendGrid, ex: regwatch@decathlon.com)
+  REVIEW_EMAIL_FROM     (expéditeur, ex: regwatch@resend.dev ou domaine vérifié)
 """
 
 import json
@@ -228,41 +228,41 @@ def get_previous_titles(history: dict) -> set:
     return titles
 
 
-# ── Email SendGrid ─────────────────────────────────────────────────────────────
+# ── Email Gmail SMTP ──────────────────────────────────────────────────────────
 
-def send_email_sendgrid(
-    sendgrid_key: str,
-    from_email: str,
+def send_email_gmail(
+    gmail_user: str,
+    gmail_app_password: str,
     to_emails: list,
     subject: str,
     html_body: str,
 ):
+    """
+    Envoie un email via Gmail SMTP.
+    gmail_app_password : mot de passe d'application Google (16 caractères)
+    Générer sur : Google Account → Sécurité → Mots de passe des applications
+    """
+    import smtplib
+    from email.mime.multipart import MIMEMultipart
+    from email.mime.text import MIMEText
+
     if not to_emails:
         print("No recipients configured — skipping email.")
         return
 
-    payload = json.dumps({
-        "personalizations": [{"to": [{"email": e} for e in to_emails]}],
-        "from": {"email": from_email, "name": "RegWatch"},
-        "subject": subject,
-        "content": [{"type": "text/html", "value": html_body}],
-    }).encode("utf-8")
+    msg = MIMEMultipart("alternative")
+    msg["Subject"] = subject
+    msg["From"]    = f"RegWatch <{gmail_user}>"
+    msg["To"]      = ", ".join(to_emails)
+    msg.attach(MIMEText(html_body, "html"))
 
-    req = urllib.request.Request(
-        "https://api.sendgrid.com/v3/mail/send",
-        data=payload,
-        headers={
-            "Content-Type": "application/json",
-            "Authorization": f"Bearer {sendgrid_key}",
-        },
-        method="POST"
-    )
     try:
-        with urllib.request.urlopen(req, timeout=30) as resp:
-            print(f"✅ Email sent — status {resp.status}")
-    except urllib.error.HTTPError as e:
-        body = e.read().decode("utf-8", errors="ignore")
-        print(f"❌ Email error {e.code}: {body[:300]}")
+        with smtplib.SMTP_SSL("smtp.gmail.com", 465) as smtp:
+            smtp.login(gmail_user, gmail_app_password)
+            smtp.sendmail(gmail_user, to_emails, msg.as_string())
+        print(f"✅ Email sent to {', '.join(to_emails)}")
+    except Exception as e:
+        print(f"❌ Email error: {e}")
 
 
 def build_email_html(review_date: str, results: dict, new_counts: dict) -> str:
@@ -333,9 +333,9 @@ def run_review():
     # Clés API
     anthropic_key = os.environ.get("ANTHROPIC_API_KEY", "")
     tavily_key    = os.environ.get("TAVILY_API_KEY", "")
-    sendgrid_key  = os.environ.get("SENDGRID_API_KEY", "")
-    email_to      = os.environ.get("REVIEW_EMAIL_TO", "")
-    email_from    = os.environ.get("REVIEW_EMAIL_FROM", "regwatch@decathlon.com")
+    resend_key  = os.environ.get("RESEND_API_KEY", "")
+    email_to    = os.environ.get("REVIEW_EMAIL_TO", "")
+    email_from  = os.environ.get("REVIEW_EMAIL_FROM", "regwatch@resend.dev")
 
     if not anthropic_key or not tavily_key:
         print("❌ Missing ANTHROPIC_API_KEY or TAVILY_API_KEY")
@@ -348,9 +348,11 @@ def run_review():
 
     active_cats = config.get("active_categories", [])
     markets     = config.get("markets", ["EU", "France"])
-    recipients  = config.get("email_recipients", [])
+    recipients = config.get("email_recipients", [])
     if email_to:
         recipients = list(set(recipients + [email_to]))
+    if gmail_user and not recipients:
+        recipients = [gmail_user]  # Fallback : s'envoyer à soi-même
 
     print(f"Categories : {', '.join(active_cats)}")
     print(f"Markets    : {', '.join(markets)}")
@@ -427,13 +429,13 @@ def run_review():
     print(f"\n✅ Review saved — {total_new} new alert(s) total")
 
     # Email
-    if sendgrid_key and recipients:
+    if resend_key and recipients:
         review_date = datetime.now().strftime("%B %d, %Y")
         subject = f"RegWatch Weekly Review — {total_new} new alert(s) · {datetime.now().strftime('%Y-%m-%d')}"
         html    = build_email_html(review_date, review_results, {cat: d["new_count"] for cat, d in review_results.items()})
-        send_email_sendgrid(sendgrid_key, email_from, recipients, subject, html)
+        send_email_resend(resend_key, email_from, recipients, subject, html)
     else:
-        print("⚠️  No SendGrid key or recipients — email skipped")
+        print("⚠️  No Resend key or recipients — email skipped")
 
     print(f"\n{'='*60}")
     print("Review complete.")
