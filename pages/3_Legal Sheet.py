@@ -229,11 +229,9 @@ if launch:
             # Mettre à jour les compteurs dans le résultat
             result["sections_to_update"] = n_update
             result["sections_ok"] = n_ok
+            _cost_5a = "N/A" if token_usage['cost_usd'] == 0 else f"${token_usage['cost_usd']:.4f}"
             status.update(
-                label=f"✅ Analyse terminée · {n_update} section(s) à mettre à jour · "
-                      f"{n_ok} à jour · "
-                      f"{token_usage['input_tokens']+token_usage['output_tokens']:,} tokens · "
-                      ("N/A" if token_usage['cost_usd'] == 0 else f"${token_usage['cost_usd']:.4f}"),
+                label=f"✅ Analyse terminée · {n_update} section(s) à mettre à jour · {n_ok} à jour · {token_usage['input_tokens']+token_usage['output_tokens']:,} tokens · {_cost_5a}",
                 state="complete"
             )
         except ValueError as e:
