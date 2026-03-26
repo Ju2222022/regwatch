@@ -533,7 +533,7 @@ if "5a_result" in st.session_state and st.session_state.get("5a_decisions"):
             with col_send:
                 st.markdown("**➡️ Ready for Risk Mapper**")
                 if st.button("🗺️ Send to Agent 5B — Risk Map", type="primary", key="send_to_5b_from_5a"):
-                    st.switch_page("pages/4_Risk Map.py")
+                    st.switch_page("pages/4_Risk_Map.py")
             with col_info:
                 st.caption(f"{len(_approved)} section(s) approved — Agent 5B will generate a before/after risk comparison.")
 

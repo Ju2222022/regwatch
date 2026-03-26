@@ -359,14 +359,14 @@ if _has_product or _has_category:
             with st.container(border=True):
                 st.markdown("**➡️ Product results ready**")
                 if st.button("🗺️ Send to Agent 5B — Risk Map", type="primary", key="send_to_5b"):
-                    st.switch_page("pages/4_Risk Map.py")
+                    st.switch_page("pages/4_Risk_Map.py")
                 st.caption("Generate a risk mapping per product from the impact analysis.")
     if _has_category:
         with cols[1]:
             with st.container(border=True):
                 st.markdown("**➡️ Category results ready**")
                 if st.button("📋 Send to Agent 5A — Legal Sheet", type="primary", key="send_to_5a"):
-                    st.switch_page("pages/3_Legal Sheet.py")
+                    st.switch_page("pages/3_Legal_Sheet.py")
                 st.caption("Update legal sheets based on the category impact analysis.")
 
 
