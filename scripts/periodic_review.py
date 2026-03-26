@@ -312,7 +312,7 @@ def build_email_html(review_date: str, results: dict, new_counts: dict) -> str:
 <body style="font-family:Segoe UI,sans-serif;max-width:800px;margin:0 auto;padding:20px">
   <div style="background:#1a3a8f;color:white;padding:20px;border-radius:8px 8px 0 0">
     <h1 style="margin:0;font-size:24px">📡 RegWatch — Periodic Review</h1>
-    <p style="margin:4px 0 0;opacity:0.85">{review_date} · Decathlon Electronics</p>
+    <p style="margin:4px 0 0;opacity:0.85">{review_date} · Julien Dlubala</p>
   </div>
   <div style="background:#f8f9ff;padding:16px;border-left:4px solid #1a3a8f">
     <strong>{total_new} new alert(s)</strong> identified this period {high_note}
