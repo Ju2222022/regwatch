@@ -354,6 +354,19 @@ if st.session_state["last_results"]:
         f"regwatch_watch_{datetime.now().strftime('%Y%m%d_%H%M')}.csv","text/csv")
     st.info(f"💾 {len(st.session_state.get('veille_results',[]))} entries available for Agent 4.")
 
+    # ── Send to Agent 4 ───────────────────────────────────────────────────────
+    _n_alerts = len(st.session_state.get("veille_results", []))
+    if _n_alerts > 0:
+        st.divider()
+        with st.container(border=True):
+            col_send, col_info = st.columns([2, 3])
+            with col_send:
+                st.markdown("**➡️ Ready for Impact Analyzer**")
+                if st.button("📊 Send to Agent 4 — Impact", type="primary", key="send_to_impact"):
+                    st.switch_page("pages/2_Impact.py")
+            with col_info:
+                st.caption(f"💾 {_n_alerts} alert(s) in memory — Agent 4 will cross-reference them with your catalog or legal categories.")
+
 # ── History ────────────────────────────────────────────────────────────────
 st.divider()
 show_history = st.toggle("🗃️ Show previous watch history", value=False)
