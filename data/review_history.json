@@ -4927,6 +4927,808 @@
           "new_count": 10
         }
       }
+    },
+    {
+      "date": "2026-03-26 09:47",
+      "categories": [
+        "CAT1",
+        "CAT3",
+        "CAT4",
+        "CAT7",
+        "CAT8",
+        "CAT9"
+      ],
+      "markets": [
+        "EU",
+        "France"
+      ],
+      "total_new": 40,
+      "results": {
+        "CAT1": {
+          "entries": [
+            {
+              "title": "EU Batteries Regulation - Minimum Recycled Content Requirements",
+              "source": "energyindustryreview.com",
+              "date": "2031-08-18",
+              "summary": "EU Batteries Regulation mandates minimum recycled content starting August 18, 2031: 16% cobalt, 6% lithium, 6% nickel in industrial/SLI/EV batteries, and 85% lead. Portable batteries must be sealed, weigh ≤5kg, and be easily removable. European Commission will review recycling targets every five years beginning 2026.",
+              "urgency": "MEDIUM",
+              "url": "https://energyindustryreview.com/environment/eu-tightens-rules-on-reusing-and-recycling-materials/"
+            },
+            {
+              "title": "Joint Industry Guidance on Battery Manufacturer Definition under EU Batteries Regulation",
+              "source": "eurobat.org",
+              "date": "2024-05-15",
+              "summary": "EUROBAT, EPBA, and Recharge released joint guidance clarifying the manufacturer definition under EU Batteries Regulation, covering legal interpretation, key duties, and compliance examples to support consistent compliance across the battery value chain.",
+              "urgency": "MEDIUM",
+              "url": "https://www.eurobat.org/"
+            },
+            {
+              "title": "EU Customs Regulations for Lithium Battery Classification and Portable Charger Compliance",
+              "source": "alibaba.com",
+              "date": "2025-07-01",
+              "summary": "EU customs requires precise lithium battery classification under UN 3480/3481 based on Wh ratings rather than mAh capacity. Portable chargers must be classified correctly with explicit Wh calculations to avoid customs holds and fines at EU border checkpoints.",
+              "urgency": "HIGH",
+              "url": "https://www.alibaba.com/product-insights/why-does-my-portable-charger-get-flagged-as-suspicious-at-eu-customs-and-how-to-prove-legitimacy.html"
+            },
+            {
+              "title": "Draft ELV Directive - Expanded Scope Including Lithium-Ion Batteries and Circular Economy",
+              "source": "autorecyclingworld.com",
+              "date": "2026-01-01",
+              "summary": "Updated ELV Directive expands scope to include heavy-duty vehicles, electric and hybrid vehicles, and explicitly emphasizes lithium-ion batteries. New directive incorporates circular economy approaches including reuse, refurbishment, repair, and redistribution of battery components.",
+              "urgency": "MEDIUM",
+              "url": "https://autorecyclingworld.com/from-directive-to-practice-testing-the-eus-new-elv-rules-against-turkiyes-reality/"
+            },
+            {
+              "title": "EU Battery Regulation: Due Diligence Obligations - Enforcement Postponed to August 2027",
+              "source": "minespider.com",
+              "date": "2025-08-27",
+              "summary": "The EU has postponed enforcement of battery due diligence obligations from August 2025 to August 2027. Large companies placing batteries on the EU market must implement due diligence policies, digital traceability systems, supplier risk assessments, grievance mechanisms, and public reporting. Supply chain mapping remains the biggest challenge as most companies lack visibility beyond tier two suppliers.",
+              "urgency": "HIGH",
+              "url": "https://minespider.com/blog/eu-battery-due-diligence-postponed-what-it-means-for-companies"
+            },
+            {
+              "title": "EU Battery Regulation: Due Diligence Requires Traceability - Material Traceability by August 2025",
+              "source": "circulor.com",
+              "date": "2024-07-11",
+              "summary": "Economic operators must implement traceability systems by August 2025 for cobalt, natural graphite, lithium, and nickel supply chains to meet due diligence obligations under the EU Battery Regulation. Building reliable chain of custody requires end-to-end traceability with third-party verification.",
+              "urgency": "HIGH",
+              "url": "https://www.circulor.com/articles/eu-battery-regulation-due-diligence-requires-traceability"
+            },
+            {
+              "title": "ESG Quick Guide: EU Sustainable Batteries Regulation - Due Diligence Elements",
+              "source": "sustainablefutures.linklaters.com",
+              "date": "2026-03-24",
+              "summary": "The EU Sustainable Batteries Regulation 2023 imposes due diligence requirements for batteries placed on the EU market, including sustainability, safety, labelling, and extended producer responsibility obligations. Top-level management must oversee policy compliance and chain of custody/traceability requirements.",
+              "urgency": "HIGH",
+              "url": "https://sustainablefutures.linklaters.com/post/102mnwt/esg-quick-guide-eu-sustainable-batteries-regulation"
+            },
+            {
+              "title": "The Real Stakes for Compliance Professionals With the EU Battery Regulation",
+              "source": "z2data.com",
+              "date": "2026-01-01",
+              "summary": "The EU Battery Regulation represents lifecycle regulation governing batteries from raw material sourcing to recycling, integrating sustainability metrics, carbon accounting, supply chain due diligence, and digital traceability into market access requirements. It expands compliance scope beyond waste and collection obligations.",
+              "urgency": "MEDIUM",
+              "url": "https://www.z2data.com/insights/the-real-stakes-for-compliance-professionals-with-the-eu-battery-regulation"
+            },
+            {
+              "title": "Supply Chain Due Diligence for Batteries - Market Environment and Regulatory Pressure",
+              "source": "slrconsulting.com",
+              "date": "2025-01-01",
+              "summary": "Despite the two-year postponement of EU Battery Regulation due diligence obligations, economic operators continue to face pressure to prepare for mandatory supply chain due diligence in a challenging market environment with persistent budget constraints.",
+              "urgency": "MEDIUM",
+              "url": "https://www.slrconsulting.com/insights/what-2025-revealed-about-battery-supply-chain-due-diligence/"
+            }
+          ],
+          "new_entries": [
+            {
+              "title": "EU Customs Regulations for Lithium Battery Classification and Portable Charger Compliance",
+              "source": "alibaba.com",
+              "date": "2025-07-01",
+              "summary": "EU customs requires precise lithium battery classification under UN 3480/3481 based on Wh ratings rather than mAh capacity. Portable chargers must be classified correctly with explicit Wh calculations to avoid customs holds and fines at EU border checkpoints.",
+              "urgency": "HIGH",
+              "url": "https://www.alibaba.com/product-insights/why-does-my-portable-charger-get-flagged-as-suspicious-at-eu-customs-and-how-to-prove-legitimacy.html"
+            },
+            {
+              "title": "Draft ELV Directive - Expanded Scope Including Lithium-Ion Batteries and Circular Economy",
+              "source": "autorecyclingworld.com",
+              "date": "2026-01-01",
+              "summary": "Updated ELV Directive expands scope to include heavy-duty vehicles, electric and hybrid vehicles, and explicitly emphasizes lithium-ion batteries. New directive incorporates circular economy approaches including reuse, refurbishment, repair, and redistribution of battery components.",
+              "urgency": "MEDIUM",
+              "url": "https://autorecyclingworld.com/from-directive-to-practice-testing-the-eus-new-elv-rules-against-turkiyes-reality/"
+            },
+            {
+              "title": "EU Battery Regulation: Due Diligence Requires Traceability - Material Traceability by August 2025",
+              "source": "circulor.com",
+              "date": "2024-07-11",
+              "summary": "Economic operators must implement traceability systems by August 2025 for cobalt, natural graphite, lithium, and nickel supply chains to meet due diligence obligations under the EU Battery Regulation. Building reliable chain of custody requires end-to-end traceability with third-party verification.",
+              "urgency": "HIGH",
+              "url": "https://www.circulor.com/articles/eu-battery-regulation-due-diligence-requires-traceability"
+            },
+            {
+              "title": "ESG Quick Guide: EU Sustainable Batteries Regulation - Due Diligence Elements",
+              "source": "sustainablefutures.linklaters.com",
+              "date": "2026-03-24",
+              "summary": "The EU Sustainable Batteries Regulation 2023 imposes due diligence requirements for batteries placed on the EU market, including sustainability, safety, labelling, and extended producer responsibility obligations. Top-level management must oversee policy compliance and chain of custody/traceability requirements.",
+              "urgency": "HIGH",
+              "url": "https://sustainablefutures.linklaters.com/post/102mnwt/esg-quick-guide-eu-sustainable-batteries-regulation"
+            },
+            {
+              "title": "Supply Chain Due Diligence for Batteries - Market Environment and Regulatory Pressure",
+              "source": "slrconsulting.com",
+              "date": "2025-01-01",
+              "summary": "Despite the two-year postponement of EU Battery Regulation due diligence obligations, economic operators continue to face pressure to prepare for mandatory supply chain due diligence in a challenging market environment with persistent budget constraints.",
+              "urgency": "MEDIUM",
+              "url": "https://www.slrconsulting.com/insights/what-2025-revealed-about-battery-supply-chain-due-diligence/"
+            }
+          ],
+          "total": 9,
+          "new_count": 5
+        },
+        "CAT3": {
+          "entries": [
+            {
+              "title": "RoHS Directive 2011/65/EU - Restriction of Hazardous Substances in Electrical and Electronic Equipment",
+              "source": "EU",
+              "date": "2011-06-08",
+              "summary": "RoHS 2 directive restricts 10 hazardous substances (lead, mercury, cadmium, hexavalent chromium, PBB, PBDE, and four phthalates: DEHP, BBP, DBP, DIBP) in electrical and electronic equipment sold in the EU. Maximum concentration limits apply, with most substances limited to 0.1% by weight per homogeneous material and cadmium to 0.01%. The directive applies to manufacturers, distributors, and importers of electrical products.",
+              "urgency": "HIGH",
+              "url": "https://euverify.com/resource/rohs-and-reach-compliance/"
+            },
+            {
+              "title": "RoHS Exemptions Review and Updates 2026",
+              "source": "EU",
+              "date": "2026-03-26",
+              "summary": "EU RoHS landscape undergoing significant updates in 2026 with changes to critical exemptions and convergence with PFAS restrictions, digital product passports, and circular economy requirements. The Chemicals Management for Electronics Regulatory Summit Europe 2026 (April 23, 2026) will address RoHS updates, exemption outlook, and substitution challenges.",
+              "urgency": "HIGH",
+              "url": "https://www.linkedin.com/posts/lizzy-zhou-44a589258_reach-or-rohs-for-eu-products-a-common-confusion-activity-7433355728070983680-gSpT"
+            },
+            {
+              "title": "RoHS UV Mercury Vapor Lamp Exemption Expiration - 2027",
+              "source": "EU",
+              "date": "2026-03-26",
+              "summary": "The RoHS exemption for UV mercury vapor lamps is set to expire in 2027. This exemption, specified in Annex III of the RoHS directive, allows mercury concentrations above the standard 0.1% limit. Manufacturers using mercury in UV applications must prepare for compliance after the exemption expires.",
+              "urgency": "HIGH",
+              "url": "https://convertingquarterly.com/clarifications-on-2027-expiration-of-rohs-uv-mercury-vapor-lamp-exemption/"
+            },
+            {
+              "title": "Delegated Directive (EU) 2015/863 - RoHS 3 Phthalate Restrictions",
+              "source": "EU",
+              "date": "2015-03-31",
+              "summary": "Delegated Directive 2015/863 expanded RoHS restrictions to include four phthalates (DEHP, BBP, DBP, DIBP) in electrical and electronic equipment. This amendment represents the third phase of RoHS implementation with additional hazardous substance restrictions beyond the original six substances.",
+              "urgency": "HIGH",
+              "url": "https://wibe-group.com/storage/47252E1EB6DF6C64BECF47DCA79F7DFC9E8D6A733B58D351D1CCC3C913B0F830/ecaa8d5f57da400cb5ef0f96b9de263d/pdf/media/485dbf38e5db490193935f4029c76ae8/CSU08190000_rohs.pdf"
+            },
+            {
+              "title": "Brazil Draft RoHS Regulation 2026",
+              "source": "Brazil Government",
+              "date": "2026-03-19",
+              "summary": "Brazil has issued a 2026 draft resolution for RoHS regulation closely based on EU RoHS Directive 2011/65/EU, aiming to restrict 10 hazardous substances in electrical and electronic equipment. This expansion of RoHS-type regulations beyond the EU affects exporters to Brazil.",
+              "urgency": "MEDIUM",
+              "url": "https://chemical.chemlinked.com/news/chemical-news/brazil-moves-forward-with-draft-rohs-regulation"
+            },
+            {
+              "title": "WEEE Directive 2012/19/EU - Open Scope Amendment",
+              "source": "deutsche-recycling.com",
+              "date": "2018-08-15",
+              "summary": "The WEEE Directive 2012/19/EU introduced open scope on 15 August 2018, making all electrical and electronic equipment subject to compulsory registration. This significantly expanded the scope to include furniture and clothing with electrical functions, representing a major shift from the previous Directive 2002/96/EC.",
+              "urgency": "LOW",
+              "url": "https://deutsche-recycling.com/weee-eu-directive/"
+            },
+            {
+              "title": "UK WEEE Regulations 2025 Amendments - Online Marketplace Operators",
+              "source": "countrystylerecycling.co.uk",
+              "date": "2025-01-01",
+              "summary": "The Waste Electrical and Electronic Equipment (Amendment, etc.) Regulations 2025 introduced significant changes including designation of online marketplace operators as producers. Additionally, from 1 January 2024, all vape retailers must accept used vapes free of charge, and distributors must retain records for four years.",
+              "urgency": "MEDIUM",
+              "url": "https://www.countrystylerecycling.co.uk/legislation/weee-regulations/"
+            },
+            {
+              "title": "EU Waste Shipment Rules - New Annex VII Implementation",
+              "source": "fead.be",
+              "date": "2026-05-21",
+              "summary": "New EU waste shipment rules requiring digital submission of Annex VII forms come into force on 21 May 2026. The regulation mandates digital procedures for waste shipment documentation and poses implementation challenges for smaller operators and those across multiple jurisdictions.",
+              "urgency": "HIGH",
+              "url": "https://fead.be/position/joint-call-ensuring-a-smooth-implementation-of-new-eu-waste-shipment-rules/"
+            },
+            {
+              "title": "UK WEEE Evidence and National Protocols Guidance Update",
+              "source": "gov.uk",
+              "date": "2026-02-27",
+              "summary": "Updated guidance from the UK Environment Agency on WEEE evidence and national protocols, establishing recovery and recycling targets for different equipment categories (85% recovery/80% recycling for large household appliances, etc.).",
+              "urgency": "MEDIUM",
+              "url": "https://www.gov.uk/government/publications/weee-evidence-and-national-protocols-guidance/waste-electrical-and-electronic-equipment-weee-evidence-and-national-protocols-guidance"
+            },
+            {
+              "title": "EU Omnibus Directive - WEEE EPR Authorised Representatives Pause",
+              "source": "fiscalnote.com",
+              "date": "2026-01-01",
+              "summary": "The EU Omnibus Directive proposes pausing the application of rules on appointment of authorised representatives for Extended Producer Responsibility under the WEEE Directive, reducing administrative burden on waste and industrial emissions compliance.",
+              "urgency": "MEDIUM",
+              "url": "https://fiscalnote.com/blog/omnibus-unpacked"
+            }
+          ],
+          "new_entries": [
+            {
+              "title": "RoHS Directive 2011/65/EU - Restriction of Hazardous Substances in Electrical and Electronic Equipment",
+              "source": "EU",
+              "date": "2011-06-08",
+              "summary": "RoHS 2 directive restricts 10 hazardous substances (lead, mercury, cadmium, hexavalent chromium, PBB, PBDE, and four phthalates: DEHP, BBP, DBP, DIBP) in electrical and electronic equipment sold in the EU. Maximum concentration limits apply, with most substances limited to 0.1% by weight per homogeneous material and cadmium to 0.01%. The directive applies to manufacturers, distributors, and importers of electrical products.",
+              "urgency": "HIGH",
+              "url": "https://euverify.com/resource/rohs-and-reach-compliance/"
+            },
+            {
+              "title": "RoHS Exemptions Review and Updates 2026",
+              "source": "EU",
+              "date": "2026-03-26",
+              "summary": "EU RoHS landscape undergoing significant updates in 2026 with changes to critical exemptions and convergence with PFAS restrictions, digital product passports, and circular economy requirements. The Chemicals Management for Electronics Regulatory Summit Europe 2026 (April 23, 2026) will address RoHS updates, exemption outlook, and substitution challenges.",
+              "urgency": "HIGH",
+              "url": "https://www.linkedin.com/posts/lizzy-zhou-44a589258_reach-or-rohs-for-eu-products-a-common-confusion-activity-7433355728070983680-gSpT"
+            },
+            {
+              "title": "RoHS UV Mercury Vapor Lamp Exemption Expiration - 2027",
+              "source": "EU",
+              "date": "2026-03-26",
+              "summary": "The RoHS exemption for UV mercury vapor lamps is set to expire in 2027. This exemption, specified in Annex III of the RoHS directive, allows mercury concentrations above the standard 0.1% limit. Manufacturers using mercury in UV applications must prepare for compliance after the exemption expires.",
+              "urgency": "HIGH",
+              "url": "https://convertingquarterly.com/clarifications-on-2027-expiration-of-rohs-uv-mercury-vapor-lamp-exemption/"
+            },
+            {
+              "title": "Delegated Directive (EU) 2015/863 - RoHS 3 Phthalate Restrictions",
+              "source": "EU",
+              "date": "2015-03-31",
+              "summary": "Delegated Directive 2015/863 expanded RoHS restrictions to include four phthalates (DEHP, BBP, DBP, DIBP) in electrical and electronic equipment. This amendment represents the third phase of RoHS implementation with additional hazardous substance restrictions beyond the original six substances.",
+              "urgency": "HIGH",
+              "url": "https://wibe-group.com/storage/47252E1EB6DF6C64BECF47DCA79F7DFC9E8D6A733B58D351D1CCC3C913B0F830/ecaa8d5f57da400cb5ef0f96b9de263d/pdf/media/485dbf38e5db490193935f4029c76ae8/CSU08190000_rohs.pdf"
+            },
+            {
+              "title": "Brazil Draft RoHS Regulation 2026",
+              "source": "Brazil Government",
+              "date": "2026-03-19",
+              "summary": "Brazil has issued a 2026 draft resolution for RoHS regulation closely based on EU RoHS Directive 2011/65/EU, aiming to restrict 10 hazardous substances in electrical and electronic equipment. This expansion of RoHS-type regulations beyond the EU affects exporters to Brazil.",
+              "urgency": "MEDIUM",
+              "url": "https://chemical.chemlinked.com/news/chemical-news/brazil-moves-forward-with-draft-rohs-regulation"
+            },
+            {
+              "title": "WEEE Directive 2012/19/EU - Open Scope Amendment",
+              "source": "deutsche-recycling.com",
+              "date": "2018-08-15",
+              "summary": "The WEEE Directive 2012/19/EU introduced open scope on 15 August 2018, making all electrical and electronic equipment subject to compulsory registration. This significantly expanded the scope to include furniture and clothing with electrical functions, representing a major shift from the previous Directive 2002/96/EC.",
+              "urgency": "LOW",
+              "url": "https://deutsche-recycling.com/weee-eu-directive/"
+            },
+            {
+              "title": "UK WEEE Regulations 2025 Amendments - Online Marketplace Operators",
+              "source": "countrystylerecycling.co.uk",
+              "date": "2025-01-01",
+              "summary": "The Waste Electrical and Electronic Equipment (Amendment, etc.) Regulations 2025 introduced significant changes including designation of online marketplace operators as producers. Additionally, from 1 January 2024, all vape retailers must accept used vapes free of charge, and distributors must retain records for four years.",
+              "urgency": "MEDIUM",
+              "url": "https://www.countrystylerecycling.co.uk/legislation/weee-regulations/"
+            },
+            {
+              "title": "EU Waste Shipment Rules - New Annex VII Implementation",
+              "source": "fead.be",
+              "date": "2026-05-21",
+              "summary": "New EU waste shipment rules requiring digital submission of Annex VII forms come into force on 21 May 2026. The regulation mandates digital procedures for waste shipment documentation and poses implementation challenges for smaller operators and those across multiple jurisdictions.",
+              "urgency": "HIGH",
+              "url": "https://fead.be/position/joint-call-ensuring-a-smooth-implementation-of-new-eu-waste-shipment-rules/"
+            },
+            {
+              "title": "UK WEEE Evidence and National Protocols Guidance Update",
+              "source": "gov.uk",
+              "date": "2026-02-27",
+              "summary": "Updated guidance from the UK Environment Agency on WEEE evidence and national protocols, establishing recovery and recycling targets for different equipment categories (85% recovery/80% recycling for large household appliances, etc.).",
+              "urgency": "MEDIUM",
+              "url": "https://www.gov.uk/government/publications/weee-evidence-and-national-protocols-guidance/waste-electrical-and-electronic-equipment-weee-evidence-and-national-protocols-guidance"
+            },
+            {
+              "title": "EU Omnibus Directive - WEEE EPR Authorised Representatives Pause",
+              "source": "fiscalnote.com",
+              "date": "2026-01-01",
+              "summary": "The EU Omnibus Directive proposes pausing the application of rules on appointment of authorised representatives for Extended Producer Responsibility under the WEEE Directive, reducing administrative burden on waste and industrial emissions compliance.",
+              "urgency": "MEDIUM",
+              "url": "https://fiscalnote.com/blog/omnibus-unpacked"
+            }
+          ],
+          "total": 10,
+          "new_count": 10
+        },
+        "CAT4": {
+          "entries": [
+            {
+              "title": "EU Common Charger Directive - USB-C Mandatory Implementation",
+              "source": "consilium.europa.eu",
+              "date": "2026-03-04",
+              "summary": "Council and European Parliament reached provisional political agreement on common charger directive making USB-C mandatory for electronic devices. Implementation required 24 months after directive entry into force, with laptops complying by April 28, 2026.",
+              "urgency": "HIGH",
+              "url": "https://www.consilium.europa.eu/en/policies/eu-industrial-policy/timeline-eu-industrial-policy/2026-03-04-council-adopts-its-negotiating-position-on-the-amended-critical-raw-material-act/"
+            },
+            {
+              "title": "EU Universal Charger Directive Implementation Deadline",
+              "source": "36kr.com",
+              "date": "2026-03-26",
+              "summary": "European Union's Universal Charger Directive requires all portable electronic devices sold in EU to use USB-C interfaces and be compatible with USB PD fast charging protocol. Deadline for laptop compliance certification is April 28, 2026.",
+              "urgency": "HIGH",
+              "url": "https://eu.36kr.com/en/p/3736751966273537"
+            },
+            {
+              "title": "Guidelines for Interpretation of Directive on Universal Chargers",
+              "source": "Official Journal of the European Union",
+              "date": "2024-01-01",
+              "summary": "EU Commission clarification that RED requires USB-C port only for cable-charged devices; wireless charging and other methods remain permissible. Directive 2022/2380 allows flexibility for alternative charging technologies.",
+              "urgency": "HIGH",
+              "url": "https://www.igorslab.de/en/goodbye-usb-c-the-eu-has-actually-given-the-green-light-but-only-under-one-condition/"
+            },
+            {
+              "title": "External Power Supply Ecodesign Compliance Requirements",
+              "source": "support.google.com",
+              "date": "2024-01-01",
+              "summary": "EU ecodesign regulations for energy-related products (SI 2010 No. 2617, 2017 regulations) mandate efficiency testing and WEEE compliance for external power supplies. Products must meet efficiency standards and support separate collection/recycling.",
+              "urgency": "HIGH",
+              "url": "https://support.google.com/product-documentation/answer/15220943?hl=en-AX"
+            },
+            {
+              "title": "IEC 63652 Wireless Charging Standards Recognition",
+              "source": "linkedin.com",
+              "date": "2025-01-01",
+              "summary": "International Electrotechnical Commission formally recognized NFC Wireless Charging under IEC 63652 for sub-3W devices. EU's Common Charging Directive calls for harmonized wireless charging standards development.",
+              "urgency": "MEDIUM",
+              "url": "https://www.linkedin.com/posts/nucurrent-inc_last-summer-we-asked-a-question-if-wireless-activity-7436433648729382912-Wd8Q"
+            },
+            {
+              "title": "EU Battery Regulation (EU) 2023/1542 - New Labelling and Collection Requirements",
+              "source": "energyindustryreview.com",
+              "date": "2026-01-01",
+              "summary": "In 2026, new provisions of EU Batteries Regulation come into force imposing stricter labelling requirements including 'non-rechargeable' marking and duration of use. Higher collection targets (73% for portable batteries by 2030) and recycling efficiency targets (90% for key metals, 50% for lithium by 31.12.2027) are mandated.",
+              "urgency": "HIGH",
+              "url": "https://energyindustryreview.com/environment/eu-tightens-rules-on-reusing-and-recycling-materials/"
+            },
+            {
+              "title": "EU Battery Regulation (EU) 2023/1542 - Digital Battery Passport Implementation",
+              "source": "linkedin.com",
+              "date": "2027-02-18",
+              "summary": "The EU Battery Regulation applies to all batteries placed on the EU market, replacing the old Battery Directive. From 18 February 2027, electric vehicle and industrial batteries with capacity above 2kWh require a mandatory unique Digital Battery Passport (DBP) for placement on the EU market.",
+              "urgency": "HIGH",
+              "url": "https://www.linkedin.com/posts/industrial-digital-twin-association_eu-regulations-interoperable-activity-7435349764709228544-_WhI"
+            },
+            {
+              "title": "Council of the European Union - Updated Measuring Instruments Directive for Electric Chargers",
+              "source": "electrive.com",
+              "date": "2026-02-27",
+              "summary": "The new measuring instruments directive sets common standards for electric chargers and gas dispensers, clearing the path for widespread deployment of charging infrastructure. This supports Europe's transition to greener and more energy-efficient mobility systems.",
+              "urgency": "MEDIUM",
+              "url": "https://www.electrive.com/2026/02/27/eu-council-simplifies-replacement-of-damaged-charging-cables/"
+            },
+            {
+              "title": "EU Batteries Regulation - Sustainability and Lifecycle Management Requirements",
+              "source": "mdpi.com",
+              "date": "2023-07-12",
+              "summary": "Regulation EU 2023/1542 establishes new sustainability and recycling requirements with carbon footprint evaluation methodology. Multiple requirements were mandated for 2025 adoption including harmonized specifications on labeling, data formats, and reporting to ensure consistency across the battery value chain.",
+              "urgency": "HIGH",
+              "url": "https://www.mdpi.com/2313-0105/12/3/97"
+            },
+            {
+              "title": "EU Sustainable Batteries Regulation - Due Diligence and ESG Compliance",
+              "source": "linklaters.com",
+              "date": "2023-01-01",
+              "summary": "The Sustainable Batteries Regulation 2023 imposes requirements on entities placing batteries on the EU market, mandating due diligence policies and management systems to identify and address social and environmental risks in raw material sourcing and processing. It repeals and replaces the Batteries Directive 2006.",
+              "urgency": "HIGH",
+              "url": "https://sustainablefutures.linklaters.com/post/102mnwt/esg-quick-guide-eu-sustainable-batteries-regulation"
+            }
+          ],
+          "new_entries": [
+            {
+              "title": "EU Common Charger Directive - USB-C Mandatory Implementation",
+              "source": "consilium.europa.eu",
+              "date": "2026-03-04",
+              "summary": "Council and European Parliament reached provisional political agreement on common charger directive making USB-C mandatory for electronic devices. Implementation required 24 months after directive entry into force, with laptops complying by April 28, 2026.",
+              "urgency": "HIGH",
+              "url": "https://www.consilium.europa.eu/en/policies/eu-industrial-policy/timeline-eu-industrial-policy/2026-03-04-council-adopts-its-negotiating-position-on-the-amended-critical-raw-material-act/"
+            },
+            {
+              "title": "EU Universal Charger Directive Implementation Deadline",
+              "source": "36kr.com",
+              "date": "2026-03-26",
+              "summary": "European Union's Universal Charger Directive requires all portable electronic devices sold in EU to use USB-C interfaces and be compatible with USB PD fast charging protocol. Deadline for laptop compliance certification is April 28, 2026.",
+              "urgency": "HIGH",
+              "url": "https://eu.36kr.com/en/p/3736751966273537"
+            },
+            {
+              "title": "Guidelines for Interpretation of Directive on Universal Chargers",
+              "source": "Official Journal of the European Union",
+              "date": "2024-01-01",
+              "summary": "EU Commission clarification that RED requires USB-C port only for cable-charged devices; wireless charging and other methods remain permissible. Directive 2022/2380 allows flexibility for alternative charging technologies.",
+              "urgency": "HIGH",
+              "url": "https://www.igorslab.de/en/goodbye-usb-c-the-eu-has-actually-given-the-green-light-but-only-under-one-condition/"
+            },
+            {
+              "title": "External Power Supply Ecodesign Compliance Requirements",
+              "source": "support.google.com",
+              "date": "2024-01-01",
+              "summary": "EU ecodesign regulations for energy-related products (SI 2010 No. 2617, 2017 regulations) mandate efficiency testing and WEEE compliance for external power supplies. Products must meet efficiency standards and support separate collection/recycling.",
+              "urgency": "HIGH",
+              "url": "https://support.google.com/product-documentation/answer/15220943?hl=en-AX"
+            },
+            {
+              "title": "IEC 63652 Wireless Charging Standards Recognition",
+              "source": "linkedin.com",
+              "date": "2025-01-01",
+              "summary": "International Electrotechnical Commission formally recognized NFC Wireless Charging under IEC 63652 for sub-3W devices. EU's Common Charging Directive calls for harmonized wireless charging standards development.",
+              "urgency": "MEDIUM",
+              "url": "https://www.linkedin.com/posts/nucurrent-inc_last-summer-we-asked-a-question-if-wireless-activity-7436433648729382912-Wd8Q"
+            },
+            {
+              "title": "EU Battery Regulation (EU) 2023/1542 - New Labelling and Collection Requirements",
+              "source": "energyindustryreview.com",
+              "date": "2026-01-01",
+              "summary": "In 2026, new provisions of EU Batteries Regulation come into force imposing stricter labelling requirements including 'non-rechargeable' marking and duration of use. Higher collection targets (73% for portable batteries by 2030) and recycling efficiency targets (90% for key metals, 50% for lithium by 31.12.2027) are mandated.",
+              "urgency": "HIGH",
+              "url": "https://energyindustryreview.com/environment/eu-tightens-rules-on-reusing-and-recycling-materials/"
+            },
+            {
+              "title": "EU Battery Regulation (EU) 2023/1542 - Digital Battery Passport Implementation",
+              "source": "linkedin.com",
+              "date": "2027-02-18",
+              "summary": "The EU Battery Regulation applies to all batteries placed on the EU market, replacing the old Battery Directive. From 18 February 2027, electric vehicle and industrial batteries with capacity above 2kWh require a mandatory unique Digital Battery Passport (DBP) for placement on the EU market.",
+              "urgency": "HIGH",
+              "url": "https://www.linkedin.com/posts/industrial-digital-twin-association_eu-regulations-interoperable-activity-7435349764709228544-_WhI"
+            },
+            {
+              "title": "Council of the European Union - Updated Measuring Instruments Directive for Electric Chargers",
+              "source": "electrive.com",
+              "date": "2026-02-27",
+              "summary": "The new measuring instruments directive sets common standards for electric chargers and gas dispensers, clearing the path for widespread deployment of charging infrastructure. This supports Europe's transition to greener and more energy-efficient mobility systems.",
+              "urgency": "MEDIUM",
+              "url": "https://www.electrive.com/2026/02/27/eu-council-simplifies-replacement-of-damaged-charging-cables/"
+            },
+            {
+              "title": "EU Batteries Regulation - Sustainability and Lifecycle Management Requirements",
+              "source": "mdpi.com",
+              "date": "2023-07-12",
+              "summary": "Regulation EU 2023/1542 establishes new sustainability and recycling requirements with carbon footprint evaluation methodology. Multiple requirements were mandated for 2025 adoption including harmonized specifications on labeling, data formats, and reporting to ensure consistency across the battery value chain.",
+              "urgency": "HIGH",
+              "url": "https://www.mdpi.com/2313-0105/12/3/97"
+            },
+            {
+              "title": "EU Sustainable Batteries Regulation - Due Diligence and ESG Compliance",
+              "source": "linklaters.com",
+              "date": "2023-01-01",
+              "summary": "The Sustainable Batteries Regulation 2023 imposes requirements on entities placing batteries on the EU market, mandating due diligence policies and management systems to identify and address social and environmental risks in raw material sourcing and processing. It repeals and replaces the Batteries Directive 2006.",
+              "urgency": "HIGH",
+              "url": "https://sustainablefutures.linklaters.com/post/102mnwt/esg-quick-guide-eu-sustainable-batteries-regulation"
+            }
+          ],
+          "total": 10,
+          "new_count": 10
+        },
+        "CAT7": {
+          "entries": [
+            {
+              "title": "FAA GPS/GNSS Interference Resource Guide Version 1.1",
+              "source": "faa.gov",
+              "date": "2026-03-23",
+              "summary": "Updated FAA guidance on GPS/GNSS interference addressing jamming and spoofing trends, impacts on aircraft systems, and pilot procedures. IATA and EASA jointly issued a four-workstream action plan for standardized interference reporting, real-time airspace monitoring, jamming device controls, and spoofing detection systems in aircraft avionics.",
+              "urgency": "HIGH",
+              "url": "https://www.facebook.com/61554983172978/posts/gnss-interference-events-are-deeply-concerning-airlines-rely-on-gnss-for-safe-an/122257380224166105/"
+            },
+            {
+              "title": "European Union Space Act - Safety, Resilience and Sustainability of Space Activities",
+              "source": "european-commission.eu",
+              "date": "2025-06-25",
+              "summary": "EU regulatory proposal (COM(2025) 335 Final) addressing safety, resilience and sustainability of space activities in the Union, including GNSS infrastructure protection and radio frequency management for satellite navigation systems.",
+              "urgency": "HIGH",
+              "url": "https://ccianet.org/wp-content/uploads/2026/03/CCIA_Economic-Implications-of-the-European-Union-Space-Act_Report.pdf"
+            },
+            {
+              "title": "Delegated Regulation (EU) 2022/30 - Radio Equipment Directive Cybersecurity Requirements",
+              "source": "limessecurity.com",
+              "date": "2025-08-01",
+              "summary": "Binding cybersecurity requirements for all radio equipment including IoT devices, wearables, and machines with integrated radio modules became active August 1, 2025. Compliance requires application of harmonized standards EN 18031-1/2/3 with high risks of non-compliance including fines and product recalls.",
+              "urgency": "HIGH",
+              "url": "https://limessecurity.com/en/radio-equipment-directive/"
+            },
+            {
+              "title": "EN 18031 Compliance - EU Radio Equipment Directive Cybersecurity Standards",
+              "source": "bytesnap.com",
+              "date": "2025-08-01",
+              "summary": "EN 18031 series cybersecurity standards (covering network protection EN 18031-1, personal data protection EN 18031-2, and financial transaction security EN 18031-3) became mandatory for all internet-connected radio equipment placed on EU market since August 1, 2025. Applies to industrial sensors, smart home devices, IoT gateways, Bluetooth wearables, and Wi-Fi-enabled devices.",
+              "urgency": "HIGH",
+              "url": "https://www.bytesnap.com/news-blog/en-18031-compliance-cra-2026/"
+            },
+            {
+              "title": "RED Cybersecurity Requirements for IP Audio and PA Systems",
+              "source": "sponcomm.com",
+              "date": "2025-08-01",
+              "summary": "EU Radio Equipment Directive enforces new cybersecurity requirements under Articles 3.3(d), (e), and (f) via Delegated Regulation (EU) 2022/30 effective August 1, 2025. Requirements cover network protection, personal data and privacy safeguards, and fraud prevention for IP audio systems, networked PA systems, and audio products with internet or network connectivity using harmonized standard EN 18031.",
+              "urgency": "HIGH",
+              "url": "https://sponcomm.com/info-detail/ip-audio-certification"
+            }
+          ],
+          "new_entries": [
+            {
+              "title": "Delegated Regulation (EU) 2022/30 - Radio Equipment Directive Cybersecurity Requirements",
+              "source": "limessecurity.com",
+              "date": "2025-08-01",
+              "summary": "Binding cybersecurity requirements for all radio equipment including IoT devices, wearables, and machines with integrated radio modules became active August 1, 2025. Compliance requires application of harmonized standards EN 18031-1/2/3 with high risks of non-compliance including fines and product recalls.",
+              "urgency": "HIGH",
+              "url": "https://limessecurity.com/en/radio-equipment-directive/"
+            },
+            {
+              "title": "EN 18031 Compliance - EU Radio Equipment Directive Cybersecurity Standards",
+              "source": "bytesnap.com",
+              "date": "2025-08-01",
+              "summary": "EN 18031 series cybersecurity standards (covering network protection EN 18031-1, personal data protection EN 18031-2, and financial transaction security EN 18031-3) became mandatory for all internet-connected radio equipment placed on EU market since August 1, 2025. Applies to industrial sensors, smart home devices, IoT gateways, Bluetooth wearables, and Wi-Fi-enabled devices.",
+              "urgency": "HIGH",
+              "url": "https://www.bytesnap.com/news-blog/en-18031-compliance-cra-2026/"
+            },
+            {
+              "title": "RED Cybersecurity Requirements for IP Audio and PA Systems",
+              "source": "sponcomm.com",
+              "date": "2025-08-01",
+              "summary": "EU Radio Equipment Directive enforces new cybersecurity requirements under Articles 3.3(d), (e), and (f) via Delegated Regulation (EU) 2022/30 effective August 1, 2025. Requirements cover network protection, personal data and privacy safeguards, and fraud prevention for IP audio systems, networked PA systems, and audio products with internet or network connectivity using harmonized standard EN 18031.",
+              "urgency": "HIGH",
+              "url": "https://sponcomm.com/info-detail/ip-audio-certification"
+            }
+          ],
+          "total": 5,
+          "new_count": 3
+        },
+        "CAT8": {
+          "entries": [
+            {
+              "title": "EU RED Cybersecurity Requirements - EN 18031-1/2/3 Harmonized Standards",
+              "source": "limessecurity.com",
+              "date": "2025-08-01",
+              "summary": "Delegated Regulation (EU) 2022/30 on the Radio Equipment Directive (RED) became active August 1, 2025, making cybersecurity binding for all affected radio equipment including IoT devices, wearables, and smart toys. Manufacturers must comply with harmonized standards EN 18031-1/2/3 to meet Articles 3(3)(d), (e), and (f) requirements, with high risks of non-compliance including fines and product recalls.",
+              "urgency": "HIGH",
+              "url": "https://limessecurity.com/en/radio-equipment-directive/"
+            },
+            {
+              "title": "EN 18031 Compliance Requirements for Internet-Connected Radio Equipment",
+              "source": "bytesnap.com",
+              "date": "2026-03-26",
+              "summary": "EN 18031 certification applies to complete internet-connected radio equipment, not individual modules. Devices that connect to the internet, process personal information, or handle financial transactions must undergo end-product evaluation as a whole for EU market access compliance, even if using pre-certified secure modules.",
+              "urgency": "HIGH",
+              "url": "https://www.bytesnap.com/news-blog/en-18031-compliance-cra-2026/"
+            },
+            {
+              "title": "ByteSnap Design EN 18031-1 Cybersecurity Requirements Assessment Tool",
+              "source": "mpemagazine.co.uk",
+              "date": "2026-03-24",
+              "summary": "ByteSnap Design released an EN 18031-1 Cybersecurity Requirements Assessment tool for manufacturers preparing internet-connected radio products for 2026 EU market launch. The tool provides a 23-month head start on Cyber Resilience Act alignment and addresses cybersecurity-by-design across IoT, industrial, and medical sectors.",
+              "urgency": "HIGH",
+              "url": "https://mpemagazine.co.uk/2026/03/24/bytesnap-design-unveils-en-18031-1-security-compliance-tool/"
+            },
+            {
+              "title": "CNLABS Validates Sophos Product Lines for EU RED Compliance",
+              "source": "prnewswire.com",
+              "date": "2026-03-12",
+              "summary": "CNLABS completed cybersecurity conformity testing for Sophos product lines (XGS Firewalls, AP6 wireless access points, SD-RED devices) in compliance with EU RED Articles 3.3(d), (e), and (f) per EN 18031 harmonized standards. Assessment covered network protection, personal data protection, and fraud safeguards.",
+              "urgency": "HIGH",
+              "url": "https://www.prnewswire.com/news-releases/cnlabs-validates-sophos-product-lines-for-eu-red-compliance-302711713.html"
+            },
+            {
+              "title": "Privacy Assets Identification under EN 18031 RED Compliance",
+              "source": "redcomply.com",
+              "date": "2025-08-01",
+              "summary": "RED compliance became mandatory August 1, 2025 for IoT devices with radio interfaces. Privacy assets must be identified before EN 18031-1 requirements assessment, with security assets protecting privacy through encryption and access controls across device network interfaces.",
+              "urgency": "HIGH",
+              "url": "https://redcomply.com/articles/privacy-assets"
+            },
+            {
+              "title": "EU Radio Equipment Directive (RED) 2025 - Revised Certification Requirements for 5G RedCap and Cybersecurity",
+              "source": "5gredcap.co.uk",
+              "date": "2025-01-01",
+              "summary": "The revised RED 2025 includes specific certification paths for RedCap device interoperability and security. The EU Cyber Resilience Act creates mandatory security requirements for connected devices aligned with 5G SA network security architecture. Regulatory framework supports 5G RedCap deployment in Europe.",
+              "urgency": "HIGH",
+              "url": "https://5gredcap.co.uk/5g-redcap-europe-iot-market-analysis/"
+            },
+            {
+              "title": "RED Cybersecurity Requirements Enforcement - Articles 3.3(d), (e), (f) of Delegated Regulation (EU) 2022/30",
+              "source": "lansingstatejournal.com",
+              "date": "2025-08-01",
+              "summary": "RED cybersecurity requirements became fully enforceable on August 1, 2025. Radio equipment must not compromise network integrity, include safeguards for user data and privacy protection, and prevent fraud. Non-compliant products face fines or mandatory recalls.",
+              "urgency": "HIGH",
+              "url": "https://www.lansingstatejournal.com/press-release/story/998073/sgs-red-cybersecurity-certification-opens-eu-market-access-for-centr-treadmills/"
+            },
+            {
+              "title": "ETSI TS 133 127 - Digital Cellular Telecommunications (GSM/UMTS/LTE/5G) Lawful Interception Architecture",
+              "source": "portal.etsi.org",
+              "date": "2026-03-13",
+              "summary": "ETSI technical specification TS 133 127 (3GPP TS 33.127 version 19.6.0 Release 19) for lawful interception architecture and functions across GSM, UMTS, LTE, and 5G systems. Draft received by ETSI Secretariat for publication.",
+              "urgency": "MEDIUM",
+              "url": "https://portal.etsi.org/webapp/WorkProgram/TUBEReport.asp?titleType=all&qSORT=TB&SearchPage=TRUE&qINCLUDE_MOVED_ON=&qEND_CURRENT_STATUS_CODE=11+WI%3BM58&qSTOP_FLG=N&qCLUSTER=19&butExpertSearch=Search&includeNonActiveTB=FALSE&qREPORT_TYPE=TUBE&optDisplay=ALL"
+            },
+            {
+              "title": "ETSI TS 133 501 - 5G Security Architecture and Procedures for 5G System",
+              "source": "portal.etsi.org",
+              "date": "2026-03-13",
+              "summary": "ETSI technical specification TS 133 501 (3GPP TS 33.501 version 15.19.0 Release 15) defining security architecture and procedures for 5G systems. Draft received by ETSI Secretariat for publication in March 2026.",
+              "urgency": "MEDIUM",
+              "url": "https://portal.etsi.org/webapp/WorkProgram/TUBEReport.asp?titleType=all&qSORT=TB&SearchPage=TRUE&qINCLUDE_MOVED_ON=&qEND_CURRENT_STATUS_CODE=11+WI%3BM58&qSTOP_FLG=N&qCLUSTER=19&butExpertSearch=Search&includeNonActiveTB=FALSE&qREPORT_TYPE=TUBE&optDisplay=ALL"
+            }
+          ],
+          "new_entries": [
+            {
+              "title": "EN 18031 Compliance Requirements for Internet-Connected Radio Equipment",
+              "source": "bytesnap.com",
+              "date": "2026-03-26",
+              "summary": "EN 18031 certification applies to complete internet-connected radio equipment, not individual modules. Devices that connect to the internet, process personal information, or handle financial transactions must undergo end-product evaluation as a whole for EU market access compliance, even if using pre-certified secure modules.",
+              "urgency": "HIGH",
+              "url": "https://www.bytesnap.com/news-blog/en-18031-compliance-cra-2026/"
+            },
+            {
+              "title": "ByteSnap Design EN 18031-1 Cybersecurity Requirements Assessment Tool",
+              "source": "mpemagazine.co.uk",
+              "date": "2026-03-24",
+              "summary": "ByteSnap Design released an EN 18031-1 Cybersecurity Requirements Assessment tool for manufacturers preparing internet-connected radio products for 2026 EU market launch. The tool provides a 23-month head start on Cyber Resilience Act alignment and addresses cybersecurity-by-design across IoT, industrial, and medical sectors.",
+              "urgency": "HIGH",
+              "url": "https://mpemagazine.co.uk/2026/03/24/bytesnap-design-unveils-en-18031-1-security-compliance-tool/"
+            },
+            {
+              "title": "Privacy Assets Identification under EN 18031 RED Compliance",
+              "source": "redcomply.com",
+              "date": "2025-08-01",
+              "summary": "RED compliance became mandatory August 1, 2025 for IoT devices with radio interfaces. Privacy assets must be identified before EN 18031-1 requirements assessment, with security assets protecting privacy through encryption and access controls across device network interfaces.",
+              "urgency": "HIGH",
+              "url": "https://redcomply.com/articles/privacy-assets"
+            },
+            {
+              "title": "EU Radio Equipment Directive (RED) 2025 - Revised Certification Requirements for 5G RedCap and Cybersecurity",
+              "source": "5gredcap.co.uk",
+              "date": "2025-01-01",
+              "summary": "The revised RED 2025 includes specific certification paths for RedCap device interoperability and security. The EU Cyber Resilience Act creates mandatory security requirements for connected devices aligned with 5G SA network security architecture. Regulatory framework supports 5G RedCap deployment in Europe.",
+              "urgency": "HIGH",
+              "url": "https://5gredcap.co.uk/5g-redcap-europe-iot-market-analysis/"
+            },
+            {
+              "title": "RED Cybersecurity Requirements Enforcement - Articles 3.3(d), (e), (f) of Delegated Regulation (EU) 2022/30",
+              "source": "lansingstatejournal.com",
+              "date": "2025-08-01",
+              "summary": "RED cybersecurity requirements became fully enforceable on August 1, 2025. Radio equipment must not compromise network integrity, include safeguards for user data and privacy protection, and prevent fraud. Non-compliant products face fines or mandatory recalls.",
+              "urgency": "HIGH",
+              "url": "https://www.lansingstatejournal.com/press-release/story/998073/sgs-red-cybersecurity-certification-opens-eu-market-access-for-centr-treadmills/"
+            },
+            {
+              "title": "ETSI TS 133 127 - Digital Cellular Telecommunications (GSM/UMTS/LTE/5G) Lawful Interception Architecture",
+              "source": "portal.etsi.org",
+              "date": "2026-03-13",
+              "summary": "ETSI technical specification TS 133 127 (3GPP TS 33.127 version 19.6.0 Release 19) for lawful interception architecture and functions across GSM, UMTS, LTE, and 5G systems. Draft received by ETSI Secretariat for publication.",
+              "urgency": "MEDIUM",
+              "url": "https://portal.etsi.org/webapp/WorkProgram/TUBEReport.asp?titleType=all&qSORT=TB&SearchPage=TRUE&qINCLUDE_MOVED_ON=&qEND_CURRENT_STATUS_CODE=11+WI%3BM58&qSTOP_FLG=N&qCLUSTER=19&butExpertSearch=Search&includeNonActiveTB=FALSE&qREPORT_TYPE=TUBE&optDisplay=ALL"
+            },
+            {
+              "title": "ETSI TS 133 501 - 5G Security Architecture and Procedures for 5G System",
+              "source": "portal.etsi.org",
+              "date": "2026-03-13",
+              "summary": "ETSI technical specification TS 133 501 (3GPP TS 33.501 version 15.19.0 Release 15) defining security architecture and procedures for 5G systems. Draft received by ETSI Secretariat for publication in March 2026.",
+              "urgency": "MEDIUM",
+              "url": "https://portal.etsi.org/webapp/WorkProgram/TUBEReport.asp?titleType=all&qSORT=TB&SearchPage=TRUE&qINCLUDE_MOVED_ON=&qEND_CURRENT_STATUS_CODE=11+WI%3BM58&qSTOP_FLG=N&qCLUSTER=19&butExpertSearch=Search&includeNonActiveTB=FALSE&qREPORT_TYPE=TUBE&optDisplay=ALL"
+            }
+          ],
+          "total": 9,
+          "new_count": 7
+        },
+        "CAT9": {
+          "entries": [
+            {
+              "title": "EU Cybersecurity Requirements for Radio Equipment - Delegated Regulation (EU) 2022/30",
+              "source": "accent-systems.com",
+              "date": "2025-08-01",
+              "summary": "Delegated Regulation (EU) 2022/30 activates essential cybersecurity requirements under RED Article 3(3)(d)(e)(f) for internet-connectable devices, devices processing personal data, or facilitating value transfers. ESL systems and BLE-enabled devices must assess whether they fall under these obligations based on functionality including personal data processing, location services, and remote access capabilities.",
+              "urgency": "HIGH",
+              "url": "https://accent-systems.com/ble-pawr-esl-electronic-shelf-labels-bluetooth-development/"
+            },
+            {
+              "title": "EN 18031-1 Cybersecurity Certification for Connected Devices",
+              "source": "linkedin.com",
+              "date": "2026-01-15",
+              "summary": "EN 18031-1 is the cybersecurity standard for connected devices under EU Radio Equipment Directive (RED). Certification requirements include protection against unauthorized access, secure handling of sensitive data, integrity-protected software updates, and increased resilience of connected infrastructure.",
+              "urgency": "HIGH",
+              "url": "https://www.linkedin.com/posts/keba-emobility_did-you-know-the-kecontact-p40-is-en-18031-activity-7437842672385515520-cz70"
+            },
+            {
+              "title": "New EU RED Cybersecurity Requirements for Wireless Products",
+              "source": "linkedin.com",
+              "date": "2026-03-25",
+              "summary": "EU Radio Equipment Directive (RED) introduces mandatory cybersecurity requirements affecting connected devices using Wi-Fi, Bluetooth, or other wireless technologies. Manufacturers must understand which products are affected and prepare compliance strategies for new RED cybersecurity requirements.",
+              "urgency": "HIGH",
+              "url": "https://www.linkedin.com/posts/isc2eastbaychapter_dont-raise-your-hand-but-how-many-of-us-activity-7439740126605246465-cz70"
+            },
+            {
+              "title": "ETSI EN 303 645 - EU Cyber Security Standard for Consumer IoT",
+              "source": "linkedin.com",
+              "date": "2026-03-16",
+              "summary": "ETSI EN 303 645 represents the EU's commitment to cybersecurity for consumer IoT devices. This standard addresses Radio Frequency (RF) security and wireless communication protection as IoT vulnerabilities and wireless attacks continue to grow.",
+              "urgency": "MEDIUM",
+              "url": "https://www.linkedin.com/posts/emereo-publishing_etsi-en-303-645-represents-the-eus-commitment-activity-7437432221486977026-Z2A_"
+            },
+            {
+              "title": "Radio Equipment Directive (RED) Article 3.3 - Cybersecurity Requirements Update",
+              "source": "intertek.com",
+              "date": "2025-08-01",
+              "summary": "RED Article 3.3 addressing security of radio interfaces became effective February 1, 2022, with mandatory compliance required from August 1, 2025. All radio equipment placed on the EU market must comply to achieve CE marking. Manufacturers should evaluate products against existing state of the art standards in advance.",
+              "urgency": "HIGH",
+              "url": "https://www.intertek.com/ict/radio-equipment-directive"
+            },
+            {
+              "title": "EU Radio Equipment Directive (RED) - New Cybersecurity Requirements EN 18031",
+              "source": "bluetooth.com",
+              "date": "2025-08-01",
+              "summary": "New EU cybersecurity requirements under RED become mandatory on August 1, 2025, applying to Bluetooth devices and wide range of radio equipment. Requirements described in EN 18031 harmonized standards series. While no changes to Bluetooth specifications needed, implementers should review advisory for alignment with existing Bluetooth security best practices.",
+              "urgency": "HIGH",
+              "url": "https://support.bluetooth.com/hc/en-us/articles/38332032284429-EU-Radio-Equipment-Directive-RED-and-EN-18031"
+            },
+            {
+              "title": "RED 3.3 Cybersecurity Update - EU Radio Equipment Directive Compliance",
+              "source": "exein.io",
+              "date": "2022-01-12",
+              "summary": "RED Article 3.3 cybersecurity update marks major step in EU digital product regulation affecting nearly all connected products. Updated January 12, 2022, with mandatory enforcement August 1, 2025. Accompanied by Cyber Resilience Act and Digital Product Passport requiring stronger cybersecurity and product transparency.",
+              "urgency": "HIGH",
+              "url": "https://www.exein.io/blog/red-3-3-radio-equipment-directive-compliance"
+            },
+            {
+              "title": "EU Radio Equipment Directive (CE-RED) Certification Process and Timeline 2025 Update",
+              "source": "blueasialabs.com",
+              "date": "2025-08-01",
+              "summary": "2025 marks pivotal year for wireless device manufacturers with mandatory cybersecurity requirements effective August 1, 2025. Updated CE-RED certification process includes comprehensive compliance requirements for Bluetooth speakers, smartwatches, and industrial routers. Testing includes RF performance standards EN 300 328 for 2.4 GHz Bluetooth devices.",
+              "urgency": "HIGH",
+              "url": "https://www.blueasialabs.com/shouyehuandeng/eu-radio-equipment-directive-ce-red-certification-process-and-timeline"
+            },
+            {
+              "title": "RED Cybersecurity Requirements for IP Audio and Networked Equipment",
+              "source": "sponcomm.com",
+              "date": "2025-08-01",
+              "summary": "Effective August 1, 2025, RED enforces new cybersecurity requirements under Articles 3.3(d), (e), (f) via Delegated Regulation (EU) 2022/30. Requirements apply to IP audio systems, networked PA systems, and internet/network-connected audio products. Applicable harmonized standard EN 18031 series.",
+              "urgency": "HIGH",
+              "url": "https://sponcomm.com/info-detail/ip-audio-certification"
+            }
+          ],
+          "new_entries": [
+            {
+              "title": "New EU RED Cybersecurity Requirements for Wireless Products",
+              "source": "linkedin.com",
+              "date": "2026-03-25",
+              "summary": "EU Radio Equipment Directive (RED) introduces mandatory cybersecurity requirements affecting connected devices using Wi-Fi, Bluetooth, or other wireless technologies. Manufacturers must understand which products are affected and prepare compliance strategies for new RED cybersecurity requirements.",
+              "urgency": "HIGH",
+              "url": "https://www.linkedin.com/posts/isc2eastbaychapter_dont-raise-your-hand-but-how-many-of-us-activity-7439740126605246465-cz70"
+            },
+            {
+              "title": "ETSI EN 303 645 - EU Cyber Security Standard for Consumer IoT",
+              "source": "linkedin.com",
+              "date": "2026-03-16",
+              "summary": "ETSI EN 303 645 represents the EU's commitment to cybersecurity for consumer IoT devices. This standard addresses Radio Frequency (RF) security and wireless communication protection as IoT vulnerabilities and wireless attacks continue to grow.",
+              "urgency": "MEDIUM",
+              "url": "https://www.linkedin.com/posts/emereo-publishing_etsi-en-303-645-represents-the-eus-commitment-activity-7437432221486977026-Z2A_"
+            },
+            {
+              "title": "EU Radio Equipment Directive (RED) - New Cybersecurity Requirements EN 18031",
+              "source": "bluetooth.com",
+              "date": "2025-08-01",
+              "summary": "New EU cybersecurity requirements under RED become mandatory on August 1, 2025, applying to Bluetooth devices and wide range of radio equipment. Requirements described in EN 18031 harmonized standards series. While no changes to Bluetooth specifications needed, implementers should review advisory for alignment with existing Bluetooth security best practices.",
+              "urgency": "HIGH",
+              "url": "https://support.bluetooth.com/hc/en-us/articles/38332032284429-EU-Radio-Equipment-Directive-RED-and-EN-18031"
+            },
+            {
+              "title": "EU Radio Equipment Directive (CE-RED) Certification Process and Timeline 2025 Update",
+              "source": "blueasialabs.com",
+              "date": "2025-08-01",
+              "summary": "2025 marks pivotal year for wireless device manufacturers with mandatory cybersecurity requirements effective August 1, 2025. Updated CE-RED certification process includes comprehensive compliance requirements for Bluetooth speakers, smartwatches, and industrial routers. Testing includes RF performance standards EN 300 328 for 2.4 GHz Bluetooth devices.",
+              "urgency": "HIGH",
+              "url": "https://www.blueasialabs.com/shouyehuandeng/eu-radio-equipment-directive-ce-red-certification-process-and-timeline"
+            },
+            {
+              "title": "RED Cybersecurity Requirements for IP Audio and Networked Equipment",
+              "source": "sponcomm.com",
+              "date": "2025-08-01",
+              "summary": "Effective August 1, 2025, RED enforces new cybersecurity requirements under Articles 3.3(d), (e), (f) via Delegated Regulation (EU) 2022/30. Requirements apply to IP audio systems, networked PA systems, and internet/network-connected audio products. Applicable harmonized standard EN 18031 series.",
+              "urgency": "HIGH",
+              "url": "https://sponcomm.com/info-detail/ip-audio-certification"
+            }
+          ],
+          "total": 9,
+          "new_count": 5
+        }
+      }
     }
   ]
 }
