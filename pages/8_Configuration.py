@@ -23,9 +23,21 @@ st.set_page_config(page_title="Configuration", page_icon="⚙️", layout="wide"
 st.title("⚙️ Configuration")
 st.caption("Manage watch sources and legal referential")
 
-SOURCES_FILE = "data/sources.json"
+SOURCES_FILE  = "data/sources.json"
+REVIEW_CONFIG = Path(__file__).parent.parent / "data" / "review_config.json"
 
-tab_sources, tab_ref = st.tabs(["🌍 Watch Sources", "📚 Legal Referential"])
+def _load_review_cfg() -> dict:
+    if REVIEW_CONFIG.exists():
+        with open(REVIEW_CONFIG) as f:
+            return json.load(f)
+    return {"active_categories":["CAT1","CAT3","CAT4","CAT7","CAT8","CAT9"],
+            "markets":["EU","France"],"email_recipients":[],"frequency":"weekly","enabled":True}
+
+def _save_review_cfg(cfg: dict):
+    with open(REVIEW_CONFIG, "w") as f:
+        json.dump(cfg, f, indent=2, ensure_ascii=False)
+
+tab_sources, tab_ref, tab_review = st.tabs(["🌍 Watch Sources", "📚 Legal Referential", "📅 Periodic Review"])
 
 # ══════════════════════════════════════════════════════════════════════════════
 # TAB 1 — WATCH SOURCES
@@ -402,3 +414,150 @@ with tab_ref:
                     st.success("Referential imported ✓ — all agents updated immediately."); st.rerun()
             except Exception as e:
                 st.error(f"Read error: {e}")
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# TAB 3 — PERIODIC REVIEW
+# ══════════════════════════════════════════════════════════════════════════════
+with tab_review:
+    st.subheader("Periodic Review — Configuration")
+    st.caption("Configure the automated regulatory watch and email notifications")
+
+    cfg = _load_review_cfg()
+
+    # ── Status & trigger ──────────────────────────────────────────────────────
+    col_status, col_action = st.columns([3, 1])
+    with col_status:
+        enabled = cfg.get("enabled", True)
+        st.markdown(f"**Status:** {'🟢 Enabled' if enabled else '🔴 Disabled'}")
+        freq_labels = {
+            "weekly":   "Weekly (every Monday)",
+            "biweekly": "Twice a month (1st & 15th)",
+            "monthly":  "Monthly (1st of month)",
+        }
+        st.markdown(f"**Frequency:** {freq_labels.get(cfg.get('frequency','weekly'), cfg.get('frequency',''))}")
+        st.caption("To change the schedule, uncomment the `schedule` block in `.github/workflows/periodic_review.yml`.")
+    with col_action:
+        st.markdown("**Run now**")
+        st.link_button(
+            "▶️ Trigger on GitHub",
+            "https://github.com/Ju2222022/regwatch/actions/workflows/periodic_review.yml",
+            help="Opens GitHub Actions — click 'Run workflow' to launch a manual review"
+        )
+
+    st.divider()
+
+    # ── Active categories ─────────────────────────────────────────────────────
+    st.markdown("**Categories to monitor**")
+    try:
+        from data.referential import get_cat_labels as _gcl
+        all_cats = list(_gcl().keys())
+    except Exception:
+        all_cats = ["CAT1","CAT2","CAT3","CAT4","CAT5","CAT6","CAT7","CAT8","CAT9"]
+
+    current_cats = cfg.get("active_categories", [])
+    selected_cats = st.multiselect(
+        "Select categories",
+        options=all_cats,
+        default=[cat for cat in current_cats if cat in all_cats],
+        help="Agent 1 will run a watch for each selected category during the periodic review"
+    )
+
+    st.divider()
+
+    # ── Markets ───────────────────────────────────────────────────────────────
+    st.markdown("**Markets to monitor**")
+    try:
+        available_markets = sorted([k for k in load_sources(SOURCES_FILE) if not k.startswith("_")])
+    except Exception:
+        available_markets = ["EU", "France", "UK", "USA", "China", "Germany", "Spain"]
+
+    current_markets = cfg.get("markets", ["EU", "France"])
+    selected_markets = st.multiselect(
+        "Select markets",
+        options=available_markets,
+        default=[m for m in current_markets if m in available_markets],
+    )
+
+    st.divider()
+
+    # ── Email recipients ──────────────────────────────────────────────────────
+    st.markdown("**Email recipients**")
+    st.caption("One email address per line — these will receive the review report")
+    current_recipients = cfg.get("email_recipients", [])
+    recipients_text = st.text_area(
+        "Recipients",
+        value="\n".join(current_recipients),
+        height=100,
+        placeholder="email1@example.com\nemail2@example.com",
+        label_visibility="collapsed"
+    )
+    st.caption("The REVIEW_EMAIL_TO GitHub Secret is always added as recipient.")
+
+    st.divider()
+
+    # ── Frequency ─────────────────────────────────────────────────────────────
+    st.markdown("**Frequency**")
+    freq_options = {
+        "weekly":   "Weekly (every Monday at 7:00 UTC)",
+        "biweekly": "Twice a month (1st & 15th at 7:00 UTC)",
+        "monthly":  "Monthly (1st of month at 7:00 UTC)",
+    }
+    cron_map = {
+        "weekly":   "0 7 * * 1",
+        "biweekly": "0 7 1,15 * *",
+        "monthly":  "0 7 1 * *",
+    }
+    current_freq = cfg.get("frequency", "weekly")
+    selected_freq = st.selectbox(
+        "Frequency",
+        options=list(freq_options.keys()),
+        index=list(freq_options.keys()).index(current_freq) if current_freq in freq_options else 0,
+        format_func=lambda f: freq_options[f],
+        label_visibility="collapsed"
+    )
+    st.info(f"Cron: `{cron_map[selected_freq]}` — uncomment `schedule` in `.github/workflows/periodic_review.yml` to activate.")
+
+    st.divider()
+
+    # ── Save / Enable toggle ──────────────────────────────────────────────────
+    col_save, col_toggle = st.columns([3, 1])
+    with col_save:
+        if st.button("💾 Save configuration", type="primary"):
+            new_cfg = {
+                **cfg,
+                "active_categories": selected_cats,
+                "markets":           selected_markets,
+                "email_recipients":  [e.strip() for e in recipients_text.split("\n") if e.strip()],
+                "frequency":         selected_freq,
+            }
+            _save_review_cfg(new_cfg)
+            st.success("✅ Configuration saved — will be applied at next review run.")
+            st.rerun()
+    with col_toggle:
+        if st.button("🔴 Disable" if enabled else "🟢 Enable", type="secondary"):
+            cfg["enabled"] = not enabled
+            _save_review_cfg(cfg)
+            st.rerun()
+
+    st.divider()
+
+    # ── History preview ───────────────────────────────────────────────────────
+    REVIEW_HISTORY_PATH = Path(__file__).parent.parent / "data" / "review_history.json"
+    if REVIEW_HISTORY_PATH.exists():
+        with open(REVIEW_HISTORY_PATH) as f:
+            history = json.load(f)
+        reviews = history.get("reviews", [])
+        if reviews:
+            latest = reviews[-1]
+            st.markdown(f"**Review history** — {len(reviews)} run(s) recorded")
+            st.caption(
+                f"Last run: {latest.get('date','')} · "
+                f"{latest.get('total_new',0)} new alert(s) · "
+                f"Categories: {', '.join(latest.get('categories',[]))}"
+            )
+            st.link_button("📅 View full history", "https://regwatch.streamlit.app/Review")
+        else:
+            st.info("No reviews run yet. Click 'Trigger on GitHub' to launch the first one.")
+    else:
+        st.info("No reviews run yet. Click 'Trigger on GitHub' to launch the first one.")
