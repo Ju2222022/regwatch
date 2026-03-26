@@ -162,6 +162,19 @@ if mode == "Single product":
 
             _display_profile(profile)
 
+            # ── Send to Agent 3 ───────────────────────────────────────────────
+            if profile.get("found"):
+                st.session_state["last_profile"] = profile
+                st.divider()
+                with st.container(border=True):
+                    col_send, col_info = st.columns([2, 3])
+                    with col_send:
+                        st.markdown("**➡️ Ready for Classifier**")
+                        if st.button("🏷️ Send to Agent 3 — Classifier", type="primary", key="send_to_classifier"):
+                            st.switch_page("pages/6_Classifier.py")
+                    with col_info:
+                        st.caption(f"Product **{profile.get('name', profile.get('code',''))}** profiled — send to Agent 3 to classify into CAT1-CAT9.")
+
 else:
     st.markdown("**Upload a CSV or Excel file** with a `code` column (one model code per row).")
     st.caption("Accepted columns: `code` (required). Other columns are ignored.")

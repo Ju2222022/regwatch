@@ -479,6 +479,21 @@ else:
         except Exception as e:
             st.error(f"❌ Error reading file: {e}")
 
+# ── Send to Agent 4 ─────────────────────────────────────────────────────────
+if "last_classification" in st.session_state:
+    _clf = st.session_state["last_classification"]
+    _cats = _clf.get("assigned_categories", [])
+    if _cats:
+        st.divider()
+        with st.container(border=True):
+            col_send, col_info = st.columns([2, 3])
+            with col_send:
+                st.markdown("**➡️ Ready for Impact Analyzer**")
+                if st.button("📊 Send to Agent 4 — Impact", type="primary", key="send_to_impact_from_cls"):
+                    st.switch_page("pages/2_Impact.py")
+            with col_info:
+                st.caption(f"Classification **{', '.join(_cats)}** ready — Agent 4 will analyze regulatory impact on your catalog.")
+
 # ── Footer ────────────────────────────────────────────────────────────────────
 st.divider()
 sess = st.session_state["session_tokens"]
