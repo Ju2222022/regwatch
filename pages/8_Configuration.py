@@ -542,14 +542,12 @@ with tab_review:
 
     # ── Email recipients ──────────────────────────────────────────────────────
     st.markdown("**Email recipients**")
-    st.caption("These addresses will receive the review report after each run")
-    current_recipients = cfg.get("email_recipients", [])
-    recipients_text = st.text_area(
-        "Recipients",
-        value="\n".join(current_recipients),
-        height=100,
-        placeholder="email1@example.com\nemail2@example.com",
-        label_visibility="collapsed"
+    st.caption("Recipients are managed via the **REVIEW_EMAIL_TO** GitHub secret — separate multiple addresses with commas.")
+    st.info(
+        "To add or change recipients:\n"
+        "1. Go to your GitHub repo → Settings → Environments → regwatch\n"
+        "2. Edit **REVIEW_EMAIL_TO** with comma-separated addresses\n"
+        "   Example: `email1@example.com,email2@example.com`"
     )
 
     st.divider()
@@ -560,7 +558,7 @@ with tab_review:
             **cfg,
             "active_categories": selected_cats,
             "markets":           selected_markets,
-            "email_recipients":  [e.strip() for e in recipients_text.split("\n") if e.strip()],
+            "email_recipients":  cfg.get("email_recipients", []),  # Managed via GitHub secret REVIEW_EMAIL_TO
             "frequency":         selected_freq,
             "enabled":           selected_freq != "manual",
         }
