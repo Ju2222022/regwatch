@@ -48,7 +48,11 @@ with st.expander("⚙️ Current configuration", expanded=False):
     col1, col2, col3 = st.columns(3)
     col1.markdown(f"**Categories:** {', '.join(config.get('active_categories', []))}")
     col2.markdown(f"**Markets:** {', '.join(config.get('markets', []))}")
-    col3.markdown(f"**Frequency:** {config.get('frequency', 'manual').capitalize()}")
+    _freq_display = {
+        "manual": "Manual only", "weekly": "Every week",
+        "biweekly": "Twice a month", "monthly": "Once a month"
+    }
+    col3.markdown(f"**Frequency:** {_freq_display.get(config.get('frequency','manual'), config.get('frequency','manual').capitalize())}")
     recipients = config.get("email_recipients", [])
     if recipients:
         st.markdown(f"**Email recipients:** {', '.join(recipients)}")
