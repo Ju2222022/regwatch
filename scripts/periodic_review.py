@@ -346,8 +346,10 @@ def run_review():
     anthropic_key = os.environ.get("ANTHROPIC_API_KEY", "")
     tavily_key    = os.environ.get("TAVILY_API_KEY", "")
     resend_key  = os.environ.get("RESEND_API_KEY", "")
-    email_to    = os.environ.get("REVIEW_EMAIL_TO", "")
-    email_from  = os.environ.get("REVIEW_EMAIL_FROM", "regwatch@resend.dev")
+    email_to_raw = os.environ.get("REVIEW_EMAIL_TO", "")
+    email_from   = os.environ.get("REVIEW_EMAIL_FROM", "regwatch@resend.dev")
+    # Support multiple recipients separated by commas
+    email_to_list = [e.strip() for e in email_to_raw.split(",") if e.strip()]
 
     if not anthropic_key or not tavily_key:
         print("❌ Missing ANTHROPIC_API_KEY or TAVILY_API_KEY")
