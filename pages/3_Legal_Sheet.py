@@ -51,7 +51,7 @@ with st.sidebar:
 
 # ── Page principale ───────────────────────────────────────────────────────────
 st.title("📋 Agent 5A — Legal Sheet Updater")
-st.caption("Analyse et mise à jour des fiches légales · My Conformity Box")
+st.caption("Legal sheet audit and update · My Conformity Box")
 
 # ── Étape 1 — Parameters ─────────────────────────────────────────────────────
 st.subheader("① Parameters")
@@ -59,20 +59,20 @@ st.subheader("① Parameters")
 col1, col2, col3 = st.columns(3)
 with col1:
     category = st.selectbox(
-        "Catégorie",
+        "Category",
         options=list(CAT_DEFINITIONS.keys()),
         format_func=lambda c: f"{c} — {CAT_LABELS[c]}",
         key="5a_category"
     )
 with col2:
     market = st.selectbox(
-        "Marché",
+        "Market",
         ["Europe", "France", "Spain", "Italy", "Germany", "UK", "USA"],
         key="5a_market"
     )
 with col3:
     urgency_filter = st.multiselect(
-        "Alertes à inclure",
+        "Alerts to include",
         ["HIGH", "MEDIUM", "LOW"],
         default=["HIGH", "MEDIUM"],
         key="5a_urgency"
@@ -104,7 +104,7 @@ fiche_title = ""
 
 if input_mode == "📄 Upload PDF":
     uploaded_pdf = st.file_uploader(
-        "Choisir la fiche légale (PDF)",
+        "Upload legal sheet (PDF)",
         type=["pdf"],
         key="5a_pdf_upload"
     )
@@ -134,7 +134,7 @@ else:
     fiche_text = st.text_area(
         "Contenu de la fiche (copier-coller depuis le PDF)",
         height=300,
-        placeholder="Collez ici le contenu de votre fiche légale...",
+        placeholder="Paste your legal sheet content here...",
         key="5a_text"
     )
     if fiche_text:
@@ -158,7 +158,7 @@ st.caption(f"*{profile_info['desc']}*")
 
 # Sélection manuelle si profil Personnalisé
 custom_ids = None
-if profile == "✏️ Personnalisé":
+if profile == "✏️ Custom":
     all_opts = {s["id"]: f"{s['label']} ({s['relevance']})" for s in ALL_SECTIONS}
     custom_ids = st.multiselect(
         "Sections to analyze",
@@ -185,12 +185,12 @@ st.divider()
 st.subheader("④ Analyse")
 
 if not fiche_text.strip():
-    st.info("Uploadez ou collez le contenu de la fiche légale pour continuer.")
+    st.info("Upload or paste the legal sheet content to continue.")
 
 col_launch, col_info = st.columns([2, 3])
 with col_info:
     if not filtered_alerts:
-        st.warning(f"No alerts {category} in memory — audit qualité uniquement.")
+        st.warning(f"No alerts for {category} in memory — quality audit only.")
     else:
         st.info(f"{len(filtered_alerts)} alert(s) crossed with the sheet.")
 
@@ -208,7 +208,7 @@ if launch:
             chars = len(fiche_text)
             st.write(f"📄 Extracted text : {chars:,} characters")
             if chars > 12000:
-                st.write(f"⚠️ Truncated text à 12 000 characters for analysis (optimal size)")
+                st.write(f"⚠️ Text truncated to 12,000 characters for analysis (optimal size)")
             st.write(f"🔀 Crossed with {len(filtered_alerts)} alert(s) · {category} / {market}...")
 
             result, token_usage = analyze_legal_sheet(
@@ -222,7 +222,7 @@ if launch:
                 custom_section_ids=custom_ids,
             )
             st.session_state["5a_result"] = result
-            st.session_state["5a_decisions"] = {}  # reset décisions
+            st.session_state["5a_decisions"] = {}  # reset decisions
             sections = result.get("sections", [])
             n_update = sum(1 for s in sections if s.get("status") in ["MISSING","ENRICH","OBSOLETE"])
             n_ok     = sum(1 for s in sections if s.get("status") in ["OK","NA_OK"])
@@ -231,7 +231,7 @@ if launch:
             result["sections_ok"] = n_ok
             _cost_5a = "N/A" if token_usage['cost_usd'] == 0 else f"${token_usage['cost_usd']:.4f}"
             status.update(
-                label=f"✅ Analyse terminée · {n_update} section(s) à mettre à jour · {n_ok} à jour · {token_usage['input_tokens']+token_usage['output_tokens']:,} tokens · {_cost_5a}",
+                label=f"✅ Analysis complete · {n_update} section(s) to update · {n_ok} up to date · {token_usage['input_tokens']+token_usage['output_tokens']:,} tokens · {_cost_5a}",
                 state="complete"
             )
         except ValueError as e:
@@ -258,9 +258,9 @@ if "5a_result" in st.session_state:
     overall = result.get("overall_status", "")
     overall_icons = {"MAJOR_UPDATE": "🔴", "MINOR_UPDATE": "🟡", "UP_TO_DATE": "✅"}
     overall_labels = {
-        "MAJOR_UPDATE": "Mise à jour majeure requise",
-        "MINOR_UPDATE": "Enrichissement mineur recommandé",
-        "UP_TO_DATE": "Fiche à jour"
+        "MAJOR_UPDATE": "Major update required",
+        "MINOR_UPDATE": "Minor enrichment recommended",
+        "UP_TO_DATE": "Sheet up to date"
     }
 
     sections_by_status = {}
@@ -281,9 +281,9 @@ if "5a_result" in st.session_state:
         f"<div style='background:{band_color}22;border-left:4px solid {band_color};"
         f"padding:10px 16px;border-radius:4px;margin-bottom:8px'>"
         f"<b>{overall_icon} {overall_label}</b>"
-        f"&nbsp;&nbsp;·&nbsp;&nbsp;✅ {n_ok} à jour"
-        f"&nbsp;&nbsp;·&nbsp;&nbsp;⚠️ {n_action} à mettre à jour"
-        f"&nbsp;&nbsp;·&nbsp;&nbsp;✔️ {n_valid} validée(s)"
+        f"&nbsp;&nbsp;·&nbsp;&nbsp;✅ {n_ok} up to date"
+        f"&nbsp;&nbsp;·&nbsp;&nbsp;⚠️ {n_action} to update"
+        f"&nbsp;&nbsp;·&nbsp;&nbsp;✔️ {n_valid} validated"
         f"</div>",
         unsafe_allow_html=True
     )
@@ -294,7 +294,7 @@ if "5a_result" in st.session_state:
     # Spécificités nationales manquantes
     natl = result.get("national_specificities_missing", [])
     if natl:
-        with st.expander(f"🌍 {len(natl)} spécificité(s) nationale(s) manquante(s)", expanded=True):
+        with st.expander(f"🌍 {len(natl)} missing national specificity(ies)", expanded=True):
             for n in natl:
                 st.warning(f"**{n.get('country','')}** — {n.get('missing_content','')} "
                            f"*(section : {n.get('section_id','')})*")
@@ -310,10 +310,10 @@ if "5a_result" in st.session_state:
             default=["MISSING", "ENRICH", "OBSOLETE"],
             format_func=lambda x: {
                 "MISSING":  "➕ Contenu manquant",
-                "ENRICH":   "⚠️ À enrichir",
-                "OBSOLETE": "🔴 Obsolète",
-                "OK":       "✅ À jour",
-                "NA_OK":    "🔵 NA justifié",
+                "ENRICH":   "⚠️ To enrich",
+                "OBSOLETE": "🔴 Obsolete",
+                "OK":       "✅ Up to date",
+                "NA_OK":    "🔵 NA justified",
             }.get(x, x),
             key="5a_filter_status"
         )
@@ -323,8 +323,8 @@ if "5a_result" in st.session_state:
             ["HIGH", "MEDIUM", "LOW", "NONE"],
             default=["HIGH", "MEDIUM", "LOW"],
             format_func=lambda x: {
-                "HIGH": "🔴 Haute", "MEDIUM": "🟡 Moyenne",
-                "LOW": "🟢 Basse", "NONE": "⚪ Aucune"
+                "HIGH": "🔴 High", "MEDIUM": "🟡 Medium",
+                "LOW": "🟢 Low", "NONE": "⚪ None"
             }.get(x, x),
             key="5a_filter_priority"
         )
@@ -374,9 +374,9 @@ if "5a_result" in st.session_state:
 
         # Couleur du header selon décision
         action_badge = {
-            "approved": "✅ Approuvée",
-            "edited":   "✏️ Éditée",
-            "rejected": "❌ Rejetée",
+            "approved": "✅ Approved",
+            "edited":   "✏️ Edited",
+            "rejected": "❌ Rejected",
             "pending":  "⏳ Pending"
         }.get(action, "")
 
@@ -397,9 +397,9 @@ if "5a_result" in st.session_state:
 
             # AI proposal — éditable
             if sec.get("proposed_update"):
-                st.markdown("**AI proposal** *(éditable)*")
+                st.markdown("**AI proposal** *(editable)*")
                 edited_text = st.text_area(
-                    "Texte proposé",
+                    "Proposed text",
                     value=decision.get("final_text", sec["proposed_update"]),
                     height=180,
                     key=f"edit_{sid}",
@@ -429,7 +429,7 @@ if "5a_result" in st.session_state:
                     }
                     st.rerun()
             else:
-                st.success("Section couverte — aucune modification nécessaire.")
+                st.success("Section covered — no changes required.")
 
     # ── Étape 5 — Export ─────────────────────────────────────────────────────
     approved = {k: v for k, v in decisions.items() if v["action"] in ["approved", "edited"]}
@@ -450,22 +450,22 @@ if "5a_result" in st.session_state:
     col_s4.metric("⏳ Pending",   len(pending))
 
     if pending:
-        st.warning(f"{len(pending)} section(s) non encore traitée(s).")
+        st.warning(f"{len(pending)} section(s) not yet reviewed.")
 
     if approved:
         # Export rapport de mise à jour
         rapport_lines = [
-            f"# Rapport de mise à jour — {fiche_title or category}",
-            f"**Marché** : {market}  |  **Catégorie** : {category}",
+            f"# Update report — {fiche_title or category}",
+            f"**Market**: {market}  |  **Category**: {category}",
             f"**Date** : {datetime.now().strftime('%d/%m/%Y %H:%M')}",
-            f"**Sections approuvées** : {len(approved)}  |  "
+            f"**Approved sections**: {len(approved)}  |  "
             f"**Rejected** : {len(rejected)}  |  **Pending** : {len(pending)}",
             "",
             "---",
             ""
         ]
         for sid, dec in approved.items():
-            action_label = "✏️ Éditée par le responsable" if dec["action"] == "edited" else "✅ Approuvée telle quelle"
+            action_label = "✏️ Edited by manager" if dec["action"] == "edited" else "✅ Approved as-is"
             rapport_lines += [
                 f"## {dec.get('section_label', sid)}",
                 f"*{action_label}*",
@@ -514,13 +514,13 @@ if "5a_result" in st.session_state:
             "summary": result.get("summary", ""),
         }
         col_dl2.download_button(
-            "⬇️ Exporter JSON (intégration)",
+            "⬇️ Export JSON (integration)",
             json.dumps(export_json, indent=2, ensure_ascii=False).encode("utf-8"),
             f"regwatch_fiche_{category}_{market}_{datetime.now().strftime('%Y%m%d')}.json",
             "application/json"
         )
 
-        st.info("💾 Le rapport validé peut être transmis à votre système de gestion documentaire.")
+        st.info("💾 The validated report can be sent to your document management system.")
     else:
         st.info("Approuvez au moins une section pour activer l'export.")
 # ── Send to Agent 5B ─────────────────────────────────────────────────────────
