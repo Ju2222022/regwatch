@@ -363,8 +363,8 @@ def run_review():
     active_cats = config.get("active_categories", [])
     markets     = config.get("markets", ["EU", "France"])
     recipients = config.get("email_recipients", [])
-    if email_to:
-        recipients = list(set(recipients + [email_to]))
+    if email_to_list:
+        recipients = list(set(recipients + email_to_list))
 
     print(f"Categories : {', '.join(active_cats)}")
     print(f"Markets    : {', '.join(markets)}")
