@@ -258,6 +258,7 @@ def send_email_resend(
         headers={
             "Content-Type": "application/json",
             "Authorization": f"Bearer {resend_key}",
+            "User-Agent": "RegWatch/1.0 (github-actions)",
         },
         method="POST"
     )
