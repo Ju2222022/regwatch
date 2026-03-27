@@ -68,6 +68,14 @@
       "github_path": "data/legal_sheets/USA/CAT1.pdf",
       "uploaded": "2026-03-27 12:46",
       "size_kb": 189.3
+    },
+    {
+      "category": "CAT4",
+      "market": "China",
+      "filename": "Legal Card - CHINA - Sun charger, electrical charger, USB charger, adaptator_transformator, rechargeable products_.pdf",
+      "github_path": "data/legal_sheets/China/CAT4.pdf",
+      "uploaded": "2026-03-27 12:47",
+      "size_kb": 52.6
     }
   ]
 }
