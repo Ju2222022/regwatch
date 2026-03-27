@@ -44,6 +44,14 @@
       "github_path": "data/legal_sheets/USA/CAT9.pdf",
       "uploaded": "2026-03-27 12:46",
       "size_kb": 128.9
+    },
+    {
+      "category": "CAT3",
+      "market": "USA",
+      "filename": "Legal Card - USA - Electronic equipments _ cardiofrequence mesure, stop watch, compass, disposable cameras ( with or without flash), fitness console, pedometer, altimeter, watches, and other equipments containing electronic parts_.pdf",
+      "github_path": "data/legal_sheets/USA/CAT3.pdf",
+      "uploaded": "2026-03-27 12:46",
+      "size_kb": 163.9
     }
   ]
 }
