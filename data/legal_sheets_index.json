@@ -84,6 +84,14 @@
       "github_path": "data/legal_sheets/China/CAT6.pdf",
       "uploaded": "2026-03-27 12:47",
       "size_kb": 33.9
+    },
+    {
+      "category": "CAT8",
+      "market": "China",
+      "filename": "Legal Card - CHINA - Mobile Phone _ products with wifi_.pdf",
+      "github_path": "data/legal_sheets/China/CAT8.pdf",
+      "uploaded": "2026-03-27 12:47",
+      "size_kb": 41.8
     }
   ]
 }
