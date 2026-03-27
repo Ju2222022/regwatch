@@ -4,5 +4,14 @@
     "created": "2026-03-27",
     "structure": "data/legal_sheets/{market}/{cat}.pdf"
   },
-  "sheets": []
+  "sheets": [
+    {
+      "category": "CAT4",
+      "market": "USA",
+      "filename": "Legal Card - USA - Sun charger, electrical charger, USB charger, adaptator_transformator, rechargeable products_.pdf",
+      "github_path": "data/legal_sheets/USA/CAT4.pdf",
+      "uploaded": "2026-03-27 12:46",
+      "size_kb": 217.2
+    }
+  ]
 }
