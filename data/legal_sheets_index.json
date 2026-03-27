@@ -156,6 +156,14 @@
       "github_path": "data/legal_sheets/EU/CAT6.pdf",
       "uploaded": "2026-03-27 12:49",
       "size_kb": 42.5
+    },
+    {
+      "category": "CAT8",
+      "market": "EU",
+      "filename": "Legal Card - EUROPE - Mobile Phone _ products with wifi_.pdf",
+      "github_path": "data/legal_sheets/EU/CAT8.pdf",
+      "uploaded": "2026-03-27 12:49",
+      "size_kb": 44.3
     }
   ]
 }
