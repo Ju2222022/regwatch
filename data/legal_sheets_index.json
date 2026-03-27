@@ -108,6 +108,14 @@
       "github_path": "data/legal_sheets/China/CAT2.pdf",
       "uploaded": "2026-03-27 12:47",
       "size_kb": 111.1
+    },
+    {
+      "category": "CAT9",
+      "market": "China",
+      "filename": "Legal Card - CHINA - Electronic equipment using bluetooth (bluetooth watch, earplug bluetooth...)_.pdf",
+      "github_path": "data/legal_sheets/China/CAT9.pdf",
+      "uploaded": "2026-03-27 12:47",
+      "size_kb": 58.6
     }
   ]
 }
