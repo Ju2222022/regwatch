@@ -196,6 +196,14 @@
       "github_path": "data/legal_sheets/EU/CAT3.pdf",
       "uploaded": "2026-03-27 12:49",
       "size_kb": 50.0
+    },
+    {
+      "category": "CAT5",
+      "market": "EU",
+      "filename": "Legal Card - EUROPE - Camera video (with laser device) + remote control using ANT+_.pdf",
+      "github_path": "data/legal_sheets/EU/CAT5.pdf",
+      "uploaded": "2026-03-27 12:49",
+      "size_kb": 40.1
     }
   ]
 }
