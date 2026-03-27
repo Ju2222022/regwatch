@@ -284,6 +284,14 @@
       "github_path": "data/legal_sheets/India/CAT1.pdf",
       "uploaded": "2026-03-27 12:55",
       "size_kb": 70.6
+    },
+    {
+      "category": "CAT4",
+      "market": "Canada",
+      "filename": "Legal Card - CANADA - Sun charger, electrical charger, USB charger, adaptator_transformator, rechargeable products_.pdf",
+      "github_path": "data/legal_sheets/Canada/CAT4.pdf",
+      "uploaded": "2026-03-27 12:57",
+      "size_kb": 115.3
     }
   ]
 }
