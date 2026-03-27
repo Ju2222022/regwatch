@@ -92,6 +92,14 @@
       "github_path": "data/legal_sheets/China/CAT8.pdf",
       "uploaded": "2026-03-27 12:47",
       "size_kb": 41.8
+    },
+    {
+      "category": "CAT7",
+      "market": "China",
+      "filename": "Legal Card - CHINA - Meteorological station, Mini radio, Global Position System, Talkie walkie, Telemeter_.pdf",
+      "github_path": "data/legal_sheets/China/CAT7.pdf",
+      "uploaded": "2026-03-27 12:47",
+      "size_kb": 53.3
     }
   ]
 }
