@@ -6,7 +6,9 @@
     "France":  "fr",
     "China":   "zh",
     "Germany": "de",
-    "Spain":   "es"
+    "Spain":   "es",
+    "India":   "en",
+    "Canada":  "en"
   },
   "EU": [
     "eur-lex.europa.eu",
@@ -46,5 +48,19 @@
     "mincotur.gob.es",
     "boe.es",
     "cnmc.es"
+  ],
+  "India": [
+    "bis.gov.in",
+    "dot.gov.in",
+    "meity.gov.in",
+    "egazette.nic.in",
+    "pib.gov.in"
+  ],
+  "Canada": [
+    "ic.gc.ca",
+    "canada.ca",
+    "gazette.gc.ca",
+    "inspection.canada.ca",
+    "ised-isde.canada.ca"
   ]
 }
