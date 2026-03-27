@@ -148,6 +148,14 @@
       "github_path": "data/legal_sheets/EU/CAT4.pdf",
       "uploaded": "2026-03-27 12:49",
       "size_kb": 42.7
+    },
+    {
+      "category": "CAT6",
+      "market": "EU",
+      "filename": "Legal Card - EUROPE - Mp3 player_.pdf",
+      "github_path": "data/legal_sheets/EU/CAT6.pdf",
+      "uploaded": "2026-03-27 12:49",
+      "size_kb": 42.5
     }
   ]
 }
