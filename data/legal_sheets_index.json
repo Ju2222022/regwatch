@@ -60,6 +60,14 @@
       "github_path": "data/legal_sheets/USA/CAT5.pdf",
       "uploaded": "2026-03-27 12:46",
       "size_kb": 152.5
+    },
+    {
+      "category": "CAT1",
+      "market": "USA",
+      "filename": "Legal Card - USA - Battery and accumulators (including component)_.pdf",
+      "github_path": "data/legal_sheets/USA/CAT1.pdf",
+      "uploaded": "2026-03-27 12:46",
+      "size_kb": 189.3
     }
   ]
 }
