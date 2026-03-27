@@ -20,6 +20,11 @@ from agent2.profiler import profile_product, profile_to_classifier_input
 from agent3.classifier import classify_product
 from agent4.impact import analyze_product_impact, analyze_category_impact
 from agent5a.updater import analyze_legal_sheet
+try:
+    from utils.legal_sheet_library import load_index, fetch_sheet_text
+    LIBRARY_AVAILABLE = True
+except Exception:
+    LIBRARY_AVAILABLE = False
 from agent5b.risk_mapper import generate_risk_mapping
 from data.referential import get_cat_labels
 

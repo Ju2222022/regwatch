@@ -11,6 +11,12 @@ from pathlib import Path
 import sys, os
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+try:
+    from utils.legal_sheet_library import load_index, fetch_sheet_text, list_available_sheets
+    LIBRARY_AVAILABLE = True
+except Exception:
+    LIBRARY_AVAILABLE = False
+
 from agent5a.updater import (
     analyze_legal_sheet, ALL_SECTIONS, STATUS_LABELS, SECTION_IDS,
     SECTION_PROFILES, get_sections_for_profile,
@@ -521,6 +527,41 @@ if "5a_result" in st.session_state:
         )
 
         st.info("💾 The validated report can be sent to your document management system.")
+
+        # ── Avertissement mise à jour bibliothèque ─────────────────────────
+        if LIBRARY_AVAILABLE and len(approved) > 0:
+            st.divider()
+            with st.container(border=True):
+                st.warning(
+                    f"📚 **Library update required** — {len(approved)} section(s) approved. "
+                    f"Please update the **{category} — {market}** sheet in your document system, "
+                    f"then re-upload the updated PDF to the library."
+                )
+                col_lib1, col_lib2 = st.columns(2)
+                with col_lib1:
+                    st.markdown("**Steps to update:**")
+                    st.caption("1. Download the update report above")
+                    st.caption("2. Apply changes to your legal sheet document")
+                    st.caption("3. Export as PDF and upload below")
+                with col_lib2:
+                    update_pdf = st.file_uploader(
+                        "Upload updated sheet PDF",
+                        type=["pdf"],
+                        key="5a_update_library_pdf"
+                    )
+                    if update_pdf and gh_token_5a:
+                        if st.button("📚 Update library", type="primary", key="5a_update_lib_btn"):
+                            from utils.legal_sheet_library import upload_sheet as _upload
+                            ok, msg = _upload(
+                                pdf_bytes=update_pdf.read(),
+                                filename=update_pdf.name,
+                                category=category,
+                                market=market,
+                                gh_token=gh_token_5a,
+                            )
+                            st.success(msg) if ok else st.error(msg)
+                    elif not gh_token_5a:
+                        st.caption("⚠️ GH_TOKEN not configured — upload via Configuration page.")
     else:
         st.info("Approuvez au moins une section pour activer l'export.")
 # ── Send to Agent 5B ─────────────────────────────────────────────────────────

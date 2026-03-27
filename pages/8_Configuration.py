@@ -12,6 +12,17 @@ import sys, os
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from agent1.watcher import load_sources, save_sources, LANGUAGE_LABELS
+import sys, os
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+try:
+    from utils.legal_sheet_library import (
+        load_index, upload_sheet, delete_sheet,
+        list_available_sheets, fetch_sheet_text
+    )
+    LIBRARY_AVAILABLE = True
+except Exception:
+    LIBRARY_AVAILABLE = False
+
 from data.referential import (
     load_referential, save_referential,
     get_legal_categories, get_cat_labels,
@@ -37,7 +48,7 @@ def _save_review_cfg(cfg: dict):
     with open(REVIEW_CONFIG, "w") as f:
         json.dump(cfg, f, indent=2, ensure_ascii=False)
 
-tab_sources, tab_ref, tab_review = st.tabs(["🌍 Watch Sources", "📚 Legal Referential", "📅 Periodic Review"])
+tab_sources, tab_ref, tab_review, tab_library = st.tabs(["🌍 Watch Sources", "📚 Legal Referential", "📅 Periodic Review", "📁 Legal Sheet Library"])
 
 # ══════════════════════════════════════════════════════════════════════════════
 # TAB 1 — WATCH SOURCES
@@ -580,3 +591,127 @@ with tab_review:
                      "Categories": ", ".join(r.get("categories",[]))}
                     for r in reversed(reviews[-5:])]
             st.dataframe(pd.DataFrame(rows), use_container_width=True, hide_index=True)
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# TAB 4 — LEGAL SHEET LIBRARY
+# ══════════════════════════════════════════════════════════════════════════════
+with tab_library:
+    st.subheader("📁 Legal Sheet Library")
+    st.caption("Store and manage legal sheets by category and market — used automatically by Agent 5A and Run All.")
+
+    if not LIBRARY_AVAILABLE:
+        st.error("Library module not available — check `utils/legal_sheet_library.py`.")
+        st.stop()
+
+    gh_token = st.secrets.get("GH_TOKEN", "")
+    if not gh_token:
+        st.warning("⚠️ GH_TOKEN not configured in Streamlit secrets — uploads will not be persisted.")
+
+    index = load_index()
+    sheets = list_available_sheets(index)
+
+    # ── Current library ───────────────────────────────────────────────────────
+    st.markdown(f"**Available sheets — {len(sheets)} file(s)**")
+    if sheets:
+        import pandas as pd
+        df = pd.DataFrame(sheets)[["category", "market", "filename", "uploaded", "size_kb"]]
+        df.columns = ["Category", "Market", "Original filename", "Uploaded", "Size (KB)"]
+        st.dataframe(df, use_container_width=True, hide_index=True)
+    else:
+        st.info("No sheets uploaded yet. Use the form below to add your first sheet.")
+
+    st.divider()
+
+    # ── Upload new sheet ──────────────────────────────────────────────────────
+    st.markdown("**📤 Upload a new sheet**")
+
+    try:
+        from data.referential import get_cat_labels as _gcl
+        _labels = _gcl()
+        all_cats = list(_labels.keys())
+        cat_fmt = lambda c: f"{c} — {_labels.get(c,'').split('(')[0].strip()[:50]}"
+    except Exception:
+        all_cats = ["CAT1","CAT2","CAT3","CAT4","CAT5","CAT6","CAT7","CAT8","CAT9"]
+        cat_fmt = lambda c: c
+
+    try:
+        from agent1.watcher import load_sources as _ls
+        _src = _ls("data/sources.json")
+        available_markets_lib = sorted([k for k in _src if not k.startswith("_")])
+    except Exception:
+        available_markets_lib = ["EU", "France", "Germany", "Spain", "Italy", "UK"]
+
+    col_u1, col_u2 = st.columns(2)
+    with col_u1:
+        upload_cat = st.selectbox(
+            "Category *",
+            options=all_cats,
+            format_func=cat_fmt,
+            key="lib_upload_cat"
+        )
+    with col_u2:
+        upload_market = st.selectbox(
+            "Market *",
+            options=available_markets_lib,
+            key="lib_upload_market"
+        )
+
+    # Avertir si une fiche existe déjà
+    existing = next(
+        (s for s in sheets if s["category"] == upload_cat and s["market"] == upload_market),
+        None
+    )
+    if existing:
+        st.warning(
+            f"⚠️ A sheet already exists for **{upload_cat} — {upload_market}** "
+            f"(uploaded {existing['uploaded']}). Uploading will replace it."
+        )
+
+    uploaded_pdf = st.file_uploader(
+        "Legal sheet PDF *",
+        type=["pdf"],
+        key="lib_pdf_upload",
+        help="Upload the legal sheet PDF for this category and market."
+    )
+
+    if uploaded_pdf:
+        st.caption(f"📄 {uploaded_pdf.name} · {round(uploaded_pdf.size / 1024, 1)} KB")
+        if st.button("💾 Save to library", type="primary", key="lib_save"):
+            with st.spinner("Uploading to GitHub..."):
+                pdf_bytes = uploaded_pdf.read()
+                ok, msg = upload_sheet(
+                    pdf_bytes=pdf_bytes,
+                    filename=uploaded_pdf.name,
+                    category=upload_cat,
+                    market=upload_market,
+                    gh_token=gh_token,
+                )
+            if ok:
+                st.success(msg)
+                st.rerun()
+            else:
+                st.error(msg)
+
+    st.divider()
+
+    # ── Delete a sheet ────────────────────────────────────────────────────────
+    if sheets:
+        st.markdown("**🗑️ Delete a sheet**")
+        sheet_options = {f"{s['category']} — {s['market']}": (s["category"], s["market"])
+                         for s in sheets}
+        to_delete = st.selectbox(
+            "Select sheet to delete",
+            options=list(sheet_options.keys()),
+            key="lib_delete_select"
+        )
+        confirm_del = st.checkbox("Confirm deletion", key="lib_confirm_del")
+        if st.button("🗑️ Delete sheet", disabled=not confirm_del, type="secondary", key="lib_delete_btn"):
+            cat_del, mkt_del = sheet_options[to_delete]
+            with st.spinner("Deleting..."):
+                ok, msg = delete_sheet(cat_del, mkt_del, gh_token)
+            if ok:
+                st.success(msg)
+                st.rerun()
+            else:
+                st.error(msg)
