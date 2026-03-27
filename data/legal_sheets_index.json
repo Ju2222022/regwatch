@@ -292,6 +292,14 @@
       "github_path": "data/legal_sheets/Canada/CAT4.pdf",
       "uploaded": "2026-03-27 12:57",
       "size_kb": 115.3
+    },
+    {
+      "category": "CAT6",
+      "market": "Canada",
+      "filename": "Legal Card - CANADA - Mp3 player_.pdf",
+      "github_path": "data/legal_sheets/Canada/CAT6.pdf",
+      "uploaded": "2026-03-27 12:57",
+      "size_kb": 30.7
     }
   ]
 }
