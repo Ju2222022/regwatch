@@ -236,6 +236,14 @@
       "github_path": "data/legal_sheets/India/CAT8.pdf",
       "uploaded": "2026-03-27 12:55",
       "size_kb": 70.5
+    },
+    {
+      "category": "CAT7",
+      "market": "India",
+      "filename": "Legal Card - INDIA - Meteorological station, Mini radio, Global Position System, Talkie walkie, Telemeter_.pdf",
+      "github_path": "data/legal_sheets/India/CAT7.pdf",
+      "uploaded": "2026-03-27 12:55",
+      "size_kb": 25.4
     }
   ]
 }
