@@ -1,0 +1,8 @@
+{
+  "_meta": {
+    "description": "RegWatch legal sheet library index",
+    "created": "2026-03-27",
+    "structure": "data/legal_sheets/{market}/{cat}.pdf"
+  },
+  "sheets": []
+}
