@@ -140,6 +140,14 @@
       "github_path": "data/legal_sheets/China/CAT1.pdf",
       "uploaded": "2026-03-27 12:47",
       "size_kb": 42.4
+    },
+    {
+      "category": "CAT4",
+      "market": "EU",
+      "filename": "Legal Card - EUROPE - Sun charger, electrical charger, USB charger, adaptator_transformator, rechargeable products_.pdf",
+      "github_path": "data/legal_sheets/EU/CAT4.pdf",
+      "uploaded": "2026-03-27 12:49",
+      "size_kb": 42.7
     }
   ]
 }
