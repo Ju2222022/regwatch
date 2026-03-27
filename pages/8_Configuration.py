@@ -57,6 +57,7 @@ with tab_sources:
     st.subheader("Watch Sources — Markets & Domains")
     st.caption("Manage markets, domains and search languages for Agent 1")
 
+    _gh_token_src = st.secrets.get("GH_TOKEN", "")
     try:
         sources = load_sources(SOURCES_FILE)
     except Exception:
@@ -134,7 +135,7 @@ with tab_sources:
                     del sources[market]
                     if market in lang_map: del lang_map[market]
                     sources[LANG_KEY] = lang_map
-                    save_sources(sources, SOURCES_FILE)
+                    save_sources(sources, SOURCES_FILE, gh_token=_gh_token_src)
                     st.success(f"Market **{market}** deleted.")
                     st.rerun()
 
@@ -142,7 +143,7 @@ with tab_sources:
                 sources[market] = [d.strip() for d in edited_domains.split("\n") if d.strip()]
                 lang_map[market] = new_lang
                 sources[LANG_KEY] = lang_map
-                save_sources(sources, SOURCES_FILE)
+                save_sources(sources, SOURCES_FILE, gh_token=_gh_token_src)
                 st.success(f"✓ {len(sources[market])} domain(s) saved for **{market}**")
                 st.rerun()
 
@@ -166,7 +167,7 @@ with tab_sources:
                 sources[name] = [d.strip() for d in new_domains_text.split("\n") if d.strip()]
                 lang_map[name] = new_lang_key
                 sources[LANG_KEY] = lang_map
-                save_sources(sources, SOURCES_FILE)
+                save_sources(sources, SOURCES_FILE, gh_token=_gh_token_src)
                 st.success(f"✓ Market **{name}** created")
                 st.rerun()
 
@@ -184,7 +185,7 @@ with tab_sources:
                 imported_markets = [k for k in imported if not k.startswith("_")]
                 st.write(f"{len(imported_markets)} market(s) detected")
                 if st.button("✅ Confirm import", type="primary"):
-                    save_sources(imported, SOURCES_FILE)
+                    save_sources(imported, SOURCES_FILE, gh_token=_gh_token_src)
                     st.success("Configuration imported ✓")
                     st.rerun()
             except Exception as e:
