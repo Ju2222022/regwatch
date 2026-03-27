@@ -30,12 +30,20 @@
       "size_kb": 171.9
     },
     {
-      "category": "CAT2",
+      "category": "CAT7",
       "market": "USA",
-      "filename": "Legal Card - USA - Lamp (cap lamp, LED, neon lantern, rainproof torch)_.pdf",
-      "github_path": "data/legal_sheets/USA/CAT2.pdf",
+      "filename": "Legal Card - USA - Meteorological station, Mini radio, Global Position System, Talkie walkie, Telemeter_.pdf",
+      "github_path": "data/legal_sheets/USA/CAT7.pdf",
       "uploaded": "2026-03-27 12:46",
-      "size_kb": 90.0
+      "size_kb": 123.6
+    },
+    {
+      "category": "CAT9",
+      "market": "USA",
+      "filename": "Legal Card - USA - Electronic equipment using bluetooth (bluetooth watch, earplug bluetooth...)_.pdf",
+      "github_path": "data/legal_sheets/USA/CAT9.pdf",
+      "uploaded": "2026-03-27 12:46",
+      "size_kb": 128.9
     }
   ]
 }
