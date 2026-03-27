@@ -220,6 +220,14 @@
       "github_path": "data/legal_sheets/India/CAT4.pdf",
       "uploaded": "2026-03-27 12:55",
       "size_kb": 53.1
+    },
+    {
+      "category": "CAT6",
+      "market": "India",
+      "filename": "Legal Card - INDIA - Mp3 player_.pdf",
+      "github_path": "data/legal_sheets/India/CAT6.pdf",
+      "uploaded": "2026-03-27 12:55",
+      "size_kb": 64.5
     }
   ]
 }
