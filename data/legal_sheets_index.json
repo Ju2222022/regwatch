@@ -164,6 +164,14 @@
       "github_path": "data/legal_sheets/EU/CAT8.pdf",
       "uploaded": "2026-03-27 12:49",
       "size_kb": 44.3
+    },
+    {
+      "category": "CAT7",
+      "market": "EU",
+      "filename": "Legal Card - EUROPE - Meteorological station, Mini radio, Global Position System, Talkie walkie, Telemeter_.pdf",
+      "github_path": "data/legal_sheets/EU/CAT7.pdf",
+      "uploaded": "2026-03-27 12:49",
+      "size_kb": 47.3
     }
   ]
 }
