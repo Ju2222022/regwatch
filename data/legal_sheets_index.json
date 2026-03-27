@@ -348,6 +348,14 @@
       "github_path": "data/legal_sheets/Canada/CAT5.pdf",
       "uploaded": "2026-03-27 12:57",
       "size_kb": 46.9
+    },
+    {
+      "category": "CAT1",
+      "market": "Canada",
+      "filename": "Legal Card - CANADA - Battery and accumulators (including component)_.pdf",
+      "github_path": "data/legal_sheets/Canada/CAT1.pdf",
+      "uploaded": "2026-03-27 12:57",
+      "size_kb": 89.1
     }
   ]
 }
