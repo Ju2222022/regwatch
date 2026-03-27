@@ -149,11 +149,69 @@ def load_sources(sources_json_path: str = "data/sources.json") -> dict:
         return DEFAULT_SOURCES
 
 
-def save_sources(sources: dict, sources_json_path: str = "data/sources.json"):
+def save_sources(sources: dict, sources_json_path: str = "data/sources.json", gh_token: str = ""):
+    """
+    Save sources locally AND commit to GitHub if gh_token is provided.
+    GitHub commit ensures persistence across Streamlit Cloud restarts.
+    """
     import os
+    import base64
+    import urllib.request as _ur
+    import urllib.error as _ue
+
+    # Always write locally first
     os.makedirs(os.path.dirname(sources_json_path), exist_ok=True)
     with open(sources_json_path, "w") as f:
         json.dump(sources, f, indent=2, ensure_ascii=False)
+
+    # Commit to GitHub if token provided
+    if not gh_token:
+        return
+
+    GITHUB_REPO = "Ju2222022/regwatch"
+    GITHUB_API  = "https://api.github.com"
+    github_path = sources_json_path  # e.g. "data/sources.json"
+    content_b64 = base64.b64encode(
+        json.dumps(sources, indent=2, ensure_ascii=False).encode("utf-8")
+    ).decode("utf-8")
+
+    # Get current SHA
+    sha = None
+    try:
+        req = _ur.Request(
+            f"{GITHUB_API}/repos/{GITHUB_REPO}/contents/{github_path}",
+            headers={
+                "Authorization": f"Bearer {gh_token}",
+                "Accept": "application/vnd.github+json",
+                "X-GitHub-Api-Version": "2022-11-28",
+            },
+            method="GET"
+        )
+        with _ur.urlopen(req, timeout=10) as resp:
+            sha = json.loads(resp.read()).get("sha")
+    except Exception:
+        pass
+
+    # Commit
+    payload = {"message": "chore: update sources.json", "content": content_b64, "branch": "main"}
+    if sha:
+        payload["sha"] = sha
+    try:
+        req2 = _ur.Request(
+            f"{GITHUB_API}/repos/{GITHUB_REPO}/contents/{github_path}",
+            data=json.dumps(payload).encode("utf-8"),
+            headers={
+                "Authorization": f"Bearer {gh_token}",
+                "Accept": "application/vnd.github+json",
+                "Content-Type": "application/json",
+                "X-GitHub-Api-Version": "2022-11-28",
+            },
+            method="PUT"
+        )
+        with _ur.urlopen(req2, timeout=20):
+            pass
+    except Exception:
+        pass  # Local save already done — GitHub failure is non-blocking
 
 
 # ── Translation ────────────────────────────────────────────────────────────────
