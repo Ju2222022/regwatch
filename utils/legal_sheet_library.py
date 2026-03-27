@@ -21,7 +21,28 @@ GITHUB_API  = "https://api.github.com"
 
 # ── Index helpers ─────────────────────────────────────────────────────────────
 
-def load_index() -> dict:
+def load_index(gh_token: str = "") -> dict:
+    """Charge l'index depuis GitHub (source of truth) ou filesystem local."""
+    # Essayer GitHub d'abord
+    if gh_token:
+        try:
+            url = f"{GITHUB_API}/repos/{GITHUB_REPO}/contents/data/legal_sheets_index.json"
+            req = urllib.request.Request(
+                url,
+                headers={
+                    "Authorization": f"Bearer {gh_token}",
+                    "Accept": "application/vnd.github+json",
+                    "X-GitHub-Api-Version": "2022-11-28",
+                },
+                method="GET"
+            )
+            with urllib.request.urlopen(req, timeout=15) as resp:
+                data = json.loads(resp.read())
+            content = base64.b64decode(data["content"]).decode("utf-8")
+            return json.loads(content)
+        except Exception:
+            pass
+    # Fallback filesystem local
     if INDEX_FILE.exists():
         with open(INDEX_FILE) as f:
             return json.load(f)
@@ -29,6 +50,8 @@ def load_index() -> dict:
 
 
 def save_index(index: dict):
+    """Sauvegarde l'index localement (GitHub commit géré séparément)."""
+    INDEX_FILE.parent.mkdir(parents=True, exist_ok=True)
     with open(INDEX_FILE, "w") as f:
         json.dump(index, f, indent=2, ensure_ascii=False)
 
@@ -158,7 +181,7 @@ def upload_sheet(
         return False, f"Error uploading PDF: {e}"
 
     # Mettre à jour l'index local + committer
-    index = load_index()
+    index = load_index(gh_token)
     entry = get_sheet_entry(index, category, market)
     new_entry = {
         "category":  category,
