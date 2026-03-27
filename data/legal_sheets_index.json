@@ -12,6 +12,14 @@
       "github_path": "data/legal_sheets/USA/CAT4.pdf",
       "uploaded": "2026-03-27 12:46",
       "size_kb": 217.2
+    },
+    {
+      "category": "CAT6",
+      "market": "USA",
+      "filename": "Legal Card - USA - Mp3 player_.pdf",
+      "github_path": "data/legal_sheets/USA/CAT6.pdf",
+      "uploaded": "2026-03-27 12:46",
+      "size_kb": 174.9
     }
   ]
 }
