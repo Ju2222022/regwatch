@@ -204,6 +204,14 @@
       "github_path": "data/legal_sheets/EU/CAT5.pdf",
       "uploaded": "2026-03-27 12:49",
       "size_kb": 40.1
+    },
+    {
+      "category": "CAT1",
+      "market": "EU",
+      "filename": "Legal Card - EUROPE - Battery and accumulators (including component)_.pdf",
+      "github_path": "data/legal_sheets/EU/CAT1.pdf",
+      "uploaded": "2026-03-27 12:49",
+      "size_kb": 53.4
     }
   ]
 }
