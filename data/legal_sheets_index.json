@@ -116,6 +116,14 @@
       "github_path": "data/legal_sheets/China/CAT9.pdf",
       "uploaded": "2026-03-27 12:47",
       "size_kb": 58.6
+    },
+    {
+      "category": "CAT3",
+      "market": "China",
+      "filename": "Legal Card - CHINA - Electronic equipments _ cardiofrequence mesure, stop watch, compass, disposable cameras ( with or without flash), fitness console, pedometer, altimeter, watches, and other equipments containing electronic parts_.pdf",
+      "github_path": "data/legal_sheets/China/CAT3.pdf",
+      "uploaded": "2026-03-27 12:47",
+      "size_kb": 107.7
     }
   ]
 }
