@@ -76,6 +76,14 @@
       "github_path": "data/legal_sheets/China/CAT4.pdf",
       "uploaded": "2026-03-27 12:47",
       "size_kb": 52.6
+    },
+    {
+      "category": "CAT6",
+      "market": "China",
+      "filename": "Legal Card - CHINA - Mp3 player_.pdf",
+      "github_path": "data/legal_sheets/China/CAT6.pdf",
+      "uploaded": "2026-03-27 12:47",
+      "size_kb": 33.9
     }
   ]
 }
