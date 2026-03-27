@@ -715,3 +715,113 @@ with tab_library:
                 st.rerun()
             else:
                 st.error(msg)
+
+    st.divider()
+
+    # ── Bulk upload ───────────────────────────────────────────────────────────
+    st.markdown("**📦 Bulk upload — multiple sheets at once**")
+    st.caption("Upload all your PDFs at once — assign category and market for each file before saving.")
+
+    bulk_files = st.file_uploader(
+        "Select multiple PDF files",
+        type=["pdf"],
+        accept_multiple_files=True,
+        key="lib_bulk_upload"
+    )
+
+    if bulk_files:
+        st.markdown(f"**{len(bulk_files)} file(s) selected — assign category and market for each:**")
+
+        try:
+            from data.referential import get_cat_labels as _gcl2
+            _labels2 = _gcl2()
+            all_cats2 = list(_labels2.keys())
+            cat_fmt2  = lambda c: f"{c} — {_labels2.get(c,'').split('(')[0].strip()[:40]}"
+        except Exception:
+            all_cats2 = ["CAT1","CAT2","CAT3","CAT4","CAT5","CAT6","CAT7","CAT8","CAT9"]
+            cat_fmt2  = lambda c: c
+
+        try:
+            from agent1.watcher import load_sources as _ls2
+            _src2 = _ls2("data/sources.json")
+            avail_mkts2 = sorted([k for k in _src2 if not k.startswith("_")])
+        except Exception:
+            avail_mkts2 = ["EU", "France", "Germany", "Spain", "Italy", "UK", "USA", "China", "India", "Canada"]
+
+        bulk_assignments = []
+        for i, f in enumerate(bulk_files):
+            col_f, col_c, col_m = st.columns([3, 2, 2])
+            with col_f:
+                st.caption(f"📄 {f.name} · {round(f.size/1024,1)} KB")
+            with col_c:
+                cat_i = st.selectbox(
+                    "Category",
+                    options=all_cats2,
+                    format_func=cat_fmt2,
+                    key=f"bulk_cat_{i}",
+                    label_visibility="collapsed"
+                )
+            with col_m:
+                mkt_i = st.selectbox(
+                    "Market",
+                    options=avail_mkts2,
+                    key=f"bulk_mkt_{i}",
+                    label_visibility="collapsed"
+                )
+            bulk_assignments.append((f, cat_i, mkt_i))
+
+        # Détecter les doublons dans la sélection
+        combos = [(cat, mkt) for _, cat, mkt in bulk_assignments]
+        duplicates = [c for c in set(combos) if combos.count(c) > 1]
+        if duplicates:
+            st.warning(
+                f"⚠️ Duplicate assignments detected: "
+                + ", ".join(f"{c} — {m}" for c, m in duplicates)
+                + ". Each CAT × Market combination must be unique."
+            )
+            can_bulk = False
+        else:
+            can_bulk = True
+
+        if st.button(
+            f"💾 Upload all {len(bulk_files)} sheet(s)",
+            type="primary",
+            key="lib_bulk_save",
+            disabled=not can_bulk or not gh_token
+        ):
+            if not gh_token:
+                st.error("GH_TOKEN not configured — cannot upload.")
+            else:
+                progress = st.progress(0, text="Starting upload...")
+                success_count = 0
+                errors = []
+                for idx, (f, cat_i, mkt_i) in enumerate(bulk_assignments):
+                    progress.progress(
+                        (idx) / len(bulk_assignments),
+                        text=f"Uploading {cat_i} — {mkt_i} ({idx+1}/{len(bulk_assignments)})..."
+                    )
+                    ok, msg = upload_sheet(
+                        pdf_bytes=f.read(),
+                        filename=f.name,
+                        category=cat_i,
+                        market=mkt_i,
+                        gh_token=gh_token,
+                    )
+                    if ok:
+                        success_count += 1
+                    else:
+                        errors.append(f"{cat_i} — {mkt_i}: {msg}")
+                    import time as _time
+                    _time.sleep(0.5)  # Éviter de saturer l'API GitHub
+
+                progress.progress(1.0, text="Done!")
+                if success_count:
+                    st.success(f"✅ {success_count}/{len(bulk_assignments)} sheet(s) uploaded successfully.")
+                if errors:
+                    for err in errors:
+                        st.error(err)
+                if success_count:
+                    st.rerun()
+
+        if not gh_token:
+            st.caption("⚠️ GH_TOKEN not configured in Streamlit secrets — bulk upload unavailable.")
