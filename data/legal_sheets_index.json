@@ -308,6 +308,14 @@
       "github_path": "data/legal_sheets/Canada/CAT8.pdf",
       "uploaded": "2026-03-27 12:57",
       "size_kb": 29.4
+    },
+    {
+      "category": "CAT7",
+      "market": "Canada",
+      "filename": "Legal Card - CANADA - Meteorological station, Mini radio, Global Position System, Talkie walkie, Telemeter_.pdf",
+      "github_path": "data/legal_sheets/Canada/CAT7.pdf",
+      "uploaded": "2026-03-27 12:57",
+      "size_kb": 50.7
     }
   ]
 }
