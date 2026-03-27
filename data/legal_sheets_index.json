@@ -212,6 +212,14 @@
       "github_path": "data/legal_sheets/EU/CAT1.pdf",
       "uploaded": "2026-03-27 12:49",
       "size_kb": 53.4
+    },
+    {
+      "category": "CAT4",
+      "market": "India",
+      "filename": "Legal Card - INDIA - Sun charger, electrical charger, USB charger, adaptator_transformator, rechargeable products_.pdf",
+      "github_path": "data/legal_sheets/India/CAT4.pdf",
+      "uploaded": "2026-03-27 12:55",
+      "size_kb": 53.1
     }
   ]
 }
