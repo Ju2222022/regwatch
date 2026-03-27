@@ -20,6 +20,14 @@
       "github_path": "data/legal_sheets/USA/CAT6.pdf",
       "uploaded": "2026-03-27 12:46",
       "size_kb": 174.9
+    },
+    {
+      "category": "CAT8",
+      "market": "USA",
+      "filename": "Legal Card - USA - Mobile Phone _ products with wifi_.pdf",
+      "github_path": "data/legal_sheets/USA/CAT8.pdf",
+      "uploaded": "2026-03-27 12:46",
+      "size_kb": 171.9
     }
   ]
 }
