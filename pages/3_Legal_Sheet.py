@@ -14,8 +14,11 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 try:
     from utils.legal_sheet_library import load_index, fetch_sheet_text, list_available_sheets
     LIBRARY_AVAILABLE = True
-except Exception:
+except Exception as _lib_err:
     LIBRARY_AVAILABLE = False
+    _LIBRARY_ERROR = str(_lib_err)
+else:
+    _LIBRARY_ERROR = ""
 
 from agent5a.updater import (
     analyze_legal_sheet, ALL_SECTIONS, STATUS_LABELS, SECTION_IDS,
@@ -58,6 +61,8 @@ with st.sidebar:
 # ── Page principale ───────────────────────────────────────────────────────────
 st.title("📋 Agent 5A — Legal Sheet Updater")
 st.caption("Legal sheet audit and update · My Conformity Box")
+if not LIBRARY_AVAILABLE and _LIBRARY_ERROR:
+    st.warning(f"⚠️ Library module not loaded: {_LIBRARY_ERROR}")
 
 # ── Étape 1 — Parameters ─────────────────────────────────────────────────────
 st.subheader("① Parameters")
