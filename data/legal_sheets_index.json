@@ -132,6 +132,14 @@
       "github_path": "data/legal_sheets/China/CAT5.pdf",
       "uploaded": "2026-03-27 12:47",
       "size_kb": 44.4
+    },
+    {
+      "category": "CAT1",
+      "market": "China",
+      "filename": "Legal Card - CHINA - Battery and accumulators (including component)_.pdf",
+      "github_path": "data/legal_sheets/China/CAT1.pdf",
+      "uploaded": "2026-03-27 12:47",
+      "size_kb": 42.4
     }
   ]
 }
