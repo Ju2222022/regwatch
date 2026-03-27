@@ -252,6 +252,14 @@
       "github_path": "data/legal_sheets/India/CAT2.pdf",
       "uploaded": "2026-03-27 12:55",
       "size_kb": 140.1
+    },
+    {
+      "category": "CAT9",
+      "market": "India",
+      "filename": "Legal Card - INDIA - Electronic equipment using bluetooth (bluetooth watch, earplug bluetooth...)_.pdf",
+      "github_path": "data/legal_sheets/India/CAT9.pdf",
+      "uploaded": "2026-03-27 12:55",
+      "size_kb": 56.7
     }
   ]
 }
