@@ -12,6 +12,11 @@ import sys, os
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from agent5b.risk_mapper import generate_risk_mapping
+try:
+    from utils.legal_sheet_library import load_index, fetch_sheet_text, list_available_sheets
+    LIBRARY_AVAILABLE = True
+except Exception:
+    LIBRARY_AVAILABLE = False
 
 st.set_page_config(page_title="Agent 5B — Risk Map", page_icon="🗺️", layout="wide")
 
@@ -118,19 +123,77 @@ with col2:
 
 st.divider()
 
-# ── Étape 2 — Lancement ──────────────────────────────────────────────────────
-st.subheader("② Risk mapping generation")
+# ── Étape 2 — Mode d'analyse + lancement ─────────────────────────────────────
+st.subheader("② Analysis mode")
+
+# Sélecteur de mode
+analysis_mode = st.radio(
+    "Base the risk analysis on:",
+    [
+        "📡 Regulatory alerts (Agent 4 output)",
+        "📚 Updated legal sheet (Agent 5A — from library)",
+    ],
+    horizontal=True,
+    key="5b_analysis_mode",
+    help=(
+        "**Alerts mode**: risk is assessed against raw regulatory alerts from Agent 4.\n\n"
+        "**Legal sheet mode**: risk is assessed against the legal sheet AFTER Agent 5A approved updates — "
+        "shows the real before/after compliance gap."
+    )
+)
+
+# Si mode fiche légale — charger depuis bibliothèque
+sheet_context = None
+if "Legal sheet" in analysis_mode and LIBRARY_AVAILABLE:
+    st.markdown("**Legal sheet source**")
+    col_s1, col_s2 = st.columns(2)
+    with col_s1:
+        try:
+            from data.referential import get_cat_labels as _gcl
+            _labels = _gcl()
+            all_cats_5b = list(_labels.keys())
+            cat_fmt_5b  = lambda c: f"{c} — {_labels.get(c,'').split('(')[0].strip()[:40]}"
+        except Exception:
+            all_cats_5b = ["CAT1","CAT2","CAT3","CAT4","CAT5","CAT6","CAT7","CAT8","CAT9"]
+            cat_fmt_5b  = lambda c: c
+        sheet_cat = st.selectbox("Category", all_cats_5b, format_func=cat_fmt_5b, key="5b_sheet_cat")
+    with col_s2:
+        _index_5b = load_index()
+        _sheets_5b = list_available_sheets(_index_5b)
+        _markets_5b = sorted(list({s["market"] for s in _sheets_5b})) or ["EU", "France"]
+        sheet_market = st.selectbox("Market", _markets_5b, key="5b_sheet_market")
+
+    # Vérifier si la fiche existe
+    _entry_5b = next(
+        (s for s in _sheets_5b if s["category"] == sheet_cat and s["market"] == sheet_market),
+        None
+    )
+    if _entry_5b:
+        st.success(f"📚 Sheet available: **{sheet_cat} — {sheet_market}** (uploaded {_entry_5b.get('uploaded','')})")
+        sheet_context = {"category": sheet_cat, "market": sheet_market}
+    else:
+        st.warning(f"No sheet found for **{sheet_cat} — {sheet_market}** in library. Upload it via Configuration → Legal Sheet Library.")
+        sheet_context = None
+
+elif "Legal sheet" in analysis_mode and not LIBRARY_AVAILABLE:
+    st.error("Library module not available.")
+
+st.divider()
+st.subheader("③ Risk mapping generation")
 
 col_l, col_i = st.columns([2, 3])
 with col_i:
     if not impact:
         st.warning("Run Agent 4 in Product Mode first.")
+    else:
         imp_ = impact.get("impacted_products", [])
-        before_after = "enabled" if agent5a else "désenabled (pas de données 5A)"
+        mode_label = "Updated legal sheet" if "Legal sheet" in analysis_mode else "Regulatory alerts"
+        ba_status = "enabled" if (agent5a or sheet_context) else "disabled (no 5A data)"
         st.info(
             f"{len(imp_)} impacted product(s) to analyze  \n"
-            f"Before/after comparison: **{before_after}**  \n"
-            f"Coût estimé : ~$0.05"
+            f"Analysis basis: **{mode_label}**  \n"
+            f"Before/after comparison: **{ba_status}**  \n"
+            f"Estimated cost: ~$0.05"
         )
 
 with col_l:
@@ -144,15 +207,36 @@ with col_l:
 if launch:
     with st.status("🗺️ Generating...", expanded=True) as status:
         try:
+            # Charger la fiche légale si mode bibliothèque
+            _agent5a_final = agent5a or []
+            if "Legal sheet" in analysis_mode and sheet_context:
+                gh_token_5b = st.secrets.get("GH_TOKEN", "")
+                st.write(f"Loading legal sheet {sheet_context['category']} — {sheet_context['market']} from library...")
+                _sheet_text, _sheet_title = fetch_sheet_text(
+                    sheet_context["category"], sheet_context["market"], gh_token_5b
+                )
+                if _sheet_text:
+                    # Construire un contexte 5A synthétique depuis la fiche
+                    _agent5a_final = [{
+                        "section_label": "Legal sheet reference",
+                        "action": "approved",
+                        "final_text": _sheet_text[:3000],
+                        "update_reason": f"Reference sheet {sheet_context['category']} — {sheet_context['market']}",
+                        "priority": "HIGH",
+                    }]
+                    st.write(f"✅ Sheet loaded — {len(_sheet_text):,} chars")
+                else:
+                    st.warning("Could not load sheet — falling back to alerts mode.")
+
             imp__ = impact.get("impacted_products", [])
             n_batches__ = max(1, -(-len(imp__) // 4))
             st.write(f"Analysing {len(imp__)} impacted product(s) in {n_batches__} batch(es)...")
-            if agent5a:
-                st.write(f"Integrating {len(agent5a)} Agent 5A update(s) for before/after comparison...")
+            if _agent5a_final:
+                st.write(f"Integrating {len(_agent5a_final)} context element(s) for before/after comparison...")
             result, token_usage = generate_risk_mapping(
                 anthropic_key=anthropic_key,
                 impact_product_result=impact,
-                agent5a_approved=agent5a or [],
+                agent5a_approved=_agent5a_final or [],
             )
             st.session_state["5b_result"] = result
             n_prod = len(result.get("products", []))
@@ -182,7 +266,7 @@ if "5b_result" in st.session_state:
     reg_view = result.get("regulatory_view", [])
 
     st.divider()
-    st.subheader("③ Results")
+    st.subheader("④ Results")
 
     # Bandeau exécutif
     n_h = exec_sum.get("total_high", 0)
