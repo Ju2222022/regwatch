@@ -180,6 +180,14 @@
       "github_path": "data/legal_sheets/EU/CAT2.pdf",
       "uploaded": "2026-03-27 12:49",
       "size_kb": 40.2
+    },
+    {
+      "category": "CAT9",
+      "market": "EU",
+      "filename": "Legal Card - EUROPE - Electronic equipment using bluetooth (bluetooth watch, earplug bluetooth...)_.pdf",
+      "github_path": "data/legal_sheets/EU/CAT9.pdf",
+      "uploaded": "2026-03-27 12:49",
+      "size_kb": 34.4
     }
   ]
 }
