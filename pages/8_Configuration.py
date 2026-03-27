@@ -608,7 +608,8 @@ with tab_library:
     if not gh_token:
         st.warning("⚠️ GH_TOKEN not configured in Streamlit secrets — uploads will not be persisted.")
 
-    index = load_index()
+    gh_token = st.secrets.get("GH_TOKEN", "")
+    index = load_index(gh_token)
     sheets = list_available_sheets(index)
 
     # ── Current library ───────────────────────────────────────────────────────

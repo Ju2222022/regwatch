@@ -158,7 +158,8 @@ if "Legal sheet" in analysis_mode and LIBRARY_AVAILABLE:
             cat_fmt_5b  = lambda c: c
         sheet_cat = st.selectbox("Category", all_cats_5b, format_func=cat_fmt_5b, key="5b_sheet_cat")
     with col_s2:
-        _index_5b = load_index()
+        _gh_token_5b = st.secrets.get("GH_TOKEN", "")
+        _index_5b = load_index(_gh_token_5b)
         _sheets_5b = list_available_sheets(_index_5b)
         _markets_5b = sorted(list({s["market"] for s in _sheets_5b})) or ["EU", "France"]
         sheet_market = st.selectbox("Market", _markets_5b, key="5b_sheet_market")
