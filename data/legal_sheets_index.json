@@ -124,6 +124,14 @@
       "github_path": "data/legal_sheets/China/CAT3.pdf",
       "uploaded": "2026-03-27 12:47",
       "size_kb": 107.7
+    },
+    {
+      "category": "CAT5",
+      "market": "China",
+      "filename": "Legal Card - CHINA - Camera video (with laser device) + remote control using ANT+_.pdf",
+      "github_path": "data/legal_sheets/China/CAT5.pdf",
+      "uploaded": "2026-03-27 12:47",
+      "size_kb": 44.4
     }
   ]
 }
