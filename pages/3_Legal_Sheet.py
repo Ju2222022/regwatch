@@ -1,6 +1,6 @@
 """
 Page 7 — Agent 5A : Legal Sheet Updater
-Upload PDF legal sheet → analyse → approve / edit / reject → export.
+Upload PDF legal sheet → analyze → approve / edit / reject → export.
 """
 
 import streamlit as st
@@ -34,10 +34,10 @@ anthropic_key = st.secrets.get("ANTHROPIC_API_KEY", "")
 # ── Sidebar ───────────────────────────────────────────────────────────────────
 with st.sidebar:
     st.header("⚙️ Status")
-    st.success("Anthropic ✓") if anthropic_key else st.error("ANTHROPIC_API_KEY manquante")
+    st.success("Anthropic ✓") if anthropic_key else st.error("ANTHROPIC_API_KEY missing")
     st.divider()
     veille = st.session_state.get("veille_results", [])
-    st.header("📡 Alertes disponibles")
+    st.header("📡 Available alerts")
     if veille:
         st.success(f"{len(veille)} alert(s) in memory")
     else:
@@ -96,12 +96,12 @@ filtered_alerts = [
     if e.get("urgency") in urgency_filter
     and (category in e.get("categories_concerned", []) or not e.get("categories_concerned"))
 ]
-st.caption(f"→ **{len(filtered_alerts)} alert(s)** applicables pour {category} / {market}")
+st.caption(f"→ **{len(filtered_alerts)} alert(s)** applicable for {category} / {market}")
 
 st.divider()
 
 # ── Étape 2 — Upload ou saisie de la fiche ───────────────────────────────────
-st.subheader("② Legal sheet actuelle")
+st.subheader("② Current legal sheet")
 
 input_mode = st.radio(
     "Sheet source",
@@ -133,8 +133,8 @@ if input_mode == "📄 Upload PDF":
             with st.expander("Preview of extracted text"):
                 st.text(fiche_text[:2000] + ("..." if len(fiche_text) > 2000 else ""))
         except Exception as e:
-            st.error(f"Error lecture PDF : {e}")
-            st.info("Essayez le mode 'Paste text' comme alternative.")
+            st.error(f"Error reading PDF: {e}")
+            st.info("Try the 'Paste text' mode as an alternative.")
 
 else:
     fiche_title = st.text_input(
@@ -186,7 +186,7 @@ n_passes = max(1, -(-len(sections_preview) // 8))  # ceil division
 cost_est = n_passes * 0.025  # ~$0.025 par passe Sonnet
 st.info(
     f"**{len(sections_preview)} section(s)** · "
-    f"**{n_passes} appel(s)** Claude · "
+    f"**{n_passes} Claude call(s)** · "
     f"Estimated cost : **~${cost_est:.2f}**"
 )
 
@@ -237,7 +237,7 @@ if launch:
             sections = result.get("sections", [])
             n_update = sum(1 for s in sections if s.get("status") in ["MISSING","ENRICH","OBSOLETE"])
             n_ok     = sum(1 for s in sections if s.get("status") in ["OK","NA_OK"])
-            # Mettre à jour les compteurs dans le résultat
+            # Update counters in result
             result["sections_to_update"] = n_update
             result["sections_ok"] = n_ok
             _cost_5a = "N/A" if token_usage['cost_usd'] == 0 else f"${token_usage['cost_usd']:.4f}"
@@ -246,10 +246,10 @@ if launch:
                 state="complete"
             )
         except ValueError as e:
-            # Error JSON ou réponse vide — afficher le détail
-            status.update(label=f"❌ Error d'analyse : {e}", state="error")
+            # JSON error or empty response — show details
+            status.update(label=f"❌ Analysis error: {e}", state="error")
             st.error(str(e))
-            st.info("💡 Conseil : essayez avec un texte plus court (mode 'Paste text' avec les sections les plus importantes) ou relancez l'analyse.")
+            st.info("💡 Tip: try with shorter text (use 'Paste text' mode with the most important sections) or re-run the analysis.")
             st.stop()
         except Exception as e:
             status.update(label=f"❌ Error: {e}", state="error")
@@ -308,7 +308,7 @@ if "5a_result" in st.session_state:
         with st.expander(f"🌍 {len(natl)} missing national specificity(ies)", expanded=True):
             for n in natl:
                 st.warning(f"**{n.get('country','')}** — {n.get('missing_content','')} "
-                           f"*(section : {n.get('section_id','')})*")
+                           f"*(section: {n.get('section_id','')})*")
 
     st.divider()
 
@@ -320,7 +320,7 @@ if "5a_result" in st.session_state:
             ["MISSING", "ENRICH", "OBSOLETE", "OK", "NA_OK"],
             default=["MISSING", "ENRICH", "OBSOLETE"],
             format_func=lambda x: {
-                "MISSING":  "➕ Contenu manquant",
+                "MISSING":  "➕ Missing content",
                 "ENRICH":   "⚠️ To enrich",
                 "OBSOLETE": "🔴 Obsolete",
                 "OK":       "✅ Up to date",
@@ -348,7 +348,7 @@ if "5a_result" in st.session_state:
         and s.get("priority") in show_priority
         and s.get("proposed_update")
     ]
-    if col_all1.button("✅ Tout approuver", key="approve_all"):
+    if col_all1.button("✅ Approve all", key="approve_all"):
         for s in sections_to_act:
             sid = s["section_id"]
             decisions[sid] = {
@@ -357,7 +357,7 @@ if "5a_result" in st.session_state:
                 "section_label": s.get("section_label", "")
             }
         st.rerun()
-    if col_all2.button("❌ Tout rejeter", key="reject_all"):
+    if col_all2.button("❌ Reject all", key="reject_all"):
         for s in sections_to_act:
             sid = s["section_id"]
             decisions[sid] = {
@@ -404,7 +404,7 @@ if "5a_result" in st.session_state:
             if sec.get("update_reason"):
                 st.markdown(f"**Why update** : {sec['update_reason']}")
                 if sec.get("alert_reference"):
-                    st.caption(f"Alerte source : *{sec['alert_reference']}*")
+                    st.caption(f"Source alert: *{sec['alert_reference']}*")
 
             # AI proposal — éditable
             if sec.get("proposed_update"):
@@ -491,7 +491,7 @@ if "5a_result" in st.session_state:
 
         col_dl1, col_dl2 = st.columns(2)
         col_dl1.download_button(
-            "⬇️ Exporter rapport Markdown",
+            "⬇️ Export Markdown report",
             rapport_md.encode("utf-8"),
             f"regwatch_legal_sheet_{category}_{market}_{datetime.now().strftime('%Y%m%d')}.md",
             "text/markdown"
@@ -566,9 +566,9 @@ if "5a_result" in st.session_state:
                             )
                             st.success(msg) if ok else st.error(msg)
                     elif not gh_token_5a:
-                        st.caption("⚠️ GH_TOKEN not configured — upload via Configuration → Legal Sheet Library.")
+                        st.caption("⚠️ GH_TOKEN not configured — upload via Configuration page.")
     else:
-        st.info("Approuvez au moins une section pour activer l'export.")
+        st.info("Approve at least one section to enable export.")
 # ── Send to Agent 5B ─────────────────────────────────────────────────────────
 if "5a_result" in st.session_state and st.session_state.get("5a_decisions"):
     _approved = [k for k, v in st.session_state["5a_decisions"].items() if v.get("decision") == "approve"]
