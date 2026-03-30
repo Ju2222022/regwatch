@@ -133,7 +133,7 @@ OUTPUT — respond ONLY with valid JSON, no markdown:
 {
   "analysis_date": "YYYY-MM-DD",
   "category": "CAT9",
-  "market": "Europe",
+  "market": "EU",
   "fiche_title": "...",
   "overall_status": "MAJOR_UPDATE|MINOR_UPDATE|UP_TO_DATE",
   "sections": [
@@ -273,7 +273,7 @@ def analyze_legal_sheet(
     alerts: list,
     category: str,
     fiche_title: str = "",
-    market: str = "Europe",
+    market: str = "EU",
     profile: str = "📋 Standard",
     custom_section_ids: list = None,
 ) -> tuple:
