@@ -16,7 +16,7 @@ from agent4.impact import (
     CAT_DEFINITIONS,
 )
 
-st.set_page_config(page_title="Agent 4 — Impact", page_icon="⚡", layout="wide")
+st.set_page_config(page_title="Impact Analysis · RegWatch", page_icon="⚡", layout="wide")
 
 CAT_LABELS = {k: v["label"] for k, v in CAT_DEFINITIONS.items()}
 
@@ -63,7 +63,7 @@ with st.sidebar:
     st.caption("Alerts are automatically passed from Agent 1 via session state.")
 
 # ── Page principale ───────────────────────────────────────────────────────────
-st.title("⚡ Agent 4 — Impact Analyzer")
+st.title("⚡ Impact Analysis")
 st.caption("Cross-reference regulatory alerts × product catalog or × legal categories")
 
 # Vérification alertes

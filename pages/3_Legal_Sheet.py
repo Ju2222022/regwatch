@@ -26,7 +26,7 @@ from agent5a.updater import (
 )
 from agent4.impact import CAT_DEFINITIONS
 
-st.set_page_config(page_title="Agent 5A — Legal Sheet", page_icon="📋", layout="wide")
+st.set_page_config(page_title="Legal Sheet Update · RegWatch", page_icon="📋", layout="wide")
 
 CAT_LABELS    = {k: v["label"] for k, v in CAT_DEFINITIONS.items()}
 anthropic_key = st.secrets.get("ANTHROPIC_API_KEY", "")
@@ -64,7 +64,7 @@ with st.sidebar:
         st.rerun()
 
 # ── Page ──────────────────────────────────────────────────────────────────────
-st.title("📋 Agent 5A — Legal Sheet Updater")
+st.title("📋 Legal Sheet Update")
 st.caption("Legal sheet audit and update · My Conformity Box")
 
 # ── ① Parameters ──────────────────────────────────────────────────────────────

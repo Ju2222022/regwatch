@@ -119,9 +119,9 @@ def _display_profile(profile: dict):
 
 
 # ── Header ────────────────────────────────────────────────────────────────────
-st.title("🔍 Agent 2 — Product Profiler")
-st.caption("Fetches raw product specs from the web by model code. No classification — use Agent 3 for that.")
-st.info("📋 **Output:** product name, description, detected technologies (wireless, power, sensors) and key specs. Results are ready to feed into Agent 3 (Classifier).\n\n🔍 **Method:** Claude web search — searches the web for the model code on the specified domain.")
+st.title("🔍 Product Profiler")
+st.caption("Fetches raw product specs from the web by model code. No classification — use the Classifier for that.")
+st.info("📋 **Output:** product name, description, detected technologies (wireless, power, sensors) and key specs. Results are ready to feed into the Classifier.\n\n🔍 **Method:** Claude web search — searches the web for the model code on the specified domain.")
 st.divider()
 
 if not ANTHROPIC_KEY:
@@ -170,10 +170,10 @@ if mode == "Single product":
                     col_send, col_info = st.columns([2, 3])
                     with col_send:
                         st.markdown("**➡️ Ready for Classifier**")
-                        if st.button("🏷️ Send to Agent 3 — Classifier", type="primary", key="send_to_classifier"):
+                        if st.button("🏷️ Send to Classifier", type="primary", key="send_to_classifier"):
                             st.switch_page("pages/6_Classifier.py")
                     with col_info:
-                        st.caption(f"Product **{profile.get('name', profile.get('code',''))}** profiled — send to Agent 3 to classify into CAT1-CAT9.")
+                        st.caption(f"Product **{profile.get('name', profile.get('code',''))}** profiled — send to Classifier to assign CAT1-CAT9.")
 
 else:
     st.markdown("**Upload a CSV or Excel file** with a `code` column (one model code per row).")

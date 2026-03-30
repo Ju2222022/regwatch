@@ -19,7 +19,7 @@ from data.referential import get_cat_labels as _get_cat_labels
 from data.referential import get_cat_labels as _get_cat_labels
 
 
-st.set_page_config(page_title="Agent 1 — Watch", page_icon="📡", layout="wide")
+st.set_page_config(page_title="Regulatory Watch · RegWatch", page_icon="📡", layout="wide")
 
 # ── Référentiels ──────────────────────────────────────────────────────────────
 CAT_LABELS = _get_cat_labels()
@@ -95,7 +95,7 @@ with st.sidebar:
     st.caption("⚙️ To manage sources, go to **Configuration**.")
 
 # ── Page principale ───────────────────────────────────────────────────────────
-st.title("📡 Agent 1 — Regulatory Watcher")
+st.title("📡 Regulatory Watch")
 st.caption("Monitoring official regulatory sources · Tavily + Jina.ai")
 
 # ── Pré-remplissage par catégorie ─────────────────────────────────────────────
