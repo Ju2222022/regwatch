@@ -1,6 +1,6 @@
 """
 Page 6 — Agent 4 : Impact Analyzer
-Deux modes : Produit (risk mapping) et Catégorie (delta fiches légales).
+Two modes: Product (risk mapping) and Category (legal sheet delta).
 """
 
 import streamlit as st
@@ -34,7 +34,7 @@ with st.sidebar:
 
     # Alertes en mémoire depuis Agent 1
     veille = st.session_state.get("veille_results", [])
-    st.header("📡 Alertes disponibles")
+    st.header("📡 Available alerts")
     if veille:
         st.success(f"{len(veille)} alert(s) in memory")
         cats_in_alerts = list(set(
@@ -197,7 +197,7 @@ if "Product Mode" in mode:
                     f"{', '.join(prod.get('categories',[]))}"
                 ):
                     st.markdown(f"**Risk summary**: {prod.get('risk_summary','—')}")
-                    st.markdown("**Alertes applicables**")
+                    st.markdown("**Applicable alerts**")
                     for alert in prod.get("applicable_alerts", []):
                         a_icon = URGENCY_COLOR.get(alert.get("alert_urgency","LOW"),"⚪")
                         st.markdown(f"{a_icon} **{alert.get('alert_title','?')}**")
@@ -218,8 +218,8 @@ if "Product Mode" in mode:
                     "Product":      p.get("name",""),
                     "Categories":   ", ".join(p.get("categories",[])),
                     "Risk":       p.get("risk_score",""),
-                    "Alerte":       alert.get("alert_title",""),
-                    "Urgence":      alert.get("alert_urgency",""),
+                    "Alert":       alert.get("alert_title",""),
+                    "Urgency":      alert.get("alert_urgency",""),
                     "Raison":       alert.get("reason",""),
                     "Action":       alert.get("action",""),
                 })
@@ -285,7 +285,7 @@ else:
                 status.update(label=f"❌ Error: {e}", state="error")
                 st.stop()
 
-    # Affichage résultats Category Mode
+    # Category Mode results
     if "impact_category_result" in st.session_state:
         result_cat = st.session_state["impact_category_result"]
         cat_impacts = result_cat.get("category_impacts", [])
@@ -296,12 +296,12 @@ else:
         c1, c2, c3 = st.columns(3)
         c1.metric("Categories to update", len(cat_impacts))
         c2.metric("Categories with no changes", len(no_update))
-        c3.metric("Total mises à jour requises", total_upd)
+        c3.metric("Total updates required", total_upd)
 
         if result_cat.get("summary"):
             st.info(result_cat["summary"])
 
-        st.subheader("📋 Fiches légales à mettre à jour")
+        st.subheader("📋 Legal sheets to update")
         for level in ["HIGH","MEDIUM","LOW"]:
             level_cats = [c for c in cat_impacts if c.get("update_priority")==level]
             if not level_cats: continue
@@ -332,10 +332,10 @@ else:
                 rows_cat.append({
                     "Category":    cat_item.get("category",""),
                     "Label":        cat_item.get("label",""),
-                    "Priorité":     cat_item.get("update_priority",""),
-                    "Alerte":       alert.get("alert_title",""),
-                    "Urgence":      alert.get("alert_urgency",""),
-                    "Type changmt": alert.get("change_type",""),
+                    "Priority":     cat_item.get("update_priority",""),
+                    "Alert":       alert.get("alert_title",""),
+                    "Urgency":      alert.get("alert_urgency",""),
+                    "Change type": alert.get("change_type",""),
                     "Update":  alert.get("update_description",""),
                 })
         if rows_cat:
