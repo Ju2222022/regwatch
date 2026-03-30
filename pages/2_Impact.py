@@ -83,6 +83,7 @@ mode = st.radio(
         "📦 Product Mode — Which products are impacted?",
         "📋 Category Mode — Which legal sheets need updating?",
     ],
+    index=1,
     horizontal=False,
 )
 
