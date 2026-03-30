@@ -81,7 +81,7 @@ with col1:
 with col2:
     market = st.selectbox(
         "Market",
-        ["Europe", "France", "Spain", "Italy", "Germany", "UK", "USA"],
+        ["EU", "France", "Spain", "Italy", "Germany", "UK", "USA"],
         key="5a_market",
     )
 with col3:
